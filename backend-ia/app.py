@@ -5,160 +5,71 @@ from flask_cors import CORS
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
-from supabase import create_client, Client
 
+# Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
 
 app = Flask(__name__)
+# Habilita o CORS para permitir que o front-end (React Native Web/Expo) faça requisições
 CORS(app) 
-
-# Inicializa Supabase
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/chat-mentor', methods=['POST'])
 def chat_mentor():
     try:
         data = request.json
         history = data.get('history', [])
-        user_id = data.get('user_id')
 
-        if not user_id:
-            return jsonify({"error": "user_id não fornecido"}), 400
-
+        # Inicializa o cliente do Gemini usando a chave do .env
         client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-        # ==============================================================================
-        # 1. RAG (Contexto Injetado): O Python lê todo o CRM e entrega "na mão" da IA
-        # ==============================================================================
-        board_response = supabase.table('crm_boards').select('data_payload').eq('user_id', user_id).ilike('id', 'board_%').execute()
-        
-        resumo_funil = "O funil deste vendedor está vazio."
-        board_data = None
-        
-        if board_response.data and len(board_response.data) > 0:
-            board_data = board_response.data[0]['data_payload']
-            fases = board_data.get('phases', [])
-            linhas_resumo = []
-            for fase in fases:
-                nome_fase = fase.get('title', 'Sem Fase')
-                leads = fase.get('clients', [])
-                linhas_resumo.append(f"\n--- FASE DO FUNIL: {nome_fase} ---")
-                for lead in leads:
-                    # Extrai os dados valiosos do lead para a IA entender o contexto
-                    linhas_resumo.append(
-                        f"Lead: {lead.get('name', 'Sem nome')} | "
-                        f"ID_SISTEMA: '{lead.get('id')}' | "
-                        f"Crédito Atual: {lead.get('desiredCredit', 'N/A')} | "
-                        f"Parcela: {lead.get('idealInstallment', 'N/A')} | "
-                        f"Temperatura: {lead.get('leadTemp', 'N/A')} | "
-                        f"Anotações do Vendedor: {lead.get('initialInfo', 'Vazio')}"
-                    )
-            resumo_funil = "\n".join(linhas_resumo)
-
-        # ==============================================================================
-        # 2. FUNCTION CALLING (Ferramenta): Ensinando a IA a apertar botões no CRM
-        # ==============================================================================
-        def atualizar_dados_lead(lead_id: str, novo_credito: str = "", nova_parcela: str = "", nova_temperatura: str = "") -> str:
-            """
-            Atualiza os dados financeiros e a temperatura de um lead no banco de dados. 
-            SÓ USE ESTA FUNÇÃO se você souber o ID_SISTEMA do lead e o usuário pedir para atualizar.
-            Args:
-                lead_id: O ID_SISTEMA exato do lead (ex: client_12345). Obrigatório.
-                novo_credito: Valor do crédito desejado (Ex: R$ 250.000,00). Opcional.
-                nova_parcela: Valor da parcela (Ex: R$ 1.800,00). Opcional.
-                nova_temperatura: Temperatura do cliente (Quente, Morno ou Frio). Opcional.
-            """
-            try:
-                # Busca o board atualizado
-                resp = supabase.table('crm_boards').select('id, data_payload').eq('user_id', user_id).ilike('id', 'board_%').execute()
-                if not resp.data:
-                    return "Erro: Quadro do usuário não encontrado."
-                
-                b_id = resp.data[0]['id']
-                payload = resp.data[0]['data_payload']
-                
-                lead_encontrado = False
-                for p in payload.get('phases', []):
-                    for c in p.get('clients', []):
-                        if c.get('id') == lead_id:
-                            if novo_credito: c['desiredCredit'] = novo_credito
-                            if nova_parcela: c['idealInstallment'] = nova_parcela
-                            if nova_temperatura: c['leadTemp'] = nova_temperatura
-                            
-                            comentario = {
-                                "id": f"sys_ia_{int(time.time()*1000)}",
-                                "text": f"🤖 IA atualizou: Crédito p/ {novo_credito or 'Mantido'}, Parcela p/ {nova_parcela or 'Mantido'}, Temp p/ {nova_temperatura or 'Mantido'}.",
-                                "date": time.strftime('%Y-%m-%dT%H:%M:%S.000Z', time.gmtime())
-                            }
-                            c['comments'] = [comentario] + c.get('comments', [])
-                            lead_encontrado = True
-                            break
-                
-                if not lead_encontrado:
-                    return "Erro: Lead não encontrado no funil."
-                    
-                # Grava a alteração no banco
-                supabase.table('crm_boards').update({'data_payload': payload}).eq('id', b_id).execute()
-                return f"Sucesso! Os dados do lead foram atualizados no CRM e a tela do usuário já refletiu a mudança."
-            
-            except Exception as e:
-                return f"Erro ao atualizar lead: {str(e)}"
-
-        # ==============================================================================
-        # 3. CONSTRUÇÃO DO CHAT E ENVIO PARA A IA (COM RETRY PACIENTE)
-        # ==============================================================================
+        # Formata o histórico de mensagens para o padrão da SDK do Gemini
         contents = []
         for msg in history:
             contents.append(
-                types.Content(role=msg['role'], parts=[types.Part.from_text(text=msg['text'])])
+                types.Content(
+                    role=msg['role'], # Deve ser 'user' ou 'model'
+                    parts=[types.Part.from_text(text=msg['text'])]
+                )
             )
 
-        instrucao_sistema = f"""Você é o Mentor IA da GT Consórcios, uma representante autorizada a vender consórcio pelo Consórcio Embracon, Consórcio Recon, Consórco Renault, Consórcio Nissan, Consórcio Âncora, Consórcio Yamaha, Consórcio Rodobens, Consórcio Canopus e Consórcio Itaú.
-        Sua missão é dar roteiros e gerenciar o funil do usuário.
+        # Instrução de Sistema - A Persona do Mentor
+        instrucao_sistema = """Você é um mentor de alta performance especializado em vendas de consórcios da GT Consórcios, uma representante autorizada a vender consórcio pelo Consórcio Embracon, Consórcio Recon, Consórco Renault, Consórcio Nissan, Consórcio Âncora, Consórcio Yamaha, Consórcio Rodobens, Consórcio Canopus e Consórcio Itaú.
+        Sua missão é treinar, tirar dúvidas e fornecer roteiros matadores para os vendedores.
+        Você domina tudo sobre lances (fixos, embutidos, livres), taxas de administração, reajustes (INCC/INPC), contemplações e quebra de objeções.
+        Seu tom é encorajador, direto, focado em resultados, com energia alta e altamente persuasivo.
+        Quando pedirem ajuda com um cliente, dê exemplos práticos do que falar ou escrever.
+        Memorize o nome do usuário e do cliente que o usuário informar para personalizar as respostas.
+        Memorize todo o histórico de mensagens para manter o contexto da conversa.
+        Use formatação em tópicos e emojis moderados para destacar partes importantes. Seja claro e prático."""
 
-        AQUI ESTÃO OS CLIENTES DELE EM TEMPO REAL:
-        {resumo_funil}
-
-        REGRAS:
-        1. Baseie suas dicas nas "Anotações do Vendedor". Se um cliente está na fase final, sugira fechamento.
-        2. Se o usuário mandar você alterar os dados de um cliente com base na anotação, USE A FERRAMENTA 'atualizar_dados_lead' informando o ID_SISTEMA do lead correspondente.
-        3. SEMPRE avise o usuário logo após atualizar informando "Pronto, acabei de atualizar a ficha do cliente para você!".
-        """
-        historico_chat = contents[:-1] if len(contents) > 1 else []
-        ultima_mensagem = contents[-1].parts[0].text if len(contents) > 0 else ""
-
-        # Aumentamos para 4 tentativas com uma pausa longa entre elas
-        max_tentativas = 4
+        # Sistema de Retry (Tentativas automáticas)
+        max_tentativas = 3
         for tentativa in range(max_tentativas):
             try:
-                # Inicializamos o chat aqui dentro para garantir um estado limpo a cada tentativa
-                chat = client.chats.create(
+                # Faz a chamada para a API
+                response = client.models.generate_content(
                     model='gemini-3.6-flash',
-                    history=historico_chat,
+                    contents=contents,
                     config=types.GenerateContentConfig(
                         system_instruction=instrucao_sistema,
-                        temperature=0.7,
-                        tools=[atualizar_dados_lead] 
+                        temperature=0.7 
                     )
                 )
-                
-                response = chat.send_message(ultima_mensagem)
                 return jsonify({"reply": response.text}), 200
-            
+
             except Exception as e:
-                erro_str = str(e).upper()
-                # Verifica se é erro de limite de cota (429) ou instabilidade (503)
-                if '503' in erro_str or 'UNAVAILABLE' in erro_str or '429' in erro_str or 'RESOURCE' in erro_str or 'DEMAND' in erro_str or 'TOO MANY' in erro_str:
-                    print(f"[Aviso] Limite da API Google atingido (Tentativa {tentativa+1}/{max_tentativas}). Pausa de 15s...")
+                erro_str = str(e).upper() # Padroniza para maiúsculo para não errar a leitura
+                
+                # Se for erro de alta demanda (503) ou limite de cota rápido (429), tenta de novo
+                if '503' in erro_str or 'UNAVAILABLE' in erro_str or 'HIGH DEMAND' in erro_str or '429' in erro_str:
                     if tentativa < max_tentativas - 1:
-                        time.sleep(15) # Pausa de 15s para dar tempo do Google resetar a cota por minuto
+                        time.sleep(3) # Aguarda 3 segundos silenciosamente antes da próxima tentativa
                         continue
                     else:
+                        # Se falhou nas 3 tentativas, avisa o front-end corretamente
                         return jsonify({"error": "ALTA_DEMANDA"}), 503
                 else:
-                    print(f"Erro interno API: {erro_str}")
+                    print(f"Erro interno na API do Google: {erro_str}")
                     return jsonify({"error": str(e)}), 500
 
     except Exception as e:
@@ -166,4 +77,5 @@ def chat_mentor():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
+    # Rodando na porta 5000 para não conflitar com o backend do WhatsApp (3001)
     app.run(host='0.0.0.0', port=5000, debug=True)

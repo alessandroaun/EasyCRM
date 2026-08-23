@@ -17,7 +17,7 @@ import { supabase } from '../services/supabaseClient';
 const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
 
 // ============================================================================
-// COMPONENTE: Avatar Vetorial Elegante da IA
+// COMPONENTE: Avatar Vetorial Elegante da IA (Design Geométrico/Sofisticado)
 // ============================================================================
 const ElegantAIAvatar = ({ isDarkMode }) => {
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
@@ -31,7 +31,7 @@ const ElegantAIAvatar = ({ isDarkMode }) => {
 };
 
 // ============================================================================
-// COMPONENTE: Animação "Pensando..." 
+// COMPONENTE: Animação "Pensando..." (3 Pontinhos fluídos)
 // ============================================================================
 const TypingIndicator = ({ isDarkMode }) => {
   const dot1 = useRef(new Animated.Value(0)).current;
@@ -183,7 +183,7 @@ export default function MentorChatScreen({ isDarkMode }) {
     {
       id: '1',
       role: 'assistant',
-      text: 'Você está conversando com o MentorIA de Vendas. Eu tenho acesso ao seu funil! Me diga de qual cliente estamos falando ou peça para eu preencher os dados de alguém.',
+      text: 'Você está conversando com o MentorIA de Vendas, comigo você encontra o caminho para bater suas metas, pergunte o que quiser, posso demorar um pouco nas respostas mas elas serão respondidas.',
       isTyping: false
     }
   ]);
@@ -194,12 +194,14 @@ export default function MentorChatScreen({ isDarkMode }) {
 
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
 
+  // Função centralizada e ajustável para rolagem
   const scrollToBottom = (animated = true) => {
     if (flatListRef.current) {
       flatListRef.current.scrollToEnd({ animated });
     }
   };
 
+  // Carrega o histórico do banco de dados ao iniciar
   useEffect(() => {
     const loadHistory = async () => {
       try {
@@ -220,6 +222,8 @@ export default function MentorChatScreen({ isDarkMode }) {
             isTyping: false
           }));
           setMessages(historyMessages);
+
+          // Força o scroll imediato e sem animação assim que os dados entram na tela
           setTimeout(() => scrollToBottom(false), 50);
           setTimeout(() => scrollToBottom(false), 300);
         }
@@ -252,16 +256,15 @@ export default function MentorChatScreen({ isDarkMode }) {
     setInputText('');
     setIsLoading(true);
     
+    // Rola suavemente ao enviar mensagem
     setTimeout(() => scrollToBottom(true), 50);
 
-    let currentUserId = null;
-
+    // Salva a mensagem do usuário no Supabase
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user?.id) {
-        currentUserId = session.user.id;
         await supabase.from('mentor_chat_history').insert([
-          { user_id: currentUserId, role: 'user', message: userText }
+          { user_id: session.user.id, role: 'user', message: userText }
         ]);
       }
     } catch (e) {
@@ -274,14 +277,10 @@ export default function MentorChatScreen({ isDarkMode }) {
         text: msg.text
       }));
 
-      // AGORA ENVIAMOS O USER_ID JUNTO PARA O PYTHON PODER PESQUISAR NO SUPABASE!
       const response = await fetch('https://mentor-ia-crm.onrender.com/chat-mentor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          history: historyForAPI,
-          user_id: currentUserId 
-        })
+        body: JSON.stringify({ history: historyForAPI })
       });
 
       const data = await response.json().catch(() => ({}));
@@ -305,10 +304,12 @@ export default function MentorChatScreen({ isDarkMode }) {
 
       setMessages(prev => prev.filter(m => m.id !== 'thinking_temp').concat(aiMessage));
 
+      // Salva a resposta da IA no Supabase
       try {
-        if (currentUserId) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.id) {
           await supabase.from('mentor_chat_history').insert([
-            { user_id: currentUserId, role: 'assistant', message: aiReplyText }
+            { user_id: session.user.id, role: 'assistant', message: aiReplyText }
           ]);
         }
       } catch (e) {
@@ -386,7 +387,7 @@ export default function MentorChatScreen({ isDarkMode }) {
           renderItem={renderMessage}
           contentContainerStyle={[styles.chatListContent, isMobile && styles.chatListContentMobile]}
           onContentSizeChange={() => scrollToBottom(true)}
-          onLayout={() => scrollToBottom(false)}
+          onLayout={() => scrollToBottom(false)} // Garante que a primeira renderização inicie no final
           showsVerticalScrollIndicator={false}
         />
 
@@ -396,7 +397,7 @@ export default function MentorChatScreen({ isDarkMode }) {
               style={[styles.input, themeStyles.input]}
               value={inputText}
               onChangeText={setInputText}
-              placeholder="Ex: Atualize o crédito do João..."
+              placeholder="Pergunte sobre lances, objeções..."
               placeholderTextColor={isDarkMode ? '#64748b' : '#94a3b8'}
               multiline
               onKeyPress={handleKeyPress}
@@ -419,18 +420,23 @@ export default function MentorChatScreen({ isDarkMode }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   contentWrapper: { flex: 1, width: '100%', alignSelf: 'center' },
+  
   chatListContent: { padding: 24, paddingBottom: 8, flexGrow: 1, justifyContent: 'flex-end' },
   chatListContentMobile: { padding: 16, paddingBottom: 8 },
+  
   messageRow: { flexDirection: 'row', marginBottom: 24, maxWidth: '90%', alignItems: 'flex-end' },
   userRow: { alignSelf: 'flex-end', justifyContent: 'flex-end' },
   aiRow: { alignSelf: 'flex-start' },
+  
   avatarContainer: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 1, position: 'relative' },
   avatarOuterRing: { position: 'absolute', width: 24, height: 24, borderRadius: 12, borderWidth: 1, opacity: 0.5 },
   avatarInnerDiamond: { position: 'absolute', width: 12, height: 12, borderWidth: 2, transform: [{ rotate: '45deg' }] },
   avatarCore: { position: 'absolute', width: 4, height: 4, borderRadius: 2 },
+  
   messageBubble: { paddingHorizontal: 20, paddingVertical: 14, borderRadius: 24, flexShrink: 1 },
   userBubble: { backgroundColor: '#2563eb', borderBottomRightRadius: 4 },
   aiBubble: { borderBottomLeftRadius: 4, borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px 4px 12px rgba(0,0,0,0.04)' } }) },
+  
   markdownWrapper: { flexShrink: 1, flexDirection: 'column' },
   messageText: { fontFamily: MODERN_FONT, fontSize: 14.5, lineHeight: 22 },
   userMessageText: { color: '#ffffff' },
@@ -446,44 +452,54 @@ const styles = StyleSheet.create({
   mdBulletRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 4 },
   mdBulletPoint: { fontSize: 16, marginRight: 8, marginTop: -2 },
   mdDivider: { height: 1, marginVertical: 12, width: '100%', opacity: 0.5 },
+
   typingIndicatorWrapper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 24, width: 40, gap: 4 },
   typingDot: { width: 6, height: 6, borderRadius: 3 },
+  
   floatingInputWrapper: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 8, backgroundColor: 'transparent' },
+  
   inputContainer: { flexDirection: 'row', padding: 6, paddingLeft: 16, borderRadius: 24, alignItems: 'center', borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px -4px 20px rgba(0,0,0,0.05)' } }) },
   input: { flex: 1, minHeight: 36, maxHeight: 120, paddingTop: 8, paddingBottom: 8, fontSize: 14, fontFamily: MODERN_FONT, ...Platform.select({ web: { outlineStyle: 'none' } }) },
   sendButton: { backgroundColor: '#2563eb', height: 36, width: 75, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
+  
   sendButtonDisabled: { opacity: 0.5 },
   sendButtonText: { color: '#ffffff', fontFamily: MODERN_FONT, fontWeight: '800', fontSize: 13 }
 });
 
 const lightStyles = StyleSheet.create({
   container: { backgroundColor: '#f1f5f9' },
+  
   avatarContainer: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
   avatarOuterRing: { borderColor: '#3b82f6' },
   avatarInnerDiamond: { borderColor: '#2563eb', backgroundColor: '#eff6ff' },
   avatarCore: { backgroundColor: '#1d4ed8' },
+
   aiBubble: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
   aiMessageText: { color: '#1e293b' },
   mdHeading: { color: '#0f172a' },
   mdQuoteBlock: { borderLeftColor: '#94a3b8', backgroundColor: '#f8fafc' },
   mdQuoteText: { color: '#475569' },
   mdDivider: { backgroundColor: '#cbd5e1' },
+  
   inputContainer: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
   input: { color: '#0f172a' }
 });
 
 const darkStyles = StyleSheet.create({
   container: { backgroundColor: '#0f172a' },
+  
   avatarContainer: { backgroundColor: '#1e293b', borderColor: '#334155' },
   avatarOuterRing: { borderColor: '#60a5fa' },
   avatarInnerDiamond: { borderColor: '#3b82f6', backgroundColor: '#172554' },
   avatarCore: { backgroundColor: '#bfdbfe' },
+
   aiBubble: { backgroundColor: '#1e293b', borderColor: '#334155' },
   aiMessageText: { color: '#e2e8f0' },
   mdHeading: { color: '#f8fafc' },
   mdQuoteBlock: { borderLeftColor: '#475569', backgroundColor: '#0f172a' },
   mdQuoteText: { color: '#cbd5e1' },
   mdDivider: { backgroundColor: '#334155' },
+  
   inputContainer: { backgroundColor: '#1e293b', borderColor: '#334155' },
   input: { color: '#f8fafc' }
 });
