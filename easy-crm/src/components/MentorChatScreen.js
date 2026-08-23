@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
   Animated
 } from 'react-native';
+import { supabase } from '../services/supabaseClient'; 
 
 const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
 
@@ -74,20 +75,18 @@ const MarkdownText = ({ text, baseStyle, isDarkMode }) => {
   if (!text) return null;
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
   
-  // Separa o texto por quebras de linha reais
   const blocks = text.split('\n');
 
   return (
     <View style={styles.markdownWrapper}>
       {blocks.map((line, index) => {
-        if (line.trim() === '') return <View key={index} style={{ height: 8 }} />; // Espaçamento entre parágrafos
+        if (line.trim() === '') return <View key={index} style={{ height: 8 }} />;
 
         let content = line;
         let isQuote = false;
         let isBullet = false;
         let headingLevel = 0;
 
-        // Verifica identificadores de bloco (Headers, Quotes, Bullets)
         if (content.trim().startsWith('>')) {
           isQuote = true;
           content = content.replace(/^>\s*/, '');
@@ -98,12 +97,11 @@ const MarkdownText = ({ text, baseStyle, isDarkMode }) => {
           isBullet = true;
           content = content.replace(/^[-*]\s/, '');
         } else if (content.match(/^\d+\.\s/)) {
-          isBullet = true; // Lista numerada (mantemos o número no texto original)
+          isBullet = true;
         } else if (content.trim() === '---') {
           return <View key={index} style={[styles.mdDivider, themeStyles.mdDivider]} />;
         }
 
-        // Processa negrito (**) e itálico (*) inline
         const formatInline = (str) => {
           const boldParts = str.split(/(\*\*.*?\*\*)/g);
           return boldParts.map((bPart, bIdx) => {
@@ -122,7 +120,6 @@ const MarkdownText = ({ text, baseStyle, isDarkMode }) => {
 
         const formattedText = formatInline(content);
 
-        // Renderiza com base no tipo de bloco
         if (headingLevel > 0) {
            const hStyles = [styles.mdHeading1, styles.mdHeading2, styles.mdHeading3, styles.mdHeading3, styles.mdHeading3, styles.mdHeading3];
            return <Text key={index} style={[baseStyle, styles.mdHeadingBase, hStyles[headingLevel - 1], themeStyles.mdHeading]}>{formattedText}</Text>;
@@ -164,7 +161,7 @@ const TypewriterMessage = ({ text, onComplete, style, isDarkMode }) => {
   useEffect(() => {
     if (displayedLength < text.length) {
       const timer = setTimeout(() => {
-        setDisplayedLength(prev => prev + 4); // Avança 4 caracteres por frame para ser rápido e natural
+        setDisplayedLength(prev => prev + 4);
       }, 10);
       return () => clearTimeout(timer);
     } else {
@@ -197,19 +194,54 @@ export default function MentorChatScreen({ isDarkMode }) {
 
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
 
-  const scrollToBottom = () => {
+  // Função centralizada e ajustável para rolagem
+  const scrollToBottom = (animated = true) => {
     if (flatListRef.current) {
-      flatListRef.current.scrollToEnd({ animated: true });
+      flatListRef.current.scrollToEnd({ animated });
     }
   };
+
+  // Carrega o histórico do banco de dados ao iniciar
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user?.id) return;
+
+        const { data, error } = await supabase
+          .from('mentor_chat_history')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: true });
+
+        if (data && data.length > 0) {
+          const historyMessages = data.map(msg => ({
+            id: msg.id,
+            role: msg.role,
+            text: msg.message,
+            isTyping: false
+          }));
+          setMessages(historyMessages);
+
+          // Força o scroll imediato e sem animação assim que os dados entram na tela
+          setTimeout(() => scrollToBottom(false), 50);
+          setTimeout(() => scrollToBottom(false), 300);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar histórico:", error);
+      }
+    };
+    loadHistory();
+  }, []);
 
   const sendMessage = async () => {
     if (!inputText.trim()) return;
 
+    const userText = inputText.trim();
     const newUserMessage = {
       id: Date.now().toString(),
       role: 'user',
-      text: inputText.trim(),
+      text: userText,
       isTyping: false
     };
 
@@ -223,6 +255,21 @@ export default function MentorChatScreen({ isDarkMode }) {
     setMessages([...currentMessages, thinkingMessage]);
     setInputText('');
     setIsLoading(true);
+    
+    // Rola suavemente ao enviar mensagem
+    setTimeout(() => scrollToBottom(true), 50);
+
+    // Salva a mensagem do usuário no Supabase
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        await supabase.from('mentor_chat_history').insert([
+          { user_id: session.user.id, role: 'user', message: userText }
+        ]);
+      }
+    } catch (e) {
+      console.error("Erro ao salvar mensagem do usuário:", e);
+    }
 
     try {
       const historyForAPI = currentMessages.map(msg => ({
@@ -230,7 +277,7 @@ export default function MentorChatScreen({ isDarkMode }) {
         text: msg.text
       }));
 
-      const response = await fetch('http://localhost:5000/chat-mentor', {
+      const response = await fetch('https://mentor-ia-crm.onrender.com/chat-mentor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ history: historyForAPI })
@@ -246,18 +293,33 @@ export default function MentorChatScreen({ isDarkMode }) {
         throw new Error(data.error || 'Falha na resposta do servidor');
       }
       
+      const aiReplyText = data.reply;
+      
       const aiMessage = {
         id: Date.now().toString(),
         role: 'assistant',
-        text: data.reply,
-        isTyping: true // Ativa a animação de digitação
+        text: aiReplyText,
+        isTyping: true 
       };
 
       setMessages(prev => prev.filter(m => m.id !== 'thinking_temp').concat(aiMessage));
+
+      // Salva a resposta da IA no Supabase
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.id) {
+          await supabase.from('mentor_chat_history').insert([
+            { user_id: session.user.id, role: 'assistant', message: aiReplyText }
+          ]);
+        }
+      } catch (e) {
+        console.error("Erro ao salvar resposta da IA:", e);
+      }
+
     } catch (error) {
       console.error("Erro no chat:", error);
       
-      let errorText = 'Desculpe, tive um problema de conexão com o servidor. Verifique se o backend Python está rodando na porta 5000.';
+      let errorText = 'Desculpe, tive um problema de conexão com o servidor.';
       if (error.message === 'ALTA_DEMANDA') {
         errorText = 'Estou atendendo muitos vendedores neste exato segundo e a rede da inteligência artificial está com alta demanda! 🥵 Pode mandar sua pergunta de novo em alguns instantes?';
       }
@@ -316,14 +378,16 @@ export default function MentorChatScreen({ isDarkMode }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.contentWrapper}>
+        
         <FlatList
           ref={flatListRef}
           data={messages}
+          style={{ flex: 1 }} 
           keyExtractor={item => item.id}
           renderItem={renderMessage}
           contentContainerStyle={[styles.chatListContent, isMobile && styles.chatListContentMobile]}
-          onContentSizeChange={scrollToBottom}
-          onLayout={scrollToBottom}
+          onContentSizeChange={() => scrollToBottom(true)}
+          onLayout={() => scrollToBottom(false)} // Garante que a primeira renderização inicie no final
           showsVerticalScrollIndicator={false}
         />
 
@@ -333,7 +397,7 @@ export default function MentorChatScreen({ isDarkMode }) {
               style={[styles.input, themeStyles.input]}
               value={inputText}
               onChangeText={setInputText}
-              placeholder="Pergunte sobre lances, objeções, funil..."
+              placeholder="Pergunte sobre lances, objeções..."
               placeholderTextColor={isDarkMode ? '#64748b' : '#94a3b8'}
               multiline
               onKeyPress={handleKeyPress}
@@ -355,27 +419,24 @@ export default function MentorChatScreen({ isDarkMode }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  contentWrapper: { flex: 1, maxWidth: 950, width: '100%', alignSelf: 'center' },
+  contentWrapper: { flex: 1, width: '100%', alignSelf: 'center' },
   
-  chatListContent: { padding: 32, paddingBottom: 100, flexGrow: 1, justifyContent: 'flex-end' },
-  chatListContentMobile: { padding: 16, paddingBottom: 100 },
+  chatListContent: { padding: 24, paddingBottom: 8, flexGrow: 1, justifyContent: 'flex-end' },
+  chatListContentMobile: { padding: 16, paddingBottom: 8 },
   
   messageRow: { flexDirection: 'row', marginBottom: 24, maxWidth: '90%', alignItems: 'flex-end' },
   userRow: { alignSelf: 'flex-end', justifyContent: 'flex-end' },
   aiRow: { alignSelf: 'flex-start' },
   
-  // Avatar Vetorial Elegante
   avatarContainer: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 1, position: 'relative' },
   avatarOuterRing: { position: 'absolute', width: 24, height: 24, borderRadius: 12, borderWidth: 1, opacity: 0.5 },
   avatarInnerDiamond: { position: 'absolute', width: 12, height: 12, borderWidth: 2, transform: [{ rotate: '45deg' }] },
   avatarCore: { position: 'absolute', width: 4, height: 4, borderRadius: 2 },
   
-  // Bubbles
   messageBubble: { paddingHorizontal: 20, paddingVertical: 14, borderRadius: 24, flexShrink: 1 },
   userBubble: { backgroundColor: '#2563eb', borderBottomRightRadius: 4 },
   aiBubble: { borderBottomLeftRadius: 4, borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px 4px 12px rgba(0,0,0,0.04)' } }) },
   
-  // Textos e Markdown
   markdownWrapper: { flexShrink: 1, flexDirection: 'column' },
   messageText: { fontFamily: MODERN_FONT, fontSize: 14.5, lineHeight: 22 },
   userMessageText: { color: '#ffffff' },
@@ -392,16 +453,15 @@ const styles = StyleSheet.create({
   mdBulletPoint: { fontSize: 16, marginRight: 8, marginTop: -2 },
   mdDivider: { height: 1, marginVertical: 12, width: '100%', opacity: 0.5 },
 
-  // Typing Indicator (Pensando...)
   typingIndicatorWrapper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 24, width: 40, gap: 4 },
   typingDot: { width: 6, height: 6, borderRadius: 3 },
   
-  // Input Area Flutuante (Arredondado sem cantos duros)
-  floatingInputWrapper: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 24, paddingBottom: 24, paddingTop: 8, backgroundColor: 'transparent' },
-  inputContainer: { flexDirection: 'row', padding: 8, paddingLeft: 16, borderRadius: 30, alignItems: 'flex-end', borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px -4px 20px rgba(0,0,0,0.05)' } }) },
-  inputContainerMobile: { paddingHorizontal: 6 },
-  input: { flex: 1, minHeight: 40, maxHeight: 120, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 10, fontSize: 14, fontFamily: MODERN_FONT, ...Platform.select({ web: { outlineStyle: 'none' } }) },
-  sendButton: { backgroundColor: '#2563eb', height: 44, width: 85, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
+  floatingInputWrapper: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 8, backgroundColor: 'transparent' },
+  
+  inputContainer: { flexDirection: 'row', padding: 6, paddingLeft: 16, borderRadius: 24, alignItems: 'center', borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px -4px 20px rgba(0,0,0,0.05)' } }) },
+  input: { flex: 1, minHeight: 36, maxHeight: 120, paddingTop: 8, paddingBottom: 8, fontSize: 14, fontFamily: MODERN_FONT, ...Platform.select({ web: { outlineStyle: 'none' } }) },
+  sendButton: { backgroundColor: '#2563eb', height: 36, width: 75, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
+  
   sendButtonDisabled: { opacity: 0.5 },
   sendButtonText: { color: '#ffffff', fontFamily: MODERN_FONT, fontWeight: '800', fontSize: 13 }
 });

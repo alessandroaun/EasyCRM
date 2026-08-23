@@ -16,7 +16,7 @@ import InformacoesGerais from '../components/InformacoesGerais';
 import Configuracao from '../components/Configuracao';
 import WhatsAppBulkModal from '../components/WhatsAppBulkModal';
 import AdminPanel from '../components/AdminPanel';
-import MentorChatScreen from '../components/MentorChatScreen'; // NOVO: Componente do Mentor de IA
+import MentorChatScreen from '../components/MentorChatScreen';
 
 const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
 
@@ -27,6 +27,11 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   
   const [isElectron, setIsElectron] = useState(false);
   const [isAutoImportActive, setIsAutoImportActive] = useState(false);
+
+  // Estados e Refs para o Mentor IA Modal
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const chatScale = useRef(new Animated.Value(0.8)).current;
+  const chatOpacity = useRef(new Animated.Value(0)).current;
 
   const { width } = useWindowDimensions();
   const isMobile = width < 850; 
@@ -109,35 +114,36 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
     setIsMenuRendered(true);
     setIsMenuOpen(true);
     Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-      Animated.timing(backdropOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(backdropOpacity, { toValue: 1, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
   };
 
   const closeSidebar = () => {
     Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: -280,
-        duration: 250,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-      Animated.timing(backdropOpacity, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
+      Animated.timing(slideAnim, { toValue: -280, duration: 250, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(backdropOpacity, { toValue: 0, duration: 250, useNativeDriver: Platform.OS !== 'web' }),
     ]).start(() => {
       setIsMenuRendered(false);
       setIsMenuOpen(false);
     });
+  };
+
+  const toggleChat = () => {
+    if (isChatOpen) {
+      Animated.parallel([
+        Animated.timing(chatScale, { toValue: 0.8, duration: 150, useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(chatOpacity, { toValue: 0, duration: 150, useNativeDriver: Platform.OS !== 'web' })
+      ]).start(() => setIsChatOpen(false));
+    } else {
+      setIsChatOpen(true);
+      chatScale.setValue(0.8);
+      chatOpacity.setValue(0);
+      Animated.parallel([
+        Animated.spring(chatScale, { toValue: 1, friction: 8, useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(chatOpacity, { toValue: 1, duration: 250, useNativeDriver: Platform.OS !== 'web' })
+      ]).start();
+    }
   };
 
   const [alertConfig, setAlertConfig] = useState({ visible: false, type: 'success', title: '', message: '' });
@@ -1027,6 +1033,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
   const filteredBoardData = boardData ? getFilteredBoard() : { phases: [] };
   const currentTheme = isDarkMode ? darkStyles : lightStyles;
+  const iconColor = isDarkMode ? '#94a3b8' : '#64748b';
 
   if (loading) {
     return (
@@ -1261,8 +1268,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
     ? `Transferir Leads (${(selectedTargetUserObj.name || selectedTargetUserObj.email).split(' ')[0]})`
     : 'Transferir Leads';
 
-  const iconColor = isDarkMode ? '#94a3b8' : '#64748b';
-
   return (
     <View style={[styles.container, currentTheme.container]} onStartShouldSetResponder={() => {
       if (isBulkDropdownOpen || isBulkTransferActive) {
@@ -1291,47 +1296,59 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
               <Image source={require('../../assets/logoCRM.png')} style={styles.logoImage} resizeMode="contain" />
             </View>
             
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <TouchableOpacity 
-              style={[styles.themeToggleButtonFancy, currentTheme.themeToggleButtonFancy]} 
-              onPress={() => toggleDarkMode(!isDarkMode)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.themeToggleInner}>
-                {isDarkMode ? (
-                  <View style={styles.sunContainer}>
-                    <View style={styles.sunCore} />
-                    <View style={[styles.sunRay, { transform: [{ rotate: '0deg' }] }]} />
-                    <View style={[styles.sunRay, { transform: [{ rotate: '45deg' }] }]} />
-                    <View style={[styles.sunRay, { transform: [{ rotate: '90deg' }] }]} />
-                    <View style={[styles.sunRay, { transform: [{ rotate: '135deg' }] }]} />
-                  </View>
-                ) : (
-                  <View style={styles.moonContainer}>
-                    <View style={styles.moonCrescent} />
-                  </View>
-                )}
-              </View>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <TouchableOpacity 
+                style={[styles.themeToggleButtonFancy, currentTheme.themeToggleButtonFancy]} 
+                onPress={() => toggleDarkMode(!isDarkMode)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.themeToggleInner}>
+                  {isDarkMode ? (
+                    <View style={styles.sunContainer}>
+                      <View style={styles.sunCore} />
+                      <View style={[styles.sunRay, { transform: [{ rotate: '0deg' }] }]} />
+                      <View style={[styles.sunRay, { transform: [{ rotate: '45deg' }] }]} />
+                      <View style={[styles.sunRay, { transform: [{ rotate: '90deg' }] }]} />
+                      <View style={[styles.sunRay, { transform: [{ rotate: '135deg' }] }]} />
+                    </View>
+                  ) : (
+                    <View style={styles.moonContainer}>
+                      <View style={styles.moonCrescent} />
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+
+              {/* MENTOR IA TOGGLE */}
+              <TouchableOpacity 
+                style={[styles.aiToggleBtnFancy, currentTheme.notificationBtnFancy, isChatOpen && { borderColor: '#3b82f6', backgroundColor: isDarkMode ? '#1e3a8a' : '#eff6ff' }]} 
+                onPress={toggleChat}
+                activeOpacity={0.8}
+              >
+                <View style={styles.aiToggleVector}>
+                  <View style={[styles.aiToggleDiamond, { borderColor: isChatOpen ? '#3b82f6' : iconColor }]} />
+                  <View style={[styles.aiToggleCore, { backgroundColor: isChatOpen ? '#2563eb' : iconColor }]} />
+                </View>
+              </TouchableOpacity>
 
               <TouchableOpacity 
-              style={[styles.notificationBtnFancy, currentTheme.notificationBtnFancy]} 
-              onPress={() => setIsNotifModalVisible(true)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.bellContainer}>
-                <View style={[styles.bellTop, { backgroundColor: isDarkMode ? '#cbd5e1' : '#475569' }]} />
-                <View style={[styles.bellBottom, { backgroundColor: isDarkMode ? '#cbd5e1' : '#475569' }]} />
-              </View>
-              
-              {(activeNotifications.length + systemNotifications.length + adminNotifications.length) > 0 && (
-                <View style={styles.notificationBadge}>
-                  <Text style={styles.notificationBadgeText}>
-                    {activeNotifications.length + systemNotifications.length + adminNotifications.length}
-                  </Text>
+                style={[styles.notificationBtnFancy, currentTheme.notificationBtnFancy]} 
+                onPress={() => setIsNotifModalVisible(true)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.bellContainer}>
+                  <View style={[styles.bellTop, { backgroundColor: isDarkMode ? '#cbd5e1' : '#475569' }]} />
+                  <View style={[styles.bellBottom, { backgroundColor: isDarkMode ? '#cbd5e1' : '#475569' }]} />
                 </View>
-              )}
-            </TouchableOpacity>
+                
+                {(activeNotifications.length + systemNotifications.length + adminNotifications.length) > 0 && (
+                  <View style={styles.notificationBadge}>
+                    <Text style={styles.notificationBadgeText}>
+                      {activeNotifications.length + systemNotifications.length + adminNotifications.length}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -1426,7 +1443,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
               <Text style={styles.actionBtnPrimaryText}>+ Novo</Text>
             </TouchableOpacity>
           </View>
-
         </View>
       ) : (
         <View style={[styles.topHeader, currentTheme.topHeader]}>
@@ -1496,6 +1512,18 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
                     <View style={styles.moonCrescent} />
                   </View>
                 )}
+              </View>
+            </TouchableOpacity>
+
+            {/* MENTOR IA TOGGLE */}
+            <TouchableOpacity 
+              style={[styles.aiToggleBtnFancy, currentTheme.notificationBtnFancy, isChatOpen && { borderColor: '#3b82f6', backgroundColor: isDarkMode ? '#1e3a8a' : '#eff6ff' }]} 
+              onPress={toggleChat}
+              activeOpacity={0.8}
+            >
+              <View style={styles.aiToggleVector}>
+                <View style={[styles.aiToggleDiamond, { borderColor: isChatOpen ? '#3b82f6' : iconColor }]} />
+                <View style={[styles.aiToggleCore, { backgroundColor: isChatOpen ? '#2563eb' : iconColor }]} />
               </View>
             </TouchableOpacity>
 
@@ -1582,62 +1610,80 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
         </View>
       )}
 
-      {activeView === 'kanban' && boardData && boardData.phases && (
-        <ScrollView ref={boardScrollRef} horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'} style={styles.boardContainer}>
-          {filteredBoardData?.phases?.map((phase) => (
-            <KanbanColumn 
-              key={phase.id} 
-              phase={phase} 
-              onDropClient={handleDropClient} 
-              onDeleteClient={handleMoveToTrash}
-              onOpenClient={handleOpenClientDetails}
-              onEditPhase={(p) => setEditingPhase(p)}
-              onReorderPhase={handleReorderPhase}
-              onAddComment={handleAddCommentToClient}
-              isBulkSelecting={isBulkTransferActive || isBulkDeleteActive}
-              selectedLeadIds={selectedLeadIds}
-              onToggleSelectLead={(clientId) => {
-                setSelectedLeadIds(prev => 
-                  prev.includes(clientId) ? prev.filter(id => id !== clientId) : [...prev, clientId]
-                );
-              }}
-              onSelectAllInPhase={(phaseClientIds) => {
-                setSelectedLeadIds(prev => Array.from(new Set([...prev, ...phaseClientIds])));
-              }}
-              onDeselectAllInPhase={(phaseClientIds) => {
-                setSelectedLeadIds(prev => prev.filter(id => !phaseClientIds.includes(id)));
-              }}
-              isDarkMode={isDarkMode}
-              isAdmin={userProfile?.role === 'admin'}
-            />
-          ))}
-          {userProfile?.role === 'admin' && (
-            <TouchableOpacity style={[styles.addPhaseButton, currentTheme.addPhaseButton]} onPress={() => setIsPhaseModalVisible(true)}>
-              <Text style={[styles.addPhaseText, currentTheme.addPhaseText]}>+ Adicionar Fase</Text>
-            </TouchableOpacity>
+      {/* ====================================================================== */}
+      {/* CORPO DO DASHBOARD (PAINEL PRINCIPAL + MODAL LATERAL DA IA)            */}
+      {/* ====================================================================== */}
+      <View style={{ flex: 1, flexDirection: 'row', position: 'relative', overflow: 'hidden' }}>
+        
+        <View style={{ flex: 1, zIndex: 1 }}>
+          {activeView === 'kanban' && boardData && boardData.phases && (
+            <ScrollView ref={boardScrollRef} horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'} style={styles.boardContainer}>
+              {filteredBoardData?.phases?.map((phase) => (
+                <KanbanColumn 
+                  key={phase.id} 
+                  phase={phase} 
+                  onDropClient={handleDropClient} 
+                  onDeleteClient={handleMoveToTrash}
+                  onOpenClient={handleOpenClientDetails}
+                  onEditPhase={(p) => setEditingPhase(p)}
+                  onReorderPhase={handleReorderPhase}
+                  onAddComment={handleAddCommentToClient}
+                  isBulkSelecting={isBulkTransferActive || isBulkDeleteActive}
+                  selectedLeadIds={selectedLeadIds}
+                  onToggleSelectLead={(clientId) => {
+                    setSelectedLeadIds(prev => 
+                      prev.includes(clientId) ? prev.filter(id => id !== clientId) : [...prev, clientId]
+                    );
+                  }}
+                  onSelectAllInPhase={(phaseClientIds) => {
+                    setSelectedLeadIds(prev => Array.from(new Set([...prev, ...phaseClientIds])));
+                  }}
+                  onDeselectAllInPhase={(phaseClientIds) => {
+                    setSelectedLeadIds(prev => prev.filter(id => !phaseClientIds.includes(id)));
+                  }}
+                  isDarkMode={isDarkMode}
+                  isAdmin={userProfile?.role === 'admin'}
+                />
+              ))}
+              {userProfile?.role === 'admin' && (
+                <TouchableOpacity style={[styles.addPhaseButton, currentTheme.addPhaseButton]} onPress={() => setIsPhaseModalVisible(true)}>
+                  <Text style={[styles.addPhaseText, currentTheme.addPhaseText]}>+ Adicionar Fase</Text>
+                </TouchableOpacity>
+              )}
+            </ScrollView>
           )}
-        </ScrollView>
-      )}
 
-      {activeView === 'minha_central' && (
-        <MinhaCentral boardData={boardData} onOpenClient={handleOpenClientDetails} isDarkMode={isDarkMode} />
-      )}
+          {activeView === 'minha_central' && (
+            <MinhaCentral boardData={boardData} onOpenClient={handleOpenClientDetails} isDarkMode={isDarkMode} />
+          )}
 
-      {activeView === 'info_gerais' && (
-        <InformacoesGerais isDarkMode={isDarkMode} />
-      )}
+          {activeView === 'info_gerais' && (
+            <InformacoesGerais isDarkMode={isDarkMode} />
+          )}
 
-      {activeView === 'configuracao' && (
-        <Configuracao isDarkMode={isDarkMode} onConfigSaved={() => {
-          fetchInitialData();
-        }} />
-      )}
+          {activeView === 'configuracao' && (
+            <Configuracao isDarkMode={isDarkMode} onConfigSaved={() => {
+              fetchInitialData();
+            }} />
+          )}
 
-      {activeView === 'mentor_ai' && (
-        <MentorChatScreen isDarkMode={isDarkMode} />
-      )}
+          {activeView === 'admin_panel' && (<AdminPanel isDarkMode={isDarkMode} />)}
+        </View>
 
-      {activeView === 'admin_panel' && (<AdminPanel isDarkMode={isDarkMode} />)}
+        {isChatOpen && (
+          <Animated.View 
+            style={[
+              styles.chatSidePanel, 
+              currentTheme.chatSidePanel,
+              isMobile && styles.chatSidePanelMobile,
+              { opacity: chatOpacity, transform: [{ scale: chatScale }] }
+            ]}
+          >
+            <MentorChatScreen isDarkMode={isDarkMode} />
+          </Animated.View>
+        )}
+
+      </View>
 
       {isBulkTransferActive && selectedLeadIds.length > 0 && bulkTargetUserId && (
         <TouchableOpacity 
@@ -1681,8 +1727,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
             
             <ScrollView style={styles.sidebarMenuContainer} contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
               
-              <Text style={[styles.menuSectionTitle, currentTheme.menuSectionTitle]}>MENU PRINCIPAL</Text>
-              
               <TouchableOpacity 
                 style={[styles.menuItem, currentTheme.menuItem, isMobile && styles.menuItemMobile, activeView === 'kanban' && (isDarkMode ? styles.menuItemActiveDark : styles.menuItemActive)]} 
                 onPress={() => { setActiveView('kanban'); closeSidebar(); }}
@@ -1703,17 +1747,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
               >
                 <Text style={[styles.menuItemText, currentTheme.menuItemText, isMobile && styles.menuItemTextMobile, activeView === 'info_gerais' && styles.menuItemTextActive]}>Visão Geral</Text>
               </TouchableOpacity>
-
-              <Text style={[styles.menuSectionTitle, currentTheme.menuSectionTitle, { marginTop: 16 }]}>INTELIGÊNCIA ARTIFICIAL</Text>
-
-              <TouchableOpacity 
-                style={[styles.menuItem, currentTheme.menuItem, isMobile && styles.menuItemMobile, activeView === 'mentor_ai' && (isDarkMode ? styles.menuItemActiveDark : styles.menuItemActive)]} 
-                onPress={() => { setActiveView('mentor_ai'); closeSidebar(); }}
-              >
-                <Text style={[styles.menuItemText, currentTheme.menuItemText, isMobile && styles.menuItemTextMobile, activeView === 'mentor_ai' && styles.menuItemTextActive]}>🤖 Mentor IA</Text>
-              </TouchableOpacity>
-
-              <Text style={[styles.menuSectionTitle, currentTheme.menuSectionTitle, { marginTop: 16 }]}>SISTEMA</Text>
 
               <TouchableOpacity 
                 style={[styles.menuItem, currentTheme.menuItem, isMobile && styles.menuItemMobile, activeView === 'configuracao' && (isDarkMode ? styles.menuItemActiveDark : styles.menuItemActive)]} 
@@ -1969,9 +2002,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
         </View>
       )}
 
-      {/* ====================================================================== */}
-      {/* MODAL DE ALERTA RENDERIZADO NO FINAL (Z-INDEX GLOBAL E DESIGN NOVO)    */}
-      {/* ====================================================================== */}
       <Modal animationType="fade" transparent={true} visible={alertConfig.visible} onRequestClose={closeCustomAlert}>
         <View style={[styles.modalOverlay, { zIndex: 999999, elevation: 100 }]}>
           <Animated.View style={[styles.alertModalBox, currentTheme.alertModalBox, { opacity: alertOpacity, transform: [{ scale: alertScale }], padding: 24, maxWidth: 400 }]}>
@@ -2026,6 +2056,23 @@ const styles = StyleSheet.create({
   bellTop: { width: 14, height: 10, borderTopLeftRadius: 7, borderTopRightRadius: 7, borderBottomLeftRadius: 2, borderBottomRightRadius: 2 },
   bellBottom: { width: 4, height: 3, marginTop: 1, borderRadius: 2 },
 
+  // ÍCONE VETORIAL DO BOTÃO DA IA
+  aiToggleBtnFancy: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    marginRight: 6,
+    ...Platform.select({
+      web: { transition: 'all 0.2s ease', cursor: 'pointer' }
+    })
+  },
+  aiToggleVector: { width: 16, height: 16, justifyContent: 'center', alignItems: 'center', position: 'relative' },
+  aiToggleDiamond: { position: 'absolute', width: 12, height: 12, borderWidth: 2, transform: [{ rotate: '45deg' }] },
+  aiToggleCore: { position: 'absolute', width: 4, height: 4, borderRadius: 2 },
+
   toastContainer: {
     position: 'absolute',
     top: Platform.OS === 'web' ? 80 : 50,
@@ -2050,6 +2097,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
+    marginRight: 6,
     ...Platform.select({
       web: { transition: 'all 0.2s ease', cursor: 'pointer', boxShadow: '0px 2px 5px rgba(0,0,0,0.05)' }
     })
@@ -2092,6 +2140,9 @@ const styles = StyleSheet.create({
   boardContainer: { flex: 1, paddingTop: 16, paddingHorizontal: 16 },
   addPhaseButton: { width: 300, borderRadius: 12, padding: 16, alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', borderWidth: 2, maxHeight: 52, marginRight: 24 },
   addPhaseText: { fontFamily: MODERN_FONT, fontWeight: '700', fontSize: 14 },
+
+  chatSidePanel: { width: 380, borderLeftWidth: 1, zIndex: 50, overflow: 'hidden' },
+  chatSidePanelMobile: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, width: '100%', borderLeftWidth: 0, zIndex: 100 },
 
   sidebarOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, flexDirection: 'row' },
   sidebarBackdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.45)' },
@@ -2157,7 +2208,6 @@ const styles = StyleSheet.create({
   confirmBtn: { flex: 1, padding: 12, borderRadius: 8, backgroundColor: '#ef4444', alignItems: 'center' },
   confirmBtnText: { fontWeight: 'bold', color: '#ffffff' },
 
-  // Alerta Modal Atualizado
   alertModalBox: { width: '100%', maxWidth: 380, borderRadius: 16, alignItems: 'center', ...Platform.select({ web: { outlineStyle: 'none', boxShadow: '0px 15px 35px rgba(0,0,0,0.25)' } }) },
   alertModalTitle: { fontSize: 17, fontWeight: '700', fontFamily: MODERN_FONT },
   alertModalMessage: { fontSize: 13, lineHeight: 18, fontFamily: MODERN_FONT },
@@ -2195,6 +2245,7 @@ const lightStyles = StyleSheet.create({
   actionBtnSecondaryText: { color: '#475569' },
   addPhaseButton: { backgroundColor: 'rgba(226, 232, 240, 0.5)', borderColor: '#CBD5E1' },
   addPhaseText: { color: '#64748B' },
+  chatSidePanel: { backgroundColor: '#f1f5f9', borderLeftColor: '#e2e8f0' },
   sidebarContent: { backgroundColor: '#ffffff', ...Platform.select({ web: { boxShadow: '6px 0px 25px rgba(0,0,0,0.08)' } }) },
   sidebarHeaderContainer: { borderBottomColor: '#f1f5f9' },
   sidebarUserName: { color: '#0f172a' },
@@ -2252,6 +2303,7 @@ const darkStyles = StyleSheet.create({
   notificationBtnFancy: { backgroundColor: '#1e293b', borderColor: '#334155' },
   addPhaseButton: { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: '#334155' },
   addPhaseText: { color: '#94a3b8' },
+  chatSidePanel: { backgroundColor: '#0f172a', borderLeftColor: '#334155' },
   sidebarContent: { backgroundColor: '#1e293b', ...Platform.select({ web: { boxShadow: '6px 0px 25px rgba(0,0,0,0.4)' } }) },
   sidebarHeaderContainer: { borderBottomColor: '#334155' },
   sidebarUserName: { color: '#f8fafc' },
