@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>A11 CRM - Atualização Obrigatória</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        .container { text-align: center; padding: 30px; background: #1e293b; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 80%; max-width: 400px; }
+        h2 { margin-top: 0; color: #f59e0b; }
+        p { font-size: 14px; color: #cbd5e1; }
+        .progress-bar { width: 100%; height: 20px; background: #334155; border-radius: 10px; margin: 20px 0; overflow: hidden; display: none; }
+        .progress-fill { height: 100%; background: #3b82f6; width: 0%; transition: width 0.3s; }
+        .buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .btn-update { background: #3b82f6; color: white; }
+        .btn-update:hover { background: #2563eb; }
+        .btn-cancel { background: #ef4444; color: white; }
+        .btn-cancel:hover { background: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Atualização Necessária</h2>
+        <p id="info-text">Uma nova versão do A11 CRM (<span id="ver"></span>) está disponível. Esta atualização é obrigatória para continuar usando o sistema.</p>
+        
+        <div class="progress-bar" id="progress-container">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <p id="status-text" style="font-weight: bold; color: #60a5fa;"></p>
+
+        <div class="buttons" id="btn-group">
+            <button class="btn-cancel" onclick="cancelar()">Sair do App</button>
+            <button class="btn-update" onclick="iniciarAtualizacao()">Instalar Agora</button>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        ipcRenderer.on('update-info', (event, info) => {
+            document.getElementById('ver').innerText = 'v' + info.version;
+            const sizeMB = (info.sizeBytes / (1024 * 1024)).toFixed(2);
+            document.getElementById('info-text').innerHTML += `<br><br>Tamanho: <b>${sizeMB} MB</b>`;
+        });
+
+        ipcRenderer.on('download-progress', (event, progress) => {
+            document.getElementById('progress-fill').style.width = progress.percent + '%';
+            document.getElementById('status-text').innerText = `Baixando... ${Math.round(progress.percent)}%`;
+        });
+
+        function iniciarAtualizacao() {
+            document.getElementById('btn-group').style.display = 'none';
+            document.getElementById('info-text').style.display = 'none';
+            document.getElementById('progress-container').style.display = 'block';
+            document.getElementById('status-text').innerText = "Iniciando download...";
+            ipcRenderer.send('start-download');
+        }
+
+        function cancelar() {
+            ipcRenderer.send('cancel-update');
+        }
+    </script>
+</body>
+</html>

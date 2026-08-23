@@ -1,0 +1,39 @@
+# Dependências
+node_modules/
+**/node_modules/
+
+# Expo & Builds Mobile
+.expo/
+**/.expo/
+*.apk
+*.aab
+
+# Electron & Builds Desktop
+dist/
+**/dist/
+build/
+**/build/
+release/
+**/release/
+win-unpacked/
+**/win-unpacked/
+
+# Sessões e Caches de WhatsApp / Navegador
+.wwebjs_auth/
+**/.wwebjs_auth/
+.wwebjs_cache/
+**/.wwebjs_cache/
+*.log
+*.sqlite
+*.db
+
+# Python
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# Variáveis de ambiente
+.env
+**/.env
