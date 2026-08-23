@@ -107,7 +107,7 @@ def chat_mentor():
                 return f"Erro ao atualizar lead: {str(e)}"
 
         # ==============================================================================
-        # 3. CONSTRUÇÃO DO CHAT E ENVIO PARA A IA
+        # 3. CONSTRUÇÃO DO CHAT E ENVIO PARA A IA (COM RETRY PACIENTE)
         # ==============================================================================
         contents = []
         for msg in history:
@@ -115,41 +115,45 @@ def chat_mentor():
                 types.Content(role=msg['role'], parts=[types.Part.from_text(text=msg['text'])])
             )
 
-        instrucao_sistema = f"""Você é o Mentor IA da GT Consórcios.
-Sua missão é dar roteiros e gerenciar o funil do usuário.
+        instrucao_sistema = f"""Você é o Mentor IA da GT Consórcios, uma representante autorizada a vender consórcio pelo Consórcio Embracon, Consórcio Recon, Consórco Renault, Consórcio Nissan, Consórcio Âncora, Consórcio Yamaha, Consórcio Rodobens, Consórcio Canopus e Consórcio Itaú.
+        Sua missão é dar roteiros e gerenciar o funil do usuário.
 
-AQUI ESTÃO OS CLIENTES DELE EM TEMPO REAL:
-{resumo_funil}
+        AQUI ESTÃO OS CLIENTES DELE EM TEMPO REAL:
+        {resumo_funil}
 
-REGRAS:
-1. Baseie suas dicas nas "Anotações do Vendedor". Se um cliente está na fase final, sugira fechamento.
-2. Se o usuário mandar você alterar os dados de um cliente com base na anotação, USE A FERRAMENTA 'atualizar_dados_lead' informando o ID_SISTEMA do lead correspondente.
-3. SEMPRE avise o usuário logo após atualizar informando "Pronto, acabei de atualizar a ficha do cliente para você!".
-"""
+        REGRAS:
+        1. Baseie suas dicas nas "Anotações do Vendedor". Se um cliente está na fase final, sugira fechamento.
+        2. Se o usuário mandar você alterar os dados de um cliente com base na anotação, USE A FERRAMENTA 'atualizar_dados_lead' informando o ID_SISTEMA do lead correspondente.
+        3. SEMPRE avise o usuário logo após atualizar informando "Pronto, acabei de atualizar a ficha do cliente para você!".
+        """
         historico_chat = contents[:-1] if len(contents) > 1 else []
         ultima_mensagem = contents[-1].parts[0].text if len(contents) > 0 else ""
 
-        # O Google SDK com a config 'tools' cuida de todo o loop automaticamente!
-        chat = client.chats.create(
-            model='gemini-3.6-flash',
-            history=historico_chat,
-            config=types.GenerateContentConfig(
-                system_instruction=instrucao_sistema,
-                temperature=0.7,
-                tools=[atualizar_dados_lead] 
-            )
-        )
-
-        max_tentativas = 3
+        # Aumentamos para 4 tentativas com uma pausa longa entre elas
+        max_tentativas = 4
         for tentativa in range(max_tentativas):
             try:
+                # Inicializamos o chat aqui dentro para garantir um estado limpo a cada tentativa
+                chat = client.chats.create(
+                    model='gemini-3.6-flash',
+                    history=historico_chat,
+                    config=types.GenerateContentConfig(
+                        system_instruction=instrucao_sistema,
+                        temperature=0.7,
+                        tools=[atualizar_dados_lead] 
+                    )
+                )
+                
                 response = chat.send_message(ultima_mensagem)
                 return jsonify({"reply": response.text}), 200
+            
             except Exception as e:
                 erro_str = str(e).upper()
-                if '503' in erro_str or 'UNAVAILABLE' in erro_str or '429' in erro_str or 'HIGH DEMAND' in erro_str:
+                # Verifica se é erro de limite de cota (429) ou instabilidade (503)
+                if '503' in erro_str or 'UNAVAILABLE' in erro_str or '429' in erro_str or 'RESOURCE' in erro_str or 'DEMAND' in erro_str or 'TOO MANY' in erro_str:
+                    print(f"[Aviso] Limite da API Google atingido (Tentativa {tentativa+1}/{max_tentativas}). Pausa de 15s...")
                     if tentativa < max_tentativas - 1:
-                        time.sleep(3)
+                        time.sleep(15) # Pausa de 15s para dar tempo do Google resetar a cota por minuto
                         continue
                     else:
                         return jsonify({"error": "ALTA_DEMANDA"}), 503
