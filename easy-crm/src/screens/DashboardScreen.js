@@ -203,7 +203,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   }, [loggedUserId]);
 
   useEffect(() => {
-    fetchInitialData();
+    fetchInitialData(); 
     
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const userAgent = navigator.userAgent.toLowerCase();
@@ -215,10 +215,17 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
         const styleEl = document.createElement('style');
         styleEl.id = styleId;
         styleEl.innerHTML = `
-          [data-card-container] { cursor: default !important; }
-          [data-card-container] button, 
-          [data-card-container] [data-card-action-btn],
-          [data-card-container] .action-icon-button { cursor: pointer !important; }
+          /* Seletor corrigido para o padrão do RN Web */
+          [data-card-container="true"] { 
+            cursor: default !important; 
+            transition: margin-top 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease !important; 
+          }
+          [data-card-container="true"] button, 
+          [data-card-action-btn="true"] { cursor: pointer !important; }
+          
+          .drag-hover-space { 
+            margin-top: 86px !important; 
+          }
         `;
         document.head.appendChild(styleEl);
       }

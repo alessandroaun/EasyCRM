@@ -35,7 +35,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
       const timeLeft = nextApptTime - now.getTime();
       const hoursLeft = timeLeft / (1000 * 60 * 60);
 
-      if (hoursLeft > 24) setPulseColor('#22c55e');      // Verde
+      if (hoursLeft > 24) setPulseColor('#22c55e');       // Verde
       else if (hoursLeft > 4) setPulseColor('#eab308'); // Amarelo
       else setPulseColor('#ef4444');                    // Vermelho
     };
@@ -61,7 +61,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
   }, [pulseColor, pulseAnim]);
 
   // =========================================================================
-  // MOTOR TÁTIL SUPREMO (FANTASMA + AUTO-SCROLL HORIZONTAL + TRAVA CLIQUE)
+  // MOTOR TÁTIL SUPREMO (FANTASMA + AUTO-SCROLL HORIZONTAL + TRAVA CLIQUE + ABRIR ESPAÇO)
   // =========================================================================
   useEffect(() => {
     if (Platform.OS === 'web' && cardRef.current) {
@@ -78,6 +78,18 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
         e.dataTransfer.setData('clientId', client.id);
         e.dataTransfer.setData('sourcePhaseId', phaseId);
         
+        window.__draggedClientId = client.id; // Marca qual card está voando
+        
+        setTimeout(() => {
+          if (node) node.style.opacity = '0.4';
+        }, 0);
+      };
+
+      const handleDragEndNative = () => {
+        if (node) node.style.opacity = '1';
+        const spacedCards = document.querySelectorAll('.drag-hover-space');
+        spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
+        window.__draggedClientId = null; // Limpa ao soltar
       };
 
       let pressTimer = null;
@@ -86,7 +98,6 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
       let initialX = 0, initialY = 0;
       let offsetX = 0, offsetY = 0;
       let touchStartTime = 0;
-      
       let scrollInterval = null;
       let currentTouchX = 0;
       let scrollContainer = null;
@@ -97,6 +108,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
         isDragging = false;
         node.style.opacity = '1';
         document.body.style.overflow = '';
+        window.__draggedClientId = null;
         
         if (scrollInterval) {
           clearInterval(scrollInterval);
@@ -140,6 +152,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
 
         pressTimer = setTimeout(() => {
           isDragging = true;
+          window.__draggedClientId = client.id; // Marca para o touch
           if (navigator.vibrate) navigator.vibrate(40);
           
           document.body.style.overflow = 'hidden';
@@ -204,6 +217,37 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
         if (ghost) {
           ghost.style.left = `${touch.clientX - offsetX}px`;
           ghost.style.top = `${touch.clientY - offsetY}px`;
+
+          const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
+          const targetCard = targetElement ? targetElement.closest('[data-clientid]') : null;
+          
+          if (targetCard) {
+            const targetId = targetCard.getAttribute('data-clientid');
+            if (targetId !== window.__draggedClientId) {
+               const rect = targetCard.getBoundingClientRect();
+               const isTopHalf = touch.clientY < rect.top + (rect.height / 2);
+               
+               if (isTopHalf) {
+                 if (!targetCard.classList.contains('drag-hover-space')) {
+                   const spacedCards = document.querySelectorAll('.drag-hover-space');
+                   spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
+                   targetCard.classList.add('drag-hover-space');
+                 }
+               } else {
+                 const nextCard = targetCard.nextElementSibling;
+                 if (nextCard && nextCard.getAttribute('data-clientid') !== window.__draggedClientId) {
+                    if (!nextCard.classList.contains('drag-hover-space')) {
+                       const spacedCards = document.querySelectorAll('.drag-hover-space');
+                       spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
+                       nextCard.classList.add('drag-hover-space');
+                    }
+                 } else if (!nextCard) {
+                    const spacedCards = document.querySelectorAll('.drag-hover-space');
+                    spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
+                 }
+               }
+            }
+          }
         }
       };
 
@@ -223,22 +267,29 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
 
         if (targetElement) {
           const targetColumn = targetElement.closest('[data-phaseid]');
-          const targetCard = targetElement.closest('[data-clientid]');
-
+          
           if (targetColumn && onDropClient) {
             const targetPhaseId = targetColumn.getAttribute('data-phaseid');
-            const targetClientId = targetCard ? targetCard.getAttribute('data-clientid') : null;
+            const spacedCard = targetColumn.querySelector('.drag-hover-space');
+            const targetClientId = spacedCard ? spacedCard.getAttribute('data-clientid') : null;
+            
             onDropClient(client.id, phaseId, targetPhaseId, targetClientId);
           }
         }
+        
+        const spacedCards = document.querySelectorAll('.drag-hover-space');
+        spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
       };
 
       const handleTouchCancel = () => {
         clearTimeout(pressTimer);
         cleanupGhost();
+        const spacedCards = document.querySelectorAll('.drag-hover-space');
+        spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
       };
 
       node.addEventListener('dragstart', handleDragStart);
+      node.addEventListener('dragend', handleDragEndNative);
       node.addEventListener('click', handleClick);
       node.addEventListener('touchstart', handleTouchStart, { passive: true });
       node.addEventListener('touchmove', handleTouchMove, { passive: false });
@@ -249,6 +300,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
         clearTimeout(pressTimer);
         cleanupGhost();
         node.removeEventListener('dragstart', handleDragStart);
+        node.removeEventListener('dragend', handleDragEndNative);
         node.removeEventListener('click', handleClick);
         node.removeEventListener('touchstart', handleTouchStart);
         node.removeEventListener('touchmove', handleTouchMove);
@@ -385,8 +437,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
     <>
       <View 
         ref={cardRef} 
-        data-card-container
-        dataSet={{ clientid: client.id }} 
+        dataSet={{ cardContainer: 'true', clientid: client.id }} 
         style={[
           styles.card, 
           themeStyles.card,
@@ -454,7 +505,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
             {client.phone && (
               <View style={styles.actionButtonsContainer}>
                 <TouchableOpacity 
-                  data-card-action-btn
+                  dataSet={{ cardActionBtn: 'true' }}
                   style={[
                     styles.btnActionWA, 
                     client.whatsappError ? (isDarkMode ? { backgroundColor: '#7f1d1d' } : { backgroundColor: '#fee2e2' }) : (isDarkMode ? { backgroundColor: '#064e3b' } : { backgroundColor: '#dcfce7' })
@@ -471,7 +522,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity data-card-action-btn style={[styles.btnActionCall, themeStyles.btnActionCall]} onPress={handlePhoneCall}>
+                <TouchableOpacity dataSet={{ cardActionBtn: 'true' }} style={[styles.btnActionCall, themeStyles.btnActionCall]} onPress={handlePhoneCall}>
                   <Text style={[styles.btnActionTextCall, themeStyles.btnActionTextCall]}>Ligar</Text>
                 </TouchableOpacity>
               </View>
@@ -534,7 +585,8 @@ const styles = StyleSheet.create({
   card: { 
     padding: 10, 
     borderRadius: 8, 
-    marginBottom: 8, 
+    marginBottom: 8,
+    marginTop: 0, 
     borderLeftWidth: 4, 
     borderLeftColor: '#3b82f6', 
   },

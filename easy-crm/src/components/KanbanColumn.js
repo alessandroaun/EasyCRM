@@ -43,12 +43,10 @@ const getDarkPaletteColor = (hexColor, isDark) => {
     '#fae8ff': '#701a75',
   };
 
-  // Se a cor exata estiver mapeada, retorna a versão escura correspondente
   if (paletteMap[cleanHex]) {
     return paletteMap[cleanHex];
   }
 
-  // Fallback genérico caso seja uma cor customizada: escurece de forma inteligente mantendo o tom
   let color = cleanHex.replace('#', '');
   if (color.length === 3) {
     color = color.split('').map(c => c + c).join('');
@@ -59,7 +57,6 @@ const getDarkPaletteColor = (hexColor, isDark) => {
   let g = (num >> 8) & 255;
   let b = num & 255;
 
-  // Garante que cores pastéis (muito claras) ganhem profundidade escura sem virar cinza
   r = Math.floor(r * 0.25);
   g = Math.floor(g * 0.25);
   b = Math.floor(b * 0.25);
@@ -75,7 +72,41 @@ export default function KanbanColumn({ phase, onDropClient, onDeleteClient, onOp
     if (Platform.OS === 'web' && columnRef.current) {
       const node = columnRef.current;
       
-      const handleDragOver = (e) => e.preventDefault();
+      const clearHoverSpaces = () => {
+        const spacedCards = document.querySelectorAll('.drag-hover-space');
+        spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
+      };
+
+      const handleDragOver = (e) => {
+        e.preventDefault();
+        
+        const targetCard = e.target.closest('[data-clientid]');
+        if (targetCard) {
+          const targetId = targetCard.getAttribute('data-clientid');
+          // Evita auto-recuo do card que está sendo arrastado
+          if (targetId === window.__draggedClientId) return;
+          
+          const rect = targetCard.getBoundingClientRect();
+          const isTopHalf = e.clientY < rect.top + (rect.height / 2);
+
+          if (isTopHalf) {
+            if (!targetCard.classList.contains('drag-hover-space')) {
+              clearHoverSpaces();
+              targetCard.classList.add('drag-hover-space');
+            }
+          } else {
+             const nextCard = targetCard.nextElementSibling;
+             if (nextCard && nextCard.getAttribute('data-clientid') !== window.__draggedClientId) {
+                if (!nextCard.classList.contains('drag-hover-space')) {
+                   clearHoverSpaces();
+                   nextCard.classList.add('drag-hover-space');
+                }
+             } else if (!nextCard) {
+                clearHoverSpaces(); // Soltar no fim da lista
+             }
+          }
+        }
+      };
       
       const handleDrop = (e) => {
         e.preventDefault();
@@ -84,11 +115,14 @@ export default function KanbanColumn({ phase, onDropClient, onDeleteClient, onOp
         const dragType = e.dataTransfer.getData('dragType');
         
         if (dragType === 'client') {
-          const clientId = e.dataTransfer.getData('clientId');
+          const clientId = e.dataTransfer.getData('clientId') || window.__draggedClientId;
           const sourcePhaseId = e.dataTransfer.getData('sourcePhaseId');
           
-          const targetNode = e.target.closest('[data-clientid]');
-          const targetClientId = targetNode ? targetNode.getAttribute('data-clientid') : null;
+          // Captura onde o espaço virtual foi aberto para soltar o card nele
+          const spacedCard = node.querySelector('.drag-hover-space');
+          let targetClientId = spacedCard ? spacedCard.getAttribute('data-clientid') : null;
+
+          clearHoverSpaces();
 
           if (clientId && sourcePhaseId) {
             onDropClient(clientId, sourcePhaseId, phase.id, targetClientId);
@@ -98,10 +132,12 @@ export default function KanbanColumn({ phase, onDropClient, onDeleteClient, onOp
 
       node.addEventListener('dragover', handleDragOver);
       node.addEventListener('drop', handleDrop);
+      document.addEventListener('dragend', clearHoverSpaces); 
       
       return () => {
         node.removeEventListener('dragover', handleDragOver);
         node.removeEventListener('drop', handleDrop);
+        document.removeEventListener('dragend', clearHoverSpaces);
       };
     }
   }, [phase.id, onDropClient]);
@@ -156,7 +192,6 @@ export default function KanbanColumn({ phase, onDropClient, onDeleteClient, onOp
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
   const defaultPhaseBg = isDarkMode ? '#1e293b' : '#F3F4F6';
   
-  // Aplica a cor mapeada correspondente no modo escuro ou a original no modo claro
   const adjustedPhaseColor = getDarkPaletteColor(phase.color, isDarkMode) || (phase.color || defaultPhaseBg);
 
   return (
@@ -219,7 +254,6 @@ export default function KanbanColumn({ phase, onDropClient, onDeleteClient, onOp
         )}
       </View>
 
-      {/* CAIXINHA DE SELECIONAR TODOS DA FASE */}
       {isBulkSelecting && phase.clients.length > 0 && (
         <TouchableOpacity style={[styles.selectAllContainer, themeStyles.selectAllContainer]} onPress={handleToggleSelectAll}>
           <View style={[styles.checkbox, themeStyles.checkbox, isAllSelected && styles.checkboxSelected]}>

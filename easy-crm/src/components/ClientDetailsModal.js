@@ -69,10 +69,14 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
   const alertScale = useRef(new Animated.Value(0.8)).current;
   const alertOpacity = useRef(new Animated.Value(0)).current;
 
-  // Estados de Animação para Zoom In / Zoom Out
+  // Estados de Animação para Zoom In / Zoom Out e Menu
   const modalScale = useRef(new Animated.Value(0.8)).current;
   const modalOpacity = useRef(new Animated.Value(0)).current;
+  const acompanhamentoAnim = useRef(new Animated.Value(0)).current;
   const [showModalContent, setShowModalContent] = useState(false);
+
+  // Estados de Inteligência (Kpis preditivos)
+  const [probData, setProbData] = useState({ score: 0, text: '' });
 
   useEffect(() => {
     if (visible) {
@@ -85,6 +89,77 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
       ]).start();
     }
   }, [visible]);
+
+  // Animação fluída para exibir ou ocultar a nova aba sem sobrepor as outras
+  useEffect(() => {
+    if (formData.dealClosed) {
+      Animated.spring(acompanhamentoAnim, { toValue: 1, friction: 8, useNativeDriver: false }).start();
+    } else {
+      Animated.timing(acompanhamentoAnim, { toValue: 0, duration: 250, useNativeDriver: false }).start();
+    }
+  }, [formData.dealClosed]);
+
+  // Motor Preditivo de Probabilidade de Fechamento
+  useEffect(() => {
+    let score = 0;
+    let reasons = [];
+    let dataPoints = 0;
+
+    if (formData.dealClosed) {
+      setProbData({ score: 100, text: "Venda concluída! O contrato já foi marcado como fechado." });
+      return;
+    }
+
+    const recentComments = formData.comments ? formData.comments.map(c => c.text.toLowerCase()).join(' ') : '';
+    if (formData.clientStatus === 'Cliente Cancelado' || recentComments.includes('perdido') || recentComments.includes('cancelado')) {
+      setProbData({ score: 0, text: "Lead marcado como cancelado ou perdido no histórico recente." });
+      return;
+    }
+
+    // 1. Temperatura do Lead
+    const temp = (formData.leadTemp || '').toLowerCase();
+    if (temp === 'quente') { score += 30; dataPoints++; reasons.push("A temperatura 'Quente' sinaliza um forte interesse e proximidade de compra."); }
+    else if (temp === 'morno') { score += 15; dataPoints++; reasons.push("A temperatura 'Morna' demonstra abertura de relacionamento, mas ainda requer acompanhamento."); }
+    else if (temp === 'frio') { dataPoints++; reasons.push("A temperatura 'Fria' aponta para um contato inicial em exploração ou com objeções severas."); }
+
+    // 2. Lance Disponível
+    const hasBid = formData.bidAmount && formData.bidAmount.trim() !== '' && formData.bidAmount.trim().toLowerCase() !== 'não' && formData.bidAmount !== 'R$ 0,00';
+    if (hasBid) { score += 20; dataPoints++; reasons.push("Possuir lance disponível do próprio bolso acelera significativamente as chances matemáticas de contemplação."); }
+
+    // 3. Nível de Urgência
+    const urgency = (formData.urgency || '').toLowerCase();
+    if (urgency.includes('alta') || urgency.includes('urgente') || urgency.includes('imediato') || urgency.includes('para ontem')) {
+      score += 15; dataPoints++; reasons.push("A urgência declarada pelo cliente favorece as tratativas de curto prazo.");
+    } else if (urgency !== '') {
+      dataPoints++;
+    }
+
+    // 4. Volume de Interações e Comentários
+    const commentsCount = formData.comments ? formData.comments.length : 0;
+    if (commentsCount >= 5) { score += 20; dataPoints++; reasons.push("O alto volume de interações indica uma negociação muito bem nutrida e ativa."); }
+    else if (commentsCount >= 2) { score += 10; dataPoints++; reasons.push("As interações constantes registradas no CRM validam o engajamento na negociação."); }
+    else if (commentsCount === 0) { reasons.push("A ausência de histórico de relacionamento registrado reduz a previsibilidade do algoritmo."); }
+
+    // 5. Definição Financeira (Foco e Clareza)
+    if (formData.desiredCredit && formData.idealInstallment) {
+      score += 10; dataPoints++; reasons.push("Expectativas de crédito e parcela já definidas em funil trazem grande clareza e solidez à oferta.");
+    }
+
+    // 6. Indicadores de "Negociação" e Fases Avançadas
+    if (recentComments.includes('negocia') || recentComments.includes('proposta') || recentComments.includes('simulação')) {
+      score += 10; reasons.push("O envio registrado de simulações/propostas atesta a qualificação na fase avançada.");
+      if (score < 80) score = 85; // Aceleração paramétrica conforme regra (se tá negociando, é no mínimo 85%)
+    }
+
+    if (dataPoints < 2) {
+      setProbData({ score: 50, text: "O algoritmo de inteligência artificial está aguardando mais dados do vendedor (como atualizar a Temperatura, Urgência, Valor de Lance ou gerar Comentários no histórico) para estipular uma probabilidade matemática precisa e acurada sobre este lead." });
+    } else {
+      if (score > 95) score = 95;
+      if (score < 5) score = 5;
+      setProbData({ score, text: reasons.join(' ') });
+    }
+
+  }, [formData.dealClosed, formData.leadTemp, formData.bidAmount, formData.urgency, formData.comments, formData.desiredCredit, formData.idealInstallment, formData.clientStatus]);
 
   const handleCloseModal = () => {
     Animated.parallel([
@@ -277,7 +352,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
         ...prev,
         dealClosed: isNowClosed,
         dealClosedDate: isNowClosed ? (prev.dealClosedDate || new Date().toISOString()) : prev.dealClosedDate,
-        clientStatus: isNowClosed ? (prev.clientStatus || 'Cliente Não Contemplado') : null,
+        clientStatus: isNowClosed ? (prev.clientStatus || 'Cliente Contemplado') : null,
         contracts: isNowClosed && (!prev.contracts || prev.contracts.length === 0) ? [{
           id: `contract_${Date.now()}`, administradora: '', numeroContrato: '', grupo: '', cota: '', valorContrato: '', valorParcela: '', prazo: '', categoria: '', diaVencimento: '', parcelasPagas: []
         }] : prev.contracts
@@ -302,8 +377,9 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
   };
 
   const handleSave = () => {
-    let updatedData = { ...formData };
-     
+    // Consolida e embute o Score Preditivo atualizado
+    let updatedData = { ...formData, winProbability: String(probData.score) };
+      
     if (updatedData.phone && updatedData.phone !== originalData.phone) {
       let cl = updatedData.phone.replace(/\D/g, '');
       if (!cl.startsWith('55') && cl.length <= 11) cl = '55' + cl;
@@ -540,11 +616,34 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
     }
   };
 
+  // Funções Utilitárias para o UI de Inteligência
+  const getTempStyleObj = (temp) => {
+    const t = temp.toLowerCase();
+    if (t === 'quente') return { backgroundColor: isDarkMode ? '#7f1d1d' : '#fee2e2', borderColor: isDarkMode ? '#dc2626' : '#f87171', borderWidth: 1 };
+    if (t === 'morno') return { backgroundColor: isDarkMode ? '#78350f' : '#fef3c7', borderColor: isDarkMode ? '#d97706' : '#fbbf24', borderWidth: 1 };
+    if (t === 'frio') return { backgroundColor: isDarkMode ? '#0c4a6e' : '#e0f2fe', borderColor: isDarkMode ? '#0284c7' : '#38bdf8', borderWidth: 1 };
+    return {};
+  };
+
+  const getTempTextStyleObj = (temp) => {
+    const t = temp.toLowerCase();
+    if (t === 'quente') return { color: isDarkMode ? '#fca5a5' : '#dc2626', fontWeight: 'bold' };
+    if (t === 'morno') return { color: isDarkMode ? '#fde047' : '#d97706', fontWeight: 'bold' };
+    if (t === 'frio') return { color: isDarkMode ? '#7dd3fc' : '#0284c7', fontWeight: 'bold' };
+    return {};
+  };
+
+  const getProbColor = (score) => {
+    if (score >= 80) return isDarkMode ? '#34d399' : '#10b981';
+    if (score >= 40) return isDarkMode ? '#fbbf24' : '#f59e0b';
+    return isDarkMode ? '#f87171' : '#ef4444';
+  };
+
   if (!clientData || !showModalContent) return null;
 
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
 
-  const TabButton = ({ id, label }) => {
+  const TabButton = ({ id, label, disabled }) => {
     const isActive = activeTab === id;
     return (
       <TouchableOpacity 
@@ -553,16 +652,19 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
           themeStyles.tabButton,
           isMobile && styles.tabButtonMobile, 
           isActive && themeStyles.tabButtonActive, 
-          isMobile && isActive && themeStyles.tabButtonMobileActive
+          isMobile && isActive && themeStyles.tabButtonMobileActive,
+          disabled && styles.tabButtonDisabled // Aplica a opacidade
         ]} 
-        onPress={() => setActiveTab(id)}
+        onPress={() => { if (!disabled) setActiveTab(id); }}
+        activeOpacity={disabled ? 1 : 0.7}
       >
         <Text style={[
           styles.tabText, 
           themeStyles.tabText,
           isMobile && styles.tabTextMobile, 
           isActive && themeStyles.tabTextActive,
-          isMobile && isActive && themeStyles.tabTextMobileActive
+          isMobile && isActive && themeStyles.tabTextMobileActive,
+          disabled && styles.tabTextDisabled
         ]}>
           {label}
         </Text>
@@ -666,7 +768,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                   <TabButton id="kpis" label="Inteligência" />
                   <TabButton id="agendamentos" label="Agendamentos" />
                   <TabButton id="proposta" label="Gerar Proposta" />
-                  {formData.dealClosed && <TabButton id="acompanhamento" label="Acompanhamento" />}
+                  <TabButton id="acompanhamento" label="Acompanhamento" disabled={!formData.dealClosed} />
                   <TabButton id="comentarios" label="Comentários" />
                 </ScrollView>
               </View>
@@ -679,7 +781,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                 <TabButton id="kpis" label="Inteligência" />
                 <TabButton id="agendamentos" label="Agendamentos" />
                 <TabButton id="proposta" label="Gerar Proposta" />
-                {formData.dealClosed && <TabButton id="acompanhamento" label="Acompanhamento" />}
+                <TabButton id="acompanhamento" label="Acompanhamento" disabled={!formData.dealClosed} />
               </View>
             )}
 
@@ -1116,6 +1218,53 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                 </View>
               )}
 
+              {/* ABA INTELIGÊNCIA REFATORADA (TAGS + PREVISÃO DA IA) */}
+              {activeTab === 'kpis' && (
+                <View style={styles.formSection}>
+                  <Text style={[styles.sectionTitle, themeStyles.sectionTitle]}>Inteligência e Probabilidade</Text>
+                  
+                  <View style={styles.inputGroup}>
+                    <Text style={[styles.label, themeStyles.label]}>Temperatura do Lead</Text>
+                    <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+                      {['Frio', 'Morno', 'Quente'].map(temp => (
+                        <TouchableOpacity
+                          key={temp}
+                          style={[
+                            styles.tempBtn,
+                            (formData.leadTemp || '').toLowerCase() === temp.toLowerCase() ? getTempStyleObj(temp) : themeStyles.tempBtnInactive
+                          ]}
+                          onPress={() => handleChange('leadTemp', temp)}
+                        >
+                          <Text style={[
+                            styles.tempBtnText,
+                            (formData.leadTemp || '').toLowerCase() === temp.toLowerCase() ? getTempTextStyleObj(temp) : themeStyles.tempBtnTextInactive
+                          ]}>{temp}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+
+                  <View style={[styles.probContainer, themeStyles.probContainer]}>
+                    <View style={styles.probHeader}>
+                      <Text style={[styles.label, themeStyles.label, { fontSize: 14, fontWeight: '700', marginBottom: 0 }]}>Probabilidade de Fechamento</Text>
+                      <Text style={[styles.probPercentage, { color: getProbColor(probData.score) }]}>
+                        {probData.score}%
+                      </Text>
+                    </View>
+                    
+                    <Text style={[styles.probJustification, themeStyles.probJustification]}>
+                      {probData.text}
+                    </Text>
+
+                    <View style={styles.probDisclaimerBox}>
+                       <Text style={styles.probDisclaimerText}>
+                         ⚠️ Aviso: Este percentual é um cálculo matemático estimado pelos dados fornecidos ao sistema, podendo não representar o real relacionamento humano com o cliente.
+                       </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+
               {activeTab === 'acompanhamento' && formData.dealClosed && (
                 <View style={styles.formSection}>
                   <Text style={[styles.sectionTitle, themeStyles.sectionTitle]}>Sistema de Pós-Venda</Text>
@@ -1163,17 +1312,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                     <Text style={styles.addContractBtnText}>+ Adicionar Outro Contrato</Text>
                   </TouchableOpacity>
                 </View>
-            )}
-
-              {activeTab === 'kpis' && (
-                <View style={styles.formSection}>
-                  <Text style={[styles.sectionTitle, themeStyles.sectionTitle]}>Campos Inteligentes</Text>
-                  <View style={[styles.row, isMobile && styles.rowMobile]}>
-                    <View style={styles.inputGroup}><Text style={[styles.label, themeStyles.label]}>Temperatura do Lead</Text><TextInput style={[styles.input, themeStyles.input]} placeholder="Frio, Morno, Quente" placeholderTextColor={isDarkMode ? '#64748b' : '#94a3b8'} value={formData.leadTemp || ''} onChangeText={t => handleChange('leadTemp', t)} /></View>
-                    <View style={styles.inputGroup}><Text style={[styles.label, themeStyles.label]}>Probabilidade de Fechamento (%)</Text><TextInput style={[styles.input, themeStyles.input]} value={formData.winProbability || ''} onChangeText={t => handleChange('winProbability', t)} placeholderTextColor={isDarkMode ? '#64748b' : '#94a3b8'} /></View>
-                  </View>
-                </View>
-            )}
+              )}
 
               {isMobile && activeTab === 'comentarios' && (
                   <CommentsSection 
@@ -1237,10 +1376,27 @@ const styles = StyleSheet.create({
   body: { flex: 1, flexDirection: 'row' },
   bodyMobile: { flexDirection: 'column' }, 
   
-  // Menu lateral reposicionado ligeiramente para cima e com espaçamento uniforme
-  sidebar: { width: 220, padding: 16, borderRightWidth: 1, gap: 8, justifyContent: 'flex-start', paddingTop: 12 },
-  tabButton: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: 'transparent', alignItems: 'flex-start', justifyContent: 'center' },
-  tabText: { fontSize: 13, fontWeight: '600' },
+  // Atualizado Sidebar: 100% de preenchimento, botões centralizados e distribuídos uniformemente
+  // Centralização simétrica vertical da barra lateral
+  // Sidebar perfeitamente harmoniosa, espaçamentos idênticos nas bordas superior e inferior
+  sidebar: { 
+    width: 220, 
+    borderRightWidth: 1, 
+    paddingHorizontal: 16, 
+    paddingVertical: 16, 
+    justifyContent: 'space-between',
+    alignItems: 'stretch'
+  },
+  tabButton: { 
+    height: 38, // Altura exata para caber perfeitamente sem sobrar ou cortar espaço
+    borderRadius: 8, 
+    borderWidth: 1, 
+    borderColor: 'transparent', 
+    alignItems: 'center', 
+    justifyContent: 'center' 
+  },
+  tabButtonDisabled: { opacity: 0.4 },
+  tabTextDisabled: { color: '#94a3b8' },
   
   sidebarMobileContainer: { borderBottomWidth: 1 },
   sidebarMobile: { paddingHorizontal: 16, paddingVertical: 8, flexDirection: 'row' },
@@ -1345,7 +1501,17 @@ const styles = StyleSheet.create({
   checkbox: { width: 16, height: 16, borderWidth: 1, borderRadius: 4, marginRight: 6, justifyContent: 'center', alignItems: 'center' },
   checkboxChecked: { backgroundColor: '#2563eb', borderColor: '#2563eb' },
   checkmark: { color: '#ffffff', fontSize: 10, fontWeight: 'bold' },
-  checkboxLabel: { fontSize: 11, flex: 1, flexWrap: 'wrap' }
+  checkboxLabel: { fontSize: 11, flex: 1, flexWrap: 'wrap' },
+
+  // ESTILOS DA ABA INTELIGÊNCIA PREDITIVA
+  tempBtn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, flex: 1, alignItems: 'center', borderWidth: 1, borderColor: 'transparent' },
+  tempBtnText: { fontSize: 13, fontWeight: '600' },
+  probContainer: { marginTop: 24, padding: 16, borderRadius: 8, borderWidth: 1 },
+  probHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  probPercentage: { fontSize: 24, fontWeight: '900' },
+  probJustification: { fontSize: 13, lineHeight: 18, marginBottom: 16 },
+  probDisclaimerBox: { backgroundColor: 'rgba(245, 158, 11, 0.1)', padding: 10, borderRadius: 6, borderLeftWidth: 3, borderLeftColor: '#f59e0b' },
+  probDisclaimerText: { fontSize: 11, color: '#b45309', fontStyle: 'italic', lineHeight: 16 },
 });
 
 const lightStyles = StyleSheet.create({
@@ -1407,7 +1573,12 @@ const lightStyles = StyleSheet.create({
   successAlertMessage: { color: '#475569' },
   checkbox: { borderColor: '#cbd5e1', backgroundColor: '#fff' },
   checkboxLabel: { color: '#475569' },
-  pdfNoticeText: { color: '#64748b' }
+  pdfNoticeText: { color: '#64748b' },
+
+  tempBtnInactive: { backgroundColor: '#f1f5f9', borderColor: '#e2e8f0' },
+  tempBtnTextInactive: { color: '#64748b' },
+  probContainer: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
+  probJustification: { color: '#475569' },
 });
 
 const darkStyles = StyleSheet.create({
@@ -1469,5 +1640,10 @@ const darkStyles = StyleSheet.create({
   successAlertMessage: { color: '#94a3b8' },
   checkbox: { borderColor: '#475569', backgroundColor: '#0f172a' },
   checkboxLabel: { color: '#cbd5e1' },
-  pdfNoticeText: { color: '#94a3b8' }
+  pdfNoticeText: { color: '#94a3b8' },
+
+  tempBtnInactive: { backgroundColor: '#1e293b', borderColor: '#334155' },
+  tempBtnTextInactive: { color: '#94a3b8' },
+  probContainer: { backgroundColor: '#1e293b', borderColor: '#334155' },
+  probJustification: { color: '#cbd5e1' },
 });
