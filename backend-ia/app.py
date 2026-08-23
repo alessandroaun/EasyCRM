@@ -131,7 +131,7 @@ REGRAS:
 
         # O Google SDK com a config 'tools' cuida de todo o loop automaticamente!
         chat = client.chats.create(
-            model='gemini-2.5-flash',
+            model='gemini-3.6-flash',
             history=historico_chat,
             config=types.GenerateContentConfig(
                 system_instruction=instrucao_sistema,
