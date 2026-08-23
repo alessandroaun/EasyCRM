@@ -16,8 +16,33 @@ import { supabase } from '../services/supabaseClient';
 
 const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
 
+// Transforma o TextInput em um componente capaz de sofrer animações fluidas
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
 // ============================================================================
-// COMPONENTE: Avatar Vetorial Elegante da IA (Design Geométrico/Sofisticado)
+// ÍCONES VETORIAIS (SVG) DE ALTA PRECISÃO
+// ============================================================================
+const SendIcon = () => (
+  Platform.OS === 'web' ? (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="19" x2="12" y2="5"></line>
+      <polyline points="5 12 12 5 19 12"></polyline>
+    </svg>
+  ) : <Text style={{color: '#fff', fontSize: 18, fontWeight: 'bold'}}>↑</Text>
+);
+
+const MicIcon = ({ isListening, color }) => (
+  Platform.OS === 'web' ? (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isListening ? "#ef4444" : color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+      <line x1="12" y1="19" x2="12" y2="22"></line>
+    </svg>
+  ) : <Text style={{color: isListening ? '#ef4444' : color, fontSize: 16}}>🎤</Text>
+);
+
+// ============================================================================
+// COMPONENTE: Avatar Vetorial Elegante da IA
 // ============================================================================
 const ElegantAIAvatar = ({ isDarkMode }) => {
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
@@ -31,7 +56,7 @@ const ElegantAIAvatar = ({ isDarkMode }) => {
 };
 
 // ============================================================================
-// COMPONENTE: Animação "Pensando..." (3 Pontinhos fluídos)
+// COMPONENTE: Animação "Pensando..." 
 // ============================================================================
 const TypingIndicator = ({ isDarkMode }) => {
   const dot1 = useRef(new Animated.Value(0)).current;
@@ -192,12 +217,136 @@ export default function MentorChatScreen({ isDarkMode }) {
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef(null);
 
+  // Estados Dinâmicos para a Caixa de Texto Animada
+  const [inputHeight, setInputHeight] = useState(36);
+  const animatedHeight = useRef(new Animated.Value(36)).current;
+  
+  // Estados para o Sistema de Voz e Timer
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+  const inputTextRef = useRef(inputText);
+  const silenceTimerRef = useRef(null);
+
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
 
-  // Função centralizada e ajustável para rolagem
+  // Mantém a referência do texto sempre atualizada
+  useEffect(() => {
+    inputTextRef.current = inputText;
+  }, [inputText]);
+
+  // NOVO: "Espião" que reseta a altura da caixa caso o usuário apague todo o texto no backspace
+  useEffect(() => {
+    if (inputText === '') {
+      setInputHeight(36);
+      Animated.timing(animatedHeight, {
+        toValue: 36,
+        duration: 150,
+        useNativeDriver: false
+      }).start();
+    }
+  }, [inputText]);
+
   const scrollToBottom = (animated = true) => {
     if (flatListRef.current) {
       flatListRef.current.scrollToEnd({ animated });
+    }
+  };
+
+  // Inicializa o Sistema Nativo de Voz e Estilos Globais
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      // Injeta CSS para criar o scrollbar elegante e super fino na caixa de texto
+      const styleId = 'custom-chat-scrollbar';
+      if (!document.getElementById(styleId)) {
+        const styleEl = document.createElement('style');
+        styleEl.id = styleId;
+        styleEl.innerHTML = `
+          textarea::-webkit-scrollbar { width: 5px; height: 5px; }
+          textarea::-webkit-scrollbar-track { background: transparent; }
+          textarea::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 10px; }
+          textarea::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.7); }
+          textarea { scrollbar-width: thin; scrollbar-color: rgba(148, 163, 184, 0.4) transparent; }
+        `;
+        document.head.appendChild(styleEl);
+      }
+
+      // API de Voz
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true; 
+        recognition.interimResults = true; 
+        recognition.lang = 'pt-BR';
+
+        let startText = '';
+
+        const resetSilenceTimer = () => {
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = setTimeout(() => {
+            if (recognitionRef.current) {
+              recognitionRef.current.stop(); 
+            }
+          }, 3000); 
+        };
+
+        recognition.onstart = () => {
+          setIsListening(true);
+          startText = inputTextRef.current.trim();
+          resetSilenceTimer(); 
+        };
+
+        recognition.onresult = (event) => {
+          resetSilenceTimer(); 
+          let currentTranscript = '';
+          for (let i = 0; i < event.results.length; ++i) {
+            currentTranscript += event.results[i][0].transcript;
+          }
+          const newText = startText ? startText + ' ' + currentTranscript : currentTranscript;
+          setInputText(newText);
+        };
+
+        recognition.onerror = (e) => {
+          console.log("Speech recognition error:", e.error);
+          setIsListening(false);
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+
+    return () => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    };
+  }, []);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      recognitionRef.current?.start();
+    }
+  };
+
+  // Observador Dinâmico do Tamanho da Caixa de Digitação
+  const handleContentSizeChange = (event) => {
+    if (!inputText) return; // Se vazio, deixa o useEffect forçar o reset
+
+    const contentHeight = Math.floor(event.nativeEvent.contentSize.height);
+    const targetHeight = Math.min(Math.max(36, contentHeight), 140); // Limite máximo fluído em 140px
+
+    if (targetHeight !== inputHeight) {
+      setInputHeight(targetHeight);
+      Animated.timing(animatedHeight, {
+        toValue: targetHeight,
+        duration: 150,
+        useNativeDriver: false
+      }).start(() => scrollToBottom(true));
     }
   };
 
@@ -223,7 +372,6 @@ export default function MentorChatScreen({ isDarkMode }) {
           }));
           setMessages(historyMessages);
 
-          // Força o scroll imediato e sem animação assim que os dados entram na tela
           setTimeout(() => scrollToBottom(false), 50);
           setTimeout(() => scrollToBottom(false), 300);
         }
@@ -236,6 +384,10 @@ export default function MentorChatScreen({ isDarkMode }) {
 
   const sendMessage = async () => {
     if (!inputText.trim()) return;
+    
+    if (isListening) {
+      recognitionRef.current?.stop();
+    }
 
     const userText = inputText.trim();
     const newUserMessage = {
@@ -253,13 +405,13 @@ export default function MentorChatScreen({ isDarkMode }) {
 
     const currentMessages = [...messages, newUserMessage];
     setMessages([...currentMessages, thinkingMessage]);
-    setInputText('');
-    setIsLoading(true);
     
-    // Rola suavemente ao enviar mensagem
+    // Retorna a caixa de texto fluidamente ao tamanho original ao enviar a mensagem
+    setInputText('');
+    
+    setIsLoading(true);
     setTimeout(() => scrollToBottom(true), 50);
 
-    // Salva a mensagem do usuário no Supabase
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user?.id) {
@@ -304,7 +456,6 @@ export default function MentorChatScreen({ isDarkMode }) {
 
       setMessages(prev => prev.filter(m => m.id !== 'thinking_temp').concat(aiMessage));
 
-      // Salva a resposta da IA no Supabase
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user?.id) {
@@ -387,29 +538,52 @@ export default function MentorChatScreen({ isDarkMode }) {
           renderItem={renderMessage}
           contentContainerStyle={[styles.chatListContent, isMobile && styles.chatListContentMobile]}
           onContentSizeChange={() => scrollToBottom(true)}
-          onLayout={() => scrollToBottom(false)} // Garante que a primeira renderização inicie no final
+          onLayout={() => scrollToBottom(false)}
           showsVerticalScrollIndicator={false}
         />
 
         <View style={styles.floatingInputWrapper}>
           <View style={[styles.inputContainer, themeStyles.inputContainer]}>
-            <TextInput
-              style={[styles.input, themeStyles.input]}
+            
+            <AnimatedTextInput
+              style={[
+                styles.input, 
+                themeStyles.input, 
+                { 
+                  height: animatedHeight,
+                  // NOVO: Esconde o scrollbar completamente até atingir o limite máximo
+                  overflow: inputHeight >= 140 ? 'auto' : 'hidden' 
+                }
+              ]}
               value={inputText}
               onChangeText={setInputText}
-              placeholder="Pergunte sobre lances, objeções..."
+              onContentSizeChange={handleContentSizeChange}
+              placeholder={isListening ? "Ouvindo... Fale agora." : "Pergunte sobre lances, objeções..."}
               placeholderTextColor={isDarkMode ? '#64748b' : '#94a3b8'}
               multiline
               onKeyPress={handleKeyPress}
-              maxLength={1500}
+              maxLength={2500}
             />
+            
+            {Platform.OS === 'web' && (
+              <TouchableOpacity 
+                style={styles.micButton} 
+                onPress={toggleListening}
+                activeOpacity={0.7}
+              >
+                <MicIcon isListening={isListening} color={isDarkMode ? '#94a3b8' : '#64748b'} />
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity 
-              style={[styles.sendButton, (!inputText.trim() || isLoading) && styles.sendButtonDisabled]} 
+              style={[styles.sendButtonVector, (!inputText.trim() && !isLoading) && styles.sendButtonDisabled]} 
               onPress={sendMessage}
               disabled={isLoading || !inputText.trim()}
+              activeOpacity={0.8}
             >
-              <Text style={styles.sendButtonText}>Enviar</Text>
+              <SendIcon />
             </TouchableOpacity>
+
           </View>
         </View>
       </View>
@@ -424,16 +598,16 @@ const styles = StyleSheet.create({
   chatListContent: { padding: 24, paddingBottom: 8, flexGrow: 1, justifyContent: 'flex-end' },
   chatListContentMobile: { padding: 16, paddingBottom: 8 },
   
-  messageRow: { flexDirection: 'row', marginBottom: 24, maxWidth: '90%', alignItems: 'flex-end' },
-  userRow: { alignSelf: 'flex-end', justifyContent: 'flex-end' },
-  aiRow: { alignSelf: 'flex-start' },
+  messageRow: { flexDirection: 'row', marginBottom: 24, width: '100%', alignItems: 'flex-end' },
+  userRow: { justifyContent: 'flex-end' },
+  aiRow: { justifyContent: 'flex-start' },
   
   avatarContainer: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 1, position: 'relative' },
   avatarOuterRing: { position: 'absolute', width: 24, height: 24, borderRadius: 12, borderWidth: 1, opacity: 0.5 },
   avatarInnerDiamond: { position: 'absolute', width: 12, height: 12, borderWidth: 2, transform: [{ rotate: '45deg' }] },
   avatarCore: { position: 'absolute', width: 4, height: 4, borderRadius: 2 },
   
-  messageBubble: { paddingHorizontal: 20, paddingVertical: 14, borderRadius: 24, flexShrink: 1 },
+  messageBubble: { paddingHorizontal: 20, paddingVertical: 14, borderRadius: 24, flexShrink: 1, maxWidth: '88%' },
   userBubble: { backgroundColor: '#2563eb', borderBottomRightRadius: 4 },
   aiBubble: { borderBottomLeftRadius: 4, borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px 4px 12px rgba(0,0,0,0.04)' } }) },
   
@@ -458,12 +632,41 @@ const styles = StyleSheet.create({
   
   floatingInputWrapper: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 8, backgroundColor: 'transparent' },
   
-  inputContainer: { flexDirection: 'row', padding: 6, paddingLeft: 16, borderRadius: 24, alignItems: 'center', borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px -4px 20px rgba(0,0,0,0.05)' } }) },
-  input: { flex: 1, minHeight: 36, maxHeight: 120, paddingTop: 8, paddingBottom: 8, fontSize: 14, fontFamily: MODERN_FONT, ...Platform.select({ web: { outlineStyle: 'none' } }) },
-  sendButton: { backgroundColor: '#2563eb', height: 36, width: 75, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
+  inputContainer: { 
+    flexDirection: 'row', 
+    padding: 6, 
+    paddingLeft: 16, 
+    borderRadius: 24, 
+    alignItems: 'flex-end',
+    borderWidth: 1, 
+    ...Platform.select({ web: { boxShadow: '0px -4px 20px rgba(0,0,0,0.05)' } }) 
+  },
+  input: { 
+    flex: 1, 
+    paddingTop: 8, 
+    paddingBottom: 8, 
+    fontSize: 14, 
+    fontFamily: MODERN_FONT, 
+    ...Platform.select({ web: { outlineStyle: 'none' } }) 
+  },
   
-  sendButtonDisabled: { opacity: 0.5 },
-  sendButtonText: { color: '#ffffff', fontFamily: MODERN_FONT, fontWeight: '800', fontSize: 13 }
+  micButton: { 
+    height: 36, 
+    width: 36, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginRight: 2 
+  },
+  sendButtonVector: { 
+    backgroundColor: '#2563eb', 
+    height: 36, 
+    width: 36, 
+    borderRadius: 18, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginLeft: 4 
+  },
+  sendButtonDisabled: { opacity: 0.5 }
 });
 
 const lightStyles = StyleSheet.create({

@@ -64,6 +64,23 @@ export default function Configuracao({ onConfigSaved, isDarkMode }) {
     fetchConfigAndProfile();
   }, []);
 
+  // Força a barra de rolagem a ficar invisível na Web, mantendo a função de scroll
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const styleId = 'hide-config-scrollbar';
+      if (!document.getElementById(styleId)) {
+        const styleEl = document.createElement('style');
+        styleEl.id = styleId;
+        styleEl.innerHTML = `
+          /* Esconde a barra de rolagem no Web */
+          ::-webkit-scrollbar { display: none !important; width: 0px !important; }
+          * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        `;
+        document.head.appendChild(styleEl);
+      }
+    }
+  }, []);
+
   const fetchConfigAndProfile = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -323,7 +340,10 @@ export default function Configuracao({ onConfigSaved, isDarkMode }) {
 
   return (
     <View style={[styles.container, themeStyles.container]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+      >
         
         <View style={styles.header}>
           <Text style={[styles.pageTitle, themeStyles.pageTitle]}>Configurações</Text>
@@ -557,7 +577,7 @@ export default function Configuracao({ onConfigSaved, isDarkMode }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   centerAll: { justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { padding: 16, maxWidth: 1100, marginHorizontal: 'auto', width: '100%', flexGrow: 1, paddingBottom: 24 },
+  scrollContent: { padding: 16, maxWidth: 1100, marginHorizontal: 'auto', width: '100%', flexGrow: 1, paddingBottom: 60 },
   header: { marginBottom: 16, alignItems: 'center' },
   pageTitle: { fontFamily: MODERN_FONT, fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
   pageSubtitle: { fontFamily: MODERN_FONT, fontSize: 13, marginTop: 4 },
@@ -580,7 +600,7 @@ const styles = StyleSheet.create({
   rowMobile: { flexDirection: 'column', gap: 10 },
   inputGroupRow: { flex: 1 },
   inputSmall: { fontFamily: MODERN_FONT, borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 8, fontSize: 12, textAlign: 'center', ...Platform.select({ web: { outlineStyle: 'none' } }) },
-  saveButton: { backgroundColor: '#2563eb', borderRadius: 24, paddingVertical: 12, paddingHorizontal: 40, alignItems: 'center', alignSelf: 'center', marginTop: 'auto', ...Platform.select({ web: { boxShadow: '0px 4px 12px rgba(37,99,235,0.3)' } }) },
+ saveButton: { backgroundColor: '#2563eb', borderRadius: 24, paddingVertical: 12, paddingHorizontal: 40, alignItems: 'center', alignSelf: 'center', marginTop: 'auto', ...Platform.select({ web: { boxShadow: '0px 4px 12px rgba(37,99,235,0.3)' } }) },
   saveButtonText: { fontFamily: MODERN_FONT, color: '#ffffff', fontSize: 13, fontWeight: '700' },
   secondaryButton: { borderWidth: 1, borderRadius: 6, paddingVertical: 8, alignItems: 'center', marginTop: 4 },
   secondaryButtonText: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '700' },

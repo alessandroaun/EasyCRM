@@ -2161,7 +2161,7 @@ const styles = StyleSheet.create({
   menuItemActive: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0', borderLeftWidth: 3, borderLeftColor: '#2563eb' },
   menuItemActiveDark: { backgroundColor: '#334155', borderColor: '#475569', borderLeftWidth: 3, borderLeftColor: '#3b82f6' },
   menuItemText: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '600' },
-  menuItemTextMobile: { fontSize: 15 },
+  menuItemTextMobile: { fontSize: 16 },
   menuItemTextActive: { color: '#2563eb', fontWeight: '700' },
   adminSectionContainer: { marginTop: 8, paddingTop: 16, borderTopWidth: 1, flexShrink: 1 },
   adminMenuItem: { borderWidth: 1, paddingVertical: 9 },
