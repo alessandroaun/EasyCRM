@@ -406,7 +406,7 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
 
   return (
     <View style={[styles.outerContainer, themeStyles.outerContainer]}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         
         {/* HEADER EXECUTIVO */}
         <View style={[styles.heroSection, isMobile && styles.heroSectionMobile]}>

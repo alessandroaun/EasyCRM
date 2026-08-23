@@ -320,6 +320,36 @@ export default function InformacoesGerais({ isDarkMode }) {
   };
 
   useEffect(() => {
+    // === CÓDIGO PARA ESCONDER A BARRA DE ROLAGEM NA WEB (MODO TURBO) ===
+    if (Platform.OS === 'web') {
+      const styleId = 'hide-scrollbar-global-turbo';
+      if (!document.getElementById(styleId)) {
+        const styleEl = document.createElement('style');
+        styleEl.id = styleId;
+        styleEl.innerHTML = `
+          /* Trava a tela de fundo para não criar scroll fantasma */
+          body, html {
+            overflow: hidden !important;
+          }
+          /* Destrói TODAS as barras de rolagem do Chromium/Electron */
+          *::-webkit-scrollbar {
+            display: none !important;
+            width: 0px !important;
+            height: 0px !important;
+            background: transparent !important;
+            -webkit-appearance: none !important;
+          }
+          /* Esconde no Firefox e IE */
+          * {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+          }
+        `;
+        document.head.appendChild(styleEl);
+      }
+    }
+    // ====================================================================
+
     let boardsSub = null;
     let disparosSub = null;
 
@@ -766,7 +796,7 @@ export default function InformacoesGerais({ isDarkMode }) {
 
   return (
     <View style={[styles.container, themeStyles.container]}>
-      <ScrollView contentContainerStyle={[styles.content, isMobile && styles.contentMobile]} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.container} contentContainerStyle={[styles.content, isMobile && styles.contentMobile]} showsVerticalScrollIndicator={false}>
         
         {/* CABEÇALHO COMPACTO */}
         <View style={[styles.headerArea, isMobile && styles.headerAreaMobile]}>

@@ -17,7 +17,7 @@ import { supabase } from '../services/supabaseClient';
 const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
 
 // ============================================================================
-// COMPONENTE: Avatar Vetorial Elegante da IA (Design Geométrico/Sofisticado)
+// COMPONENTE: Avatar Vetorial Elegante da IA
 // ============================================================================
 const ElegantAIAvatar = ({ isDarkMode }) => {
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
@@ -31,7 +31,7 @@ const ElegantAIAvatar = ({ isDarkMode }) => {
 };
 
 // ============================================================================
-// COMPONENTE: Animação "Pensando..." (3 Pontinhos fluídos)
+// COMPONENTE: Animação "Pensando..."
 // ============================================================================
 const TypingIndicator = ({ isDarkMode }) => {
   const dot1 = useRef(new Animated.Value(0)).current;
@@ -183,25 +183,24 @@ export default function MentorChatScreen({ isDarkMode }) {
     {
       id: '1',
       role: 'assistant',
-      text: 'Você está conversando com o MentorIA de Vendas, comigo você encontra o caminho para bater suas metas, pergunte o que quiser, posso demorar um pouco nas respostas mas elas serão respondidas.',
+      text: 'Você está conversando com o MentorIA de Vendas. Envie suas tabelas em PDF ou Imagem no ícone do clipe (📎) e eu te ajudo a montar a simulação perfeita!',
       isTyping: false
     }
   ]);
   
   const [inputText, setInputText] = useState('');
+  const [attachment, setAttachment] = useState(null); // NOVO: Estado para guardar o anexo
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef(null);
 
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
 
-  // Função centralizada e ajustável para rolagem
   const scrollToBottom = (animated = true) => {
     if (flatListRef.current) {
       flatListRef.current.scrollToEnd({ animated });
     }
   };
 
-  // Carrega o histórico do banco de dados ao iniciar
   useEffect(() => {
     const loadHistory = async () => {
       try {
@@ -222,8 +221,6 @@ export default function MentorChatScreen({ isDarkMode }) {
             isTyping: false
           }));
           setMessages(historyMessages);
-
-          // Força o scroll imediato e sem animação assim que os dados entram na tela
           setTimeout(() => scrollToBottom(false), 50);
           setTimeout(() => scrollToBottom(false), 300);
         }
@@ -234,14 +231,50 @@ export default function MentorChatScreen({ isDarkMode }) {
     loadHistory();
   }, []);
 
-  const sendMessage = async () => {
-    if (!inputText.trim()) return;
+  // NOVO: Função para abrir janela de arquivos e pegar PDF ou Imagem
+  const handleAttachFile = () => {
+    if (Platform.OS === 'web') {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/pdf, image/jpeg, image/png, image/webp';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          // Limita a 5MB por segurança
+          if (file.size > 5 * 1024 * 1024) {
+             alert("Por favor, selecione um arquivo menor que 5MB.");
+             return;
+          }
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64String = reader.result.split(',')[1];
+            setAttachment({
+              name: file.name,
+              mimeType: file.type,
+              base64: base64String
+            });
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
+    } else {
+      alert("Anexos de arquivos só estão disponíveis na versão Desktop/Web no momento.");
+    }
+  };
 
-    const userText = inputText.trim();
+  const sendMessage = async () => {
+    // Se não tiver texto E não tiver anexo, não faz nada
+    if (!inputText.trim() && !attachment) return;
+
+    // Se tiver anexo e o usuário não digitou nada, avisa a IA para olhar o anexo.
+    const finalUserText = inputText.trim() || "Por favor, analise a tabela em anexo para mim.";
+
     const newUserMessage = {
       id: Date.now().toString(),
       role: 'user',
-      text: userText,
+      text: attachment ? `[Arquivo Anexado: ${attachment.name}]\n${finalUserText}` : finalUserText,
+      file: attachment, // Guarda o arquivo no payload da mensagem
       isTyping: false
     };
 
@@ -253,29 +286,39 @@ export default function MentorChatScreen({ isDarkMode }) {
 
     const currentMessages = [...messages, newUserMessage];
     setMessages([...currentMessages, thinkingMessage]);
+    
+    // Limpa a barra de entrada e o anexo
     setInputText('');
+    setAttachment(null);
     setIsLoading(true);
     
-    // Rola suavemente ao enviar mensagem
     setTimeout(() => scrollToBottom(true), 50);
 
-    // Salva a mensagem do usuário no Supabase
+    // Salva no histórico (Apenas o texto, não salvamos o PDF gigante no Supabase)
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user?.id) {
         await supabase.from('mentor_chat_history').insert([
-          { user_id: session.user.id, role: 'user', message: userText }
+          { user_id: session.user.id, role: 'user', message: newUserMessage.text }
         ]);
       }
     } catch (e) {
-      console.error("Erro ao salvar mensagem do usuário:", e);
+      console.error("Erro ao salvar mensagem:", e);
     }
 
     try {
-      const historyForAPI = currentMessages.map(msg => ({
-        role: msg.role === 'assistant' ? 'model' : 'user',
-        text: msg.text
-      }));
+      // Monta o histórico pra API
+      const historyForAPI = currentMessages.map(msg => {
+        const apiMsg = {
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          text: msg.text
+        };
+        // Se a mensagem do array tiver arquivo, manda pro Python
+        if (msg.file) {
+          apiMsg.file = msg.file;
+        }
+        return apiMsg;
+      });
 
       const response = await fetch('https://mentor-ia-crm.onrender.com/chat-mentor', {
         method: 'POST',
@@ -286,10 +329,10 @@ export default function MentorChatScreen({ isDarkMode }) {
       const data = await response.json().catch(() => ({}));
       
       const errorMsg = (data.error || '').toString().toUpperCase();
-      const isHighDemand = response.status === 503 || response.status === 429 || errorMsg.includes('ALTA_DEMANDA') || errorMsg.includes('503') || errorMsg.includes('UNAVAILABLE') || errorMsg.includes('HIGH DEMAND');
-
       if (!response.ok) {
-        if (isHighDemand) throw new Error('ALTA_DEMANDA');
+        if (errorMsg.includes('ALTA_DEMANDA') || errorMsg.includes('503') || errorMsg.includes('429')) {
+          throw new Error('ALTA_DEMANDA');
+        }
         throw new Error(data.error || 'Falha na resposta do servidor');
       }
       
@@ -304,7 +347,6 @@ export default function MentorChatScreen({ isDarkMode }) {
 
       setMessages(prev => prev.filter(m => m.id !== 'thinking_temp').concat(aiMessage));
 
-      // Salva a resposta da IA no Supabase
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user?.id) {
@@ -319,9 +361,9 @@ export default function MentorChatScreen({ isDarkMode }) {
     } catch (error) {
       console.error("Erro no chat:", error);
       
-      let errorText = 'Desculpe, tive um problema de conexão com o servidor.';
+      let errorText = 'Desculpe, tive um problema de conexão com o servidor. O arquivo pode ser muito pesado.';
       if (error.message === 'ALTA_DEMANDA') {
-        errorText = 'Estou atendendo muitos vendedores neste exato segundo e a rede da inteligência artificial está com alta demanda! 🥵 Pode mandar sua pergunta de novo em alguns instantes?';
+        errorText = 'Estou atendendo muitos vendedores neste segundo e a rede está com alta demanda! 🥵 Tente novamente.';
       }
 
       const errorMessage = {
@@ -387,26 +429,44 @@ export default function MentorChatScreen({ isDarkMode }) {
           renderItem={renderMessage}
           contentContainerStyle={[styles.chatListContent, isMobile && styles.chatListContentMobile]}
           onContentSizeChange={() => scrollToBottom(true)}
-          onLayout={() => scrollToBottom(false)} // Garante que a primeira renderização inicie no final
+          onLayout={() => scrollToBottom(false)}
           showsVerticalScrollIndicator={false}
         />
 
         <View style={styles.floatingInputWrapper}>
-          <View style={[styles.inputContainer, themeStyles.inputContainer]}>
+          
+          {/* Caixa de visualização do anexo logo acima do input */}
+          {attachment && (
+            <View style={[styles.attachmentPreview, themeStyles.attachmentPreview]}>
+              <Text style={[styles.attachmentText, themeStyles.attachmentText]} numberOfLines={1}>
+                📎 {attachment.name}
+              </Text>
+              <TouchableOpacity onPress={() => setAttachment(null)} style={styles.attachmentCloseBtn}>
+                <Text style={[styles.attachmentCloseIcon, themeStyles.attachmentCloseIcon]}>✕</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={[styles.inputContainer, themeStyles.inputContainer, attachment && styles.inputContainerWithAttachment]}>
+            <TouchableOpacity style={styles.attachButton} onPress={handleAttachFile}>
+              <Text style={styles.attachButtonIcon}>📎</Text>
+            </TouchableOpacity>
+
             <TextInput
               style={[styles.input, themeStyles.input]}
               value={inputText}
               onChangeText={setInputText}
-              placeholder="Pergunte sobre lances, objeções..."
+              placeholder="Digite aqui ou mande uma tabela..."
               placeholderTextColor={isDarkMode ? '#64748b' : '#94a3b8'}
               multiline
               onKeyPress={handleKeyPress}
               maxLength={1500}
             />
+            
             <TouchableOpacity 
-              style={[styles.sendButton, (!inputText.trim() || isLoading) && styles.sendButtonDisabled]} 
+              style={[styles.sendButton, ((!inputText.trim() && !attachment) || isLoading) && styles.sendButtonDisabled]} 
               onPress={sendMessage}
-              disabled={isLoading || !inputText.trim()}
+              disabled={isLoading || (!inputText.trim() && !attachment)}
             >
               <Text style={styles.sendButtonText}>Enviar</Text>
             </TouchableOpacity>
@@ -458,7 +518,15 @@ const styles = StyleSheet.create({
   
   floatingInputWrapper: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 8, backgroundColor: 'transparent' },
   
-  inputContainer: { flexDirection: 'row', padding: 6, paddingLeft: 16, borderRadius: 24, alignItems: 'center', borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px -4px 20px rgba(0,0,0,0.05)' } }) },
+  attachmentPreview: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 8, borderTopLeftRadius: 16, borderTopRightRadius: 16, borderWidth: 1, borderBottomWidth: 0 },
+  attachmentText: { fontFamily: MODERN_FONT, fontSize: 12, flex: 1, fontWeight: '600' },
+  attachmentCloseBtn: { padding: 4, marginLeft: 8 },
+  attachmentCloseIcon: { fontSize: 14, fontWeight: 'bold' },
+  inputContainerWithAttachment: { borderTopLeftRadius: 0, borderTopRightRadius: 0 },
+
+  inputContainer: { flexDirection: 'row', padding: 6, paddingLeft: 10, borderRadius: 24, alignItems: 'center', borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px -4px 20px rgba(0,0,0,0.05)' } }) },
+  attachButton: { padding: 8, marginRight: 4, justifyContent: 'center', alignItems: 'center', borderRadius: 20 },
+  attachButtonIcon: { fontSize: 18 },
   input: { flex: 1, minHeight: 36, maxHeight: 120, paddingTop: 8, paddingBottom: 8, fontSize: 14, fontFamily: MODERN_FONT, ...Platform.select({ web: { outlineStyle: 'none' } }) },
   sendButton: { backgroundColor: '#2563eb', height: 36, width: 75, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
   
@@ -468,12 +536,10 @@ const styles = StyleSheet.create({
 
 const lightStyles = StyleSheet.create({
   container: { backgroundColor: '#f1f5f9' },
-  
   avatarContainer: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
   avatarOuterRing: { borderColor: '#3b82f6' },
   avatarInnerDiamond: { borderColor: '#2563eb', backgroundColor: '#eff6ff' },
   avatarCore: { backgroundColor: '#1d4ed8' },
-
   aiBubble: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
   aiMessageText: { color: '#1e293b' },
   mdHeading: { color: '#0f172a' },
@@ -482,17 +548,18 @@ const lightStyles = StyleSheet.create({
   mdDivider: { backgroundColor: '#cbd5e1' },
   
   inputContainer: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
-  input: { color: '#0f172a' }
+  input: { color: '#0f172a' },
+  attachmentPreview: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
+  attachmentText: { color: '#475569' },
+  attachmentCloseIcon: { color: '#94a3b8' }
 });
 
 const darkStyles = StyleSheet.create({
   container: { backgroundColor: '#0f172a' },
-  
   avatarContainer: { backgroundColor: '#1e293b', borderColor: '#334155' },
   avatarOuterRing: { borderColor: '#60a5fa' },
   avatarInnerDiamond: { borderColor: '#3b82f6', backgroundColor: '#172554' },
   avatarCore: { backgroundColor: '#bfdbfe' },
-
   aiBubble: { backgroundColor: '#1e293b', borderColor: '#334155' },
   aiMessageText: { color: '#e2e8f0' },
   mdHeading: { color: '#f8fafc' },
@@ -501,5 +568,8 @@ const darkStyles = StyleSheet.create({
   mdDivider: { backgroundColor: '#334155' },
   
   inputContainer: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  input: { color: '#f8fafc' }
+  input: { color: '#f8fafc' },
+  attachmentPreview: { backgroundColor: '#0f172a', borderColor: '#334155' },
+  attachmentText: { color: '#cbd5e1' },
+  attachmentCloseIcon: { color: '#64748b' }
 });

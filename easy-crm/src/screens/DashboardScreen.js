@@ -2173,7 +2173,7 @@ const styles = StyleSheet.create({
   sellersHeaderTitle: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '700', letterSpacing: 0.2 },
   sellersHeaderTitleMobile: { fontSize: 15 },
   sellersHeaderArrow: { fontSize: 11, fontWeight: 'bold' },
-  sellersDropdownList: { maxHeight: 150, minHeight: 40, borderTopWidth: 1, paddingVertical: 2 },
+  sellersDropdownList: { maxHeight: 120, minHeight: 40, borderTopWidth: 1, paddingVertical: 2 },
   sellerItemRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 7, paddingHorizontal: 10, gap: 6 },
   sellerItemRowMobile: { paddingVertical: 10, paddingHorizontal: 12 },
   sellerIndicatorDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#cbd5e1' },
