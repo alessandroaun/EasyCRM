@@ -562,7 +562,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
             <View style={[styles.checkbox, themeStyles.checkbox, isSelected && styles.checkboxSelected]}>
               {isSelected && <Text style={styles.checkmark}>✓</Text>}
             </View>
-            <Text style={[styles.checkboxLabel, themeStyles.checkboxLabel]}>Selecionar para transferência</Text>
+            <Text style={[styles.checkboxLabel, themeStyles.checkboxLabel]}>Selecionar</Text>
           </TouchableOpacity>
         )}
 
@@ -580,7 +580,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
               
               {commentsCount > 0 && (
                 <View style={[styles.commentBadge, themeStyles.commentBadge]}>
-                  <Text style={[styles.commentBadgeText, themeStyles.commentBadgeText]}>{commentsCount} {commentsCount === 1 ? 'comentário' : 'comentários'}</Text>
+                  <Text style={[styles.commentBadgeText, themeStyles.commentBadgeText]}>{commentsCount} msg</Text>
                 </View>
               )}
 
@@ -639,17 +639,17 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
 
           {client.dealClosed ? (
             <View style={styles.dealClosedContainer}>
-              <Text style={styles.dealClosedDateText}>Contrato fechado no dia {client.dealClosedDate ? new Date(client.dealClosedDate).toLocaleDateString('pt-BR') : 'N/A'}</Text>
+              <Text style={styles.dealClosedDateText}>Fechado: {client.dealClosedDate ? new Date(client.dealClosedDate).toLocaleDateString('pt-BR') : 'N/A'}</Text>
               
               <View style={styles.dealStatusWrapper}>
                  <Text style={styles.dealStatusLabel}>Status:</Text>
                  <Text style={[styles.dealStatusValue, client.clientStatus === 'Cliente Contemplado' ? styles.statusContemplado : (client.clientStatus === 'Cliente Cancelado' ? styles.statusCancelado : styles.statusDefault)]}>
-                   {client.clientStatus || 'Cliente Não Contemplado'}
+                   {client.clientStatus || 'Não Contemplado'}
                  </Text>
               </View>
 
               <Text style={styles.dealCreditText}>
-                Crédito Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(calculateTotalCredit())}
+                Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(calculateTotalCredit())}
               </Text>
             </View>
           ) : (
@@ -671,7 +671,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
             <Animated.View style={[styles.alertBox, themeStyles.alertBox, { opacity: deleteOpacity, transform: [{ scale: deleteScale }] }]}>
               <Text style={styles.alertIcon}>⚠️</Text>
               <Text style={[styles.alertTitle, themeStyles.alertTitle]}>Excluir Card?</Text>
-              <Text style={[styles.alertMessage, themeStyles.alertMessage]}>Tem certeza que deseja enviar "{client.name}" para a lixeira? Você poderá restaurá-lo depois se precisar.</Text>
+              <Text style={[styles.alertMessage, themeStyles.alertMessage]}>Tem certeza que deseja enviar "{client.name}" para a lixeira?</Text>
               
               <View style={styles.alertButtonRow}>
                 <TouchableOpacity style={[styles.cancelBtn, themeStyles.cancelBtn]} onPress={() => closeDeleteModal()}>
@@ -691,24 +691,24 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
 
 const styles = StyleSheet.create({
   card: { 
-    padding: 10, 
+    padding: 8, 
     borderRadius: 8, 
-    marginBottom: 8,
+    marginBottom: 6,
     marginTop: 0, 
-    borderLeftWidth: 4, 
+    borderLeftWidth: 3, 
     borderLeftColor: '#3b82f6', 
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    paddingBottom: 6,
+    marginBottom: 6,
+    paddingBottom: 4,
     borderBottomWidth: 1,
-    gap: 8,
+    gap: 6,
   },
   checkbox: {
-    width: 18,
-    height: 18,
+    width: 16,
+    height: 16,
     borderRadius: 4,
     borderWidth: 2,
     alignItems: 'center',
@@ -720,60 +720,60 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   checkboxLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     fontFamily: MODERN_FONT,
   },
   headerContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 },
-  headerTextContainer: { flex: 1, marginRight: 8 },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'nowrap' },
-  name: { fontSize: 14, fontWeight: 'bold', flexShrink: 1 },
-  pulsingClock: { fontSize: 12 },
-  commentBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  commentBadgeText: { fontSize: 9, fontWeight: '700' },
-  apptBadge: { paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4 },
-  apptBadgeText: { fontSize: 9, fontWeight: 'bold' },
+  headerTextContainer: { flex: 1, marginRight: 6 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'nowrap' },
+  name: { fontSize: 12, fontWeight: 'bold', flexShrink: 1 },
+  pulsingClock: { fontSize: 10 },
+  commentBadge: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 4 },
+  commentBadgeText: { fontSize: 8, fontWeight: '700' },
+  apptBadge: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 4 },
+  apptBadgeText: { fontSize: 8, fontWeight: 'bold' },
   inactiveBadge: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 4 },
-  inactiveText: { fontSize: 10, fontWeight: 'bold' },
-  dateText: { fontSize: 9, marginTop: 2 },
-  deleteButton: { paddingLeft: 8, paddingBottom: 4 },
-  deleteIcon: { fontSize: 12, fontWeight: 'bold' },
+  inactiveText: { fontSize: 8, fontWeight: 'bold' },
+  dateText: { fontSize: 8, marginTop: 1 },
+  deleteButton: { paddingLeft: 6, paddingBottom: 4 },
+  deleteIcon: { fontSize: 11, fontWeight: 'bold' },
   clickableArea: { paddingTop: 0, paddingBottom: 0 },
-  phoneRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
-  phoneText: { fontSize: 13, fontWeight: '500' },
+  phoneRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  phoneText: { fontSize: 11, fontWeight: '500' },
   actionButtonsContainer: { flexDirection: 'row', gap: 4 },
-  btnActionWA: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  btnActionTextWA: { fontSize: 10, fontWeight: 'bold' },
-  btnActionCall: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  btnActionTextCall: { fontSize: 10, fontWeight: 'bold' },
+  btnActionWA: { paddingHorizontal: 6, paddingVertical: 3, borderRadius: 4 },
+  btnActionTextWA: { fontSize: 9, fontWeight: 'bold' },
+  btnActionCall: { paddingHorizontal: 6, paddingVertical: 3, borderRadius: 4 },
+  btnActionTextCall: { fontSize: 9, fontWeight: 'bold' },
   
-  dealClosedContainer: { backgroundColor: '#ecfdf5', padding: 8, borderRadius: 6, marginBottom: 8, borderWidth: 1, borderColor: '#a7f3d0' },
-  dealClosedDateText: { fontSize: 11, fontWeight: 'bold', color: '#047857', marginBottom: 4 },
-  dealStatusWrapper: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
-  dealStatusLabel: { fontSize: 11, fontWeight: '600', color: '#065f46', marginRight: 4 },
-  dealStatusValue: { fontSize: 11, fontWeight: 'bold' },
+  dealClosedContainer: { backgroundColor: '#ecfdf5', padding: 6, borderRadius: 6, marginBottom: 6, borderWidth: 1, borderColor: '#a7f3d0' },
+  dealClosedDateText: { fontSize: 10, fontWeight: 'bold', color: '#047857', marginBottom: 2 },
+  dealStatusWrapper: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
+  dealStatusLabel: { fontSize: 10, fontWeight: '600', color: '#065f46', marginRight: 4 },
+  dealStatusValue: { fontSize: 10, fontWeight: 'bold' },
   statusContemplado: { color: '#2563eb' },
   statusCancelado: { color: '#dc2626' },
   statusDefault: { color: '#d97706' },
-  dealCreditText: { fontSize: 13, fontWeight: '800', color: '#064e3b' },
+  dealCreditText: { fontSize: 11, fontWeight: '800', color: '#064e3b' },
 
-  info: { fontSize: 12, marginBottom: 6, lineHeight: 16 },
+  info: { fontSize: 10, marginBottom: 4, lineHeight: 14 },
   tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 }, 
-  tag: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, fontSize: 10, fontWeight: '600' },
+  tag: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 4, fontSize: 8.5, fontWeight: '600' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 9999 },
-  alertBox: { padding: 24, borderRadius: 16, alignItems: 'center', width: 320 },
-  alertIcon: { fontSize: 48, marginBottom: 12 },
-  alertTitle: { fontFamily: MODERN_FONT, fontSize: 20, fontWeight: '800', marginBottom: 8 },
-  alertMessage: { fontFamily: MODERN_FONT, fontSize: 14, textAlign: 'center', marginBottom: 24, lineHeight: 20 },
-  alertButtonRow: { flexDirection: 'row', gap: 12, width: '100%' },
-  cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
-  cancelBtnText: { fontFamily: MODERN_FONT, fontWeight: '700', fontSize: 14 },
-  confirmBtn: { flex: 1, backgroundColor: '#ef4444', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
-  confirmBtnText: { fontFamily: MODERN_FONT, color: '#ffffff', fontWeight: '700', fontSize: 14 }
+  alertBox: { padding: 20, borderRadius: 16, alignItems: 'center', width: 280 },
+  alertIcon: { fontSize: 40, marginBottom: 10 },
+  alertTitle: { fontFamily: MODERN_FONT, fontSize: 16, fontWeight: '800', marginBottom: 6 },
+  alertMessage: { fontFamily: MODERN_FONT, fontSize: 12, textAlign: 'center', marginBottom: 20, lineHeight: 18 },
+  alertButtonRow: { flexDirection: 'row', gap: 10, width: '100%' },
+  cancelBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  cancelBtnText: { fontFamily: MODERN_FONT, fontWeight: '700', fontSize: 13 },
+  confirmBtn: { flex: 1, backgroundColor: '#ef4444', paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  confirmBtnText: { fontFamily: MODERN_FONT, color: '#ffffff', fontWeight: '700', fontSize: 13 }
 });
 
 const lightStyles = StyleSheet.create({
@@ -781,7 +781,7 @@ const lightStyles = StyleSheet.create({
     backgroundColor: '#FFFFFF', 
     ...Platform.select({ 
       web: { 
-        boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)', 
+        boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.08)', 
         userSelect: 'none', 
         WebkitUserSelect: 'none', 
         WebkitTouchCallout: 'none' 
@@ -817,7 +817,7 @@ const darkStyles = StyleSheet.create({
     backgroundColor: '#1e293b', 
     ...Platform.select({ 
       web: { 
-        boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.3)', 
+        boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.25)', 
         userSelect: 'none', 
         WebkitUserSelect: 'none', 
         WebkitTouchCallout: 'none' 

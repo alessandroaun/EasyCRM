@@ -37,6 +37,20 @@ const getBrazilTime = () => {
   return new Date(utc + (3600000 * -3)); 
 };
 
+// Componente do Botão Vetorial de Olho para ocultar valores
+const EyeToggle = ({ isVisible, onPress, color }) => (
+  <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ padding: 4 }}>
+    <View style={{ width: 20, height: 16, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+      <View style={{ width: 20, height: 12, borderWidth: 1.5, borderRadius: 10, justifyContent: 'center', alignItems: 'center', borderColor: color }}>
+        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: color }} />
+      </View>
+      {!isVisible && (
+        <View style={{ position: 'absolute', width: 22, height: 1.5, transform: [{ rotate: '-45deg' }], backgroundColor: color }} />
+      )}
+    </View>
+  </TouchableOpacity>
+);
+
 export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
   const { width } = useWindowDimensions();
   const isMobile = width < 850;
@@ -44,6 +58,28 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
   const [config, setConfig] = useState(null);
   const [userProfileName, setUserProfileName] = useState(null);
   
+  // Estado de visibilidade dos valores financeiros (Comissionamento) persistente
+  const [showCommission, setShowCommission] = useState(true);
+
+  // Carrega a preferência salva assim que a tela abre
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const savedPref = localStorage.getItem('@crm_show_commission');
+      if (savedPref !== null) {
+        setShowCommission(savedPref === 'true');
+      }
+    }
+  }, []);
+
+  // Função que inverte a visibilidade e salva a escolha na memória do aplicativo
+  const toggleCommissionVisibility = () => {
+    const newValue = !showCommission;
+    setShowCommission(newValue);
+    if (Platform.OS === 'web') {
+      localStorage.setItem('@crm_show_commission', String(newValue));
+    }
+  };
+
   // Alterado nome do estado para evitar termos técnicos
   const [boardsEngagementMetrics, setBoardsEngagementMetrics] = useState({
     disparazapCount: 0,
@@ -53,7 +89,7 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
   });
   
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'mentoria' | 'desempenho' | 'engajamento'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'mentoria' | 'desempenho' | 'engajamento' | 'comissao'
 
   // Busca as configurações dinâmicas e o nome real em user_profiles > name, além dos dados dos boards
   useEffect(() => {
@@ -339,6 +375,9 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
   }, [boardData]);
 
   const metaPercentage = metaMensalNumerica > 0 ? Math.min(Math.round((metrics.vendasMes / metaMensalNumerica) * 100), 100) : 0;
+  
+  // Cálculo de Comissionamento Estimado (Base temporária: 1% do valor vendido)
+  const estimatedCommission = metrics.vendasMes * 0.01;
 
   const getGreeting = () => {
     const hour = getBrazilTime().getHours();
@@ -349,7 +388,6 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
 
   const currentDate = getBrazilTime();
   const weekDays = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
-  const months = ['agosto', 'setembro', 'outubro', 'novembro', 'dezembro', 'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho'];
   const monthsCorrected = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
   const dateFormatted = `Hoje é ${weekDays[currentDate.getDay()]}, ${currentDate.getDate()} de ${monthsCorrected[currentDate.getMonth()]} de ${currentDate.getFullYear()}.`;
 
@@ -403,6 +441,43 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
   }
 
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
+  const iconColor = isDarkMode ? '#94a3b8' : '#64748b';
+
+  // Renderizador unificado dos botões de abas para manter código DRY
+  const renderNavTabs = () => (
+    <>
+      <TouchableOpacity 
+        style={[styles.navTabBtn, activeTab === 'overview' && themeStyles.navTabActive]} 
+        onPress={() => setActiveTab('overview')}
+      >
+        <Text style={[styles.navTabText, themeStyles.navTabText, activeTab === 'overview' && themeStyles.navTabTextActive]}>Visão Geral</Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+        style={[styles.navTabBtn, activeTab === 'mentoria' && themeStyles.navTabActive]} 
+        onPress={() => setActiveTab('mentoria')}
+      >
+        <Text style={[styles.navTabText, themeStyles.navTabText, activeTab === 'mentoria' && themeStyles.navTabTextActive]}>Mentoria & Dicas</Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+        style={[styles.navTabBtn, activeTab === 'desempenho' && themeStyles.navTabActive]} 
+        onPress={() => setActiveTab('desempenho')}
+      >
+        <Text style={[styles.navTabText, themeStyles.navTabText, activeTab === 'desempenho' && themeStyles.navTabTextActive]}>Análise de Funil</Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+        style={[styles.navTabBtn, activeTab === 'engajamento' && themeStyles.navTabActive]} 
+        onPress={() => setActiveTab('engajamento')}
+      >
+        <Text style={[styles.navTabText, themeStyles.navTabText, activeTab === 'engajamento' && themeStyles.navTabTextActive]}>Engajamento</Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+        style={[styles.navTabBtn, activeTab === 'comissao' && themeStyles.navTabActive]} 
+        onPress={() => setActiveTab('comissao')}
+      >
+        <Text style={[styles.navTabText, themeStyles.navTabText, activeTab === 'comissao' && themeStyles.navTabTextActive]}>Comissionamento</Text>
+      </TouchableOpacity>
+    </>
+  );
 
   return (
     <View style={[styles.outerContainer, themeStyles.outerContainer]}>
@@ -414,32 +489,19 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
             <Text style={[styles.greeting, themeStyles.greeting]}>{getGreeting()}, {firstName}!</Text>
             <Text style={[styles.dateText, themeStyles.dateText]}>{dateFormatted}</Text>
           </View>
-          <View style={[styles.navTabsContainer, themeStyles.navTabsContainer, isMobile && styles.navTabsContainerMobile]}>
-            <TouchableOpacity 
-              style={[styles.navTabBtn, activeTab === 'overview' && themeStyles.navTabActive]} 
-              onPress={() => setActiveTab('overview')}
-            >
-              <Text style={[styles.navTabText, themeStyles.navTabText, activeTab === 'overview' && themeStyles.navTabTextActive]}>Visão Geral</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.navTabBtn, activeTab === 'mentoria' && themeStyles.navTabActive]} 
-              onPress={() => setActiveTab('mentoria')}
-            >
-              <Text style={[styles.navTabText, themeStyles.navTabText, activeTab === 'mentoria' && themeStyles.navTabTextActive]}>Mentoria & Dicas</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.navTabBtn, activeTab === 'desempenho' && themeStyles.navTabActive]} 
-              onPress={() => setActiveTab('desempenho')}
-            >
-              <Text style={[styles.navTabText, themeStyles.navTabText, activeTab === 'desempenho' && themeStyles.navTabTextActive]}>Análise de Funil</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.navTabBtn, activeTab === 'engajamento' && themeStyles.navTabActive]} 
-              onPress={() => setActiveTab('engajamento')}
-            >
-              <Text style={[styles.navTabText, themeStyles.navTabText, activeTab === 'engajamento' && themeStyles.navTabTextActive]}>Engajamento & DisparaZap</Text>
-            </TouchableOpacity>
-          </View>
+          
+          {/* ISOLAMENTO DA BARRA DE NAVEGAÇÃO: Mobile usa Scroll horizontal em 1 linha / PC usa o antigo Wrap */}
+          {isMobile ? (
+            <View style={[themeStyles.navTabsContainer, styles.navTabsWrapperMobile]}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.navTabsContainerMobileInner}>
+                {renderNavTabs()}
+              </ScrollView>
+            </View>
+          ) : (
+            <View style={[styles.navTabsContainer, themeStyles.navTabsContainer]}>
+              {renderNavTabs()}
+            </View>
+          )}
         </View>
 
         {/* ABA: VISÃO GERAL */}
@@ -518,7 +580,7 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
                 </View>
               </View>
 
-              {/* ÚLTIMAS INTERAÇÕES (Exibido apenas no celular) */}
+              {/* ÚLTIMAS INTERAÇÕES E COMISSIONAMENTO (Exibido apenas no celular na coluna principal) */}
               {isMobile && (
                 <>
                   <Text style={[styles.sectionTitle, themeStyles.sectionTitle, { marginTop: 28 }]}>Últimas Interações</Text>
@@ -539,6 +601,20 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
                     {metrics.allClients.length === 0 && (
                       <Text style={[styles.emptyRecentText, themeStyles.emptyRecentText]}>Nenhuma movimentação registrada no CRM ainda.</Text>
                     )}
+                  </View>
+
+                  {/* Card de Comissionamento Mobile */}
+                  <View style={[styles.commissionCard, themeStyles.commissionCard]}>
+                    <View style={styles.commissionHeaderRow}>
+                      <Text style={[styles.commissionCardTitle, themeStyles.commissionCardTitle]}>💰 Comissionamento (Mês Atual)</Text>
+                      <EyeToggle isVisible={showCommission} onPress={toggleCommissionVisibility} color={iconColor} />
+                    </View>
+                    <Text style={[styles.commissionCardValue, themeStyles.commissionCardValue]}>
+                      {showCommission ? formatCurrency(estimatedCommission) : 'R$ •••••••'}
+                    </Text>
+                    <Text style={[styles.commissionCardDesc, themeStyles.commissionCardDesc]}>
+                      Baseado em {showCommission ? formatCurrency(metrics.vendasMes) : 'R$ •••••••'} de vendas fechadas.
+                    </Text>
                   </View>
                 </>
               )}
@@ -640,6 +716,20 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
                   {metrics.allClients.length === 0 && (
                     <Text style={[styles.emptyRecentText, themeStyles.emptyRecentText]}>Nenhuma movimentação registrada no CRM ainda.</Text>
                   )}
+                </View>
+
+                {/* Card de Comissionamento Desktop */}
+                <View style={[styles.commissionCard, themeStyles.commissionCard]}>
+                  <View style={styles.commissionHeaderRow}>
+                    <Text style={[styles.commissionCardTitle, themeStyles.commissionCardTitle]}>💰 Comissionamento (Mês Atual)</Text>
+                    <EyeToggle isVisible={showCommission} onPress={toggleCommissionVisibility} color={iconColor} />
+                  </View>
+                  <Text style={[styles.commissionCardValue, themeStyles.commissionCardValue]}>
+                    {showCommission ? formatCurrency(estimatedCommission) : 'R$ •••••••'}
+                  </Text>
+                  <Text style={[styles.commissionCardDesc, themeStyles.commissionCardDesc]}>
+                    Baseado em {showCommission ? formatCurrency(metrics.vendasMes) : 'R$ •••••••'} de vendas fechadas.
+                  </Text>
                 </View>
 
                 <Text style={[styles.sectionTitle, themeStyles.sectionTitle, { marginTop: 28 }]}>Alertas e Oportunidades</Text>
@@ -805,6 +895,33 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
           </View>
         )}
 
+        {/* ABA: COMISSIONAMENTO */}
+        {activeTab === 'comissao' && (
+          <View style={[styles.tabContentContainer, themeStyles.tabContentContainer]}>
+            <View style={[styles.mentoriaHeroCard, themeStyles.commissionHeroCard]}>
+              <View style={styles.commissionHeaderRow}>
+                <View>
+                  <Text style={[styles.mentoriaHeroTitle, themeStyles.commissionHeroTitle]}>💸 Comissionamento Atual</Text>
+                  <Text style={[styles.mentoriaHeroSubtitle, themeStyles.commissionHeroSubtitle]}>
+                    Acompanhe sua projeção de ganhos com base nas vendas concluídas neste mês.
+                  </Text>
+                </View>
+                <EyeToggle isVisible={showCommission} onPress={toggleCommissionVisibility} color={isDarkMode ? '#34d399' : '#065f46'} />
+              </View>
+              <Text style={[styles.commissionMainValue, themeStyles.commissionMainValue]}>
+                {showCommission ? formatCurrency(estimatedCommission) : 'R$ •••••••'}
+              </Text>
+            </View>
+
+            <Text style={[styles.sectionTitle, themeStyles.sectionTitle, { marginTop: 24 }]}>Detalhamento (Em Construção 🚧)</Text>
+            <View style={[styles.tipCard, themeStyles.tipCard]}>
+              <Text style={[styles.tipCardDesc, themeStyles.tipCardDesc]}>
+                Futuramente, este painel exibirá o cálculo exato do seu comissionamento, incluindo bônus por engajamento, taxas de conversão de funil e aceleradores de meta. Continue cadastrando suas vendas para manter os dados atualizados.
+              </Text>
+            </View>
+          </View>
+        )}
+
       </ScrollView>
     </View>
   );
@@ -820,9 +937,11 @@ const styles = StyleSheet.create({
   heroSection: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, gap: 16, flexWrap: 'wrap' },
   heroSectionMobile: { flexDirection: 'column', alignItems: 'flex-start' },
   greeting: { fontFamily: MODERN_FONT, fontSize: 30, fontWeight: '900', letterSpacing: -0.5 },
-  dateText: { fontFamily: MODERN_FONT, fontSize: 14, marginTop: 4 }, // Removido capitalize para ficar tudo minúsculo conforme solicitado
+  dateText: { fontFamily: MODERN_FONT, fontSize: 14, marginTop: 4 }, 
   
   navTabsContainer: { flexDirection: 'row', padding: 4, borderRadius: 10, gap: 4, flexWrap: 'wrap' },
+  navTabsWrapperMobile: { width: '100%', borderRadius: 10, paddingVertical: 4 },
+  navTabsContainerMobileInner: { flexDirection: 'row', paddingHorizontal: 4, gap: 4, alignItems: 'center' },
   navTabsContainerMobile: { width: '100%' },
   navTabBtn: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 8 },
   navTabText: { fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '600' },
@@ -875,6 +994,12 @@ const styles = StyleSheet.create({
   recentPhase: { fontFamily: MODERN_FONT, fontSize: 11, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, overflow: 'hidden', maxWidth: 110, textAlign: 'center' },
   emptyRecentText: { fontFamily: MODERN_FONT, fontSize: 13, paddingVertical: 20, textAlign: 'center', fontStyle: 'italic' },
 
+  commissionCard: { borderRadius: 14, padding: 18, borderWidth: 1, marginTop: 20, ...Platform.select({ web: { boxShadow: '0px 4px 10px rgba(0,0,0,0.02)' } }) },
+  commissionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  commissionCardTitle: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '800' },
+  commissionCardValue: { fontFamily: MODERN_FONT, fontSize: 24, fontWeight: '900', marginBottom: 4 },
+  commissionCardDesc: { fontFamily: MODERN_FONT, fontSize: 12 },
+
   alertCardDanger: { borderRadius: 14, padding: 18, borderWidth: 1, marginBottom: 14 },
   alertTitleDanger: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '800', textTransform: 'uppercase', marginBottom: 6 },
   alertTextDanger: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 20 },
@@ -894,6 +1019,8 @@ const styles = StyleSheet.create({
   mentoriaHeroCard: { padding: 24, borderRadius: 12, borderWidth: 1 },
   mentoriaHeroTitle: { fontFamily: MODERN_FONT, fontSize: 18, fontWeight: '800', marginBottom: 8 },
   mentoriaHeroSubtitle: { fontFamily: MODERN_FONT, fontSize: 14, lineHeight: 22 },
+
+  commissionMainValue: { fontFamily: MODERN_FONT, fontSize: 36, fontWeight: '900', marginTop: 16 },
 
   tipCard: { padding: 18, borderRadius: 12, borderWidth: 1, marginBottom: 12 },
   tipCardTitle: { fontFamily: MODERN_FONT, fontSize: 15, fontWeight: '700', marginBottom: 6 },
@@ -952,6 +1079,10 @@ const lightStyles = StyleSheet.create({
   recentName: { color: '#1e293b' },
   recentPhase: { color: '#475569', backgroundColor: '#f1f5f9' },
   emptyRecentText: { color: '#94a3b8' },
+  commissionCard: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
+  commissionCardTitle: { color: '#1e293b' },
+  commissionCardValue: { color: '#10b981' },
+  commissionCardDesc: { color: '#64748b' },
   alertCardDanger: { backgroundColor: '#fef2f2', borderColor: '#fecaca' },
   alertTitleDanger: { color: '#b91c1c' },
   alertTextDanger: { color: '#991b1b' },
@@ -967,6 +1098,10 @@ const lightStyles = StyleSheet.create({
   mentoriaHeroCard: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
   mentoriaHeroTitle: { color: '#1e40af' },
   mentoriaHeroSubtitle: { color: '#1e3a8a' },
+  commissionHeroCard: { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' },
+  commissionHeroTitle: { color: '#065f46' },
+  commissionHeroSubtitle: { color: '#047857' },
+  commissionMainValue: { color: '#064e3b' },
   tipCard: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
   tipCardTitle: { color: '#0f172a' },
   tipCardDesc: { color: '#475569' },
@@ -1016,6 +1151,10 @@ const darkStyles = StyleSheet.create({
   recentName: { color: '#f8fafc' },
   recentPhase: { color: '#cbd5e1', backgroundColor: '#334155' },
   emptyRecentText: { color: '#64748b' },
+  commissionCard: { backgroundColor: '#1e293b', borderColor: '#334155' },
+  commissionCardTitle: { color: '#f8fafc' },
+  commissionCardValue: { color: '#34d399' },
+  commissionCardDesc: { color: '#94a3b8' },
   alertCardDanger: { backgroundColor: '#450a0a', borderColor: '#7f1d1d' },
   alertTitleDanger: { color: '#fca5a5' },
   alertTextDanger: { color: '#fecaca' },
@@ -1031,6 +1170,10 @@ const darkStyles = StyleSheet.create({
   mentoriaHeroCard: { backgroundColor: '#172554', borderColor: '#1d4ed8' },
   mentoriaHeroTitle: { color: '#93c5fd' },
   mentoriaHeroSubtitle: { color: '#bfdbfe' },
+  commissionHeroCard: { backgroundColor: '#064e3b', borderColor: '#047857' },
+  commissionHeroTitle: { color: '#34d399' },
+  commissionHeroSubtitle: { color: '#a7f3d0' },
+  commissionMainValue: { color: '#f8fafc' },
   tipCard: { backgroundColor: '#0f172a', borderColor: '#334155' },
   tipCardTitle: { color: '#f8fafc' },
   tipCardDesc: { color: '#94a3b8' },

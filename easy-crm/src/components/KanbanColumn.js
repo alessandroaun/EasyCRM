@@ -214,7 +214,7 @@ export default function KanbanColumn({ phase, onDropClient, onDeleteClient, onOp
           </View>
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>          
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>         
           <TouchableOpacity style={[styles.iconActionButton, themeStyles.iconActionButton]} onPress={() => setShowSortMenu(!showSortMenu)} title="Ordenar Fase">
             <Text style={[styles.actionSymbol, themeStyles.actionSymbol]} suppressHighlighting={true}>⇅</Text>
           </TouchableOpacity>
@@ -283,37 +283,37 @@ export default function KanbanColumn({ phase, onDropClient, onDeleteClient, onOp
 
 const styles = StyleSheet.create({
   column: { 
-    width: 270,
+    width: 220,
     borderRadius: 12, 
-    paddingHorizontal: 12, 
-    paddingTop: 16,
+    paddingHorizontal: 8, 
+    paddingTop: 12,
     paddingBottom: 4,
-    marginRight: 16,
+    marginRight: 10,
     maxHeight: '100%',
     borderWidth: 1,
     position: 'relative',
   },
   backdropOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, paddingHorizontal: 4, position: 'relative', zIndex: 1 },
-  titleContainer: { flexDirection: 'row', alignItems: 'center', flex: 1, flexWrap: 'wrap', gap: 8 },
-  title: { fontFamily: MODERN_FONT, fontSize: 16, fontWeight: '700' },
-  badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
-  badgeText: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '700' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10, paddingHorizontal: 4, position: 'relative', zIndex: 1 },
+  titleContainer: { flexDirection: 'row', alignItems: 'center', flex: 1, flexWrap: 'wrap', gap: 6 },
+  title: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '700' },
+  badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 12 },
+  badgeText: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '700' },
   iconActionButton: { 
-    width: 26, 
-    height: 26, 
+    width: 22, 
+    height: 22, 
     borderRadius: 6, 
     justifyContent: 'center', 
     alignItems: 'center'
   },
-  actionSymbol: { fontSize: 15, fontWeight: '600', lineHeight: 18, textAlign: 'center' },
+  actionSymbol: { fontSize: 13, fontWeight: '600', lineHeight: 16, textAlign: 'center' },
   selectAllContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 8,
     borderRadius: 6,
-    marginBottom: 12,
+    marginBottom: 10,
     gap: 8,
     borderWidth: 1,
   },
@@ -335,12 +335,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   selectAllText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     fontFamily: MODERN_FONT,
   },
   sortMenuDropdown: {
-    position: 'absolute', top: 35, right: 0, width: 200, 
+    position: 'absolute', top: 30, right: 0, width: 200, 
     borderRadius: 10, padding: 8, zIndex: 99999, borderWidth: 1,
   },
   sortMenuTitle: { fontSize: 11, fontWeight: '700', marginBottom: 6, paddingHorizontal: 6 },

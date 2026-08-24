@@ -217,41 +217,40 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
         styleEl.innerHTML = `
           [data-card-container="true"] { 
             cursor: default !important; 
-            /* Devolve a animação de recuo suave e o destaque fluido */
             transition: margin-top 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.2s ease, box-shadow 0.2s ease !important; 
             position: relative;
           }
           [data-card-container="true"] button, 
           [data-card-action-btn="true"] { cursor: pointer !important; }
           
-          /* O recuo suave abrindo espaço na lista */
+          /* Ajuste do recuo para o novo tamanho de card menor */
           .drag-hover-space { 
-            margin-top: 94px !important; 
+            margin-top: 76px !important; 
           }
           
-          /* As linhas indicando onde o card vai ficar (Placeholder Tracejado) */
+          /* Placeholder Tracejado reajustado */
           .drag-hover-space::before {
             content: "";
             position: absolute;
-            top: -86px; 
+            top: -68px; 
             left: 0;
             width: 100%;
-            height: 78px;
-            border-radius: 8px;
+            height: 62px;
+            border-radius: 6px;
             background-color: rgba(59, 130, 246, 0.1);
             border: 2px dashed rgba(59, 130, 246, 0.4);
             box-sizing: border-box;
             pointer-events: none;
           }
           
-          /* Película invisível para evitar a tremedeira (flickering) ao passar o mouse */
+          /* Película invisível reajustada */
           .drag-hover-space::after {
             content: "";
             position: absolute;
-            top: -94px;
+            top: -76px;
             left: 0;
             width: 100%;
-            height: 94px;
+            height: 76px;
             background: transparent;
           }
         `;
@@ -2172,9 +2171,9 @@ const styles = StyleSheet.create({
   mobileRowBottom: { flexDirection: 'row', justifyContent: 'space-between', gap: 6, width: '100%' },
   mobileActionBtn: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 6 },
 
-  boardContainer: { flex: 1, paddingTop: 16, paddingHorizontal: 16 },
-  addPhaseButton: { width: 300, borderRadius: 12, padding: 16, alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', borderWidth: 2, maxHeight: 52, marginRight: 24 },
-  addPhaseText: { fontFamily: MODERN_FONT, fontWeight: '700', fontSize: 14 },
+  boardContainer: { flex: 1, paddingTop: 12, paddingHorizontal: 12 },
+  addPhaseButton: { width: 220, borderRadius: 12, padding: 12, alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', borderWidth: 2, maxHeight: 46, marginRight: 16 },
+  addPhaseText: { fontFamily: MODERN_FONT, fontWeight: '700', fontSize: 13 },
 
   chatSidePanel: { width: 380, borderLeftWidth: 1, zIndex: 50, overflow: 'hidden' },
   chatSidePanelMobile: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, width: '100%', borderLeftWidth: 0, zIndex: 100 },
