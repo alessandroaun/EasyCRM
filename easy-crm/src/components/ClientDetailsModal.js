@@ -10,12 +10,17 @@ import { supabase } from '../services/supabaseClient';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
-const CommentsSection = ({ formData, setFormData, newCommentText, setNewCommentText, isDarkMode, isMobile, themeStyles }) => {
+const CommentsSection = ({ formData, setFormData, newCommentText, setNewCommentText, isDarkMode, isMobile, themeStyles, onSilentSave }) => {
   const handleAddComment = () => {
     if (!newCommentText.trim()) return;
     const comment = { id: Date.now().toString(), text: newCommentText, date: new Date().toISOString() };
-    setFormData(prev => ({ ...prev, comments: [comment, ...(prev.comments || [])] }));
+    
+    // Atualiza o estado visual e em seguida dispara o salvamento silencioso no banco
+    const updatedComments = [comment, ...(formData.comments || [])];
+    setFormData(prev => ({ ...prev, comments: updatedComments }));
     setNewCommentText('');
+    
+    if (onSilentSave) onSilentSave(updatedComments);
   };
 
   return (
@@ -30,7 +35,9 @@ const CommentsSection = ({ formData, setFormData, newCommentText, setNewCommentT
           value={newCommentText} 
           onChangeText={setNewCommentText} 
         />
-        <TouchableOpacity style={styles.addCommentBtn} onPress={handleAddComment}><Text style={styles.addCommentBtnText}>Salvar</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.addCommentBtn} onPress={handleAddComment}>
+          <Text style={styles.addCommentBtnText}>Salvar e Sincronizar</Text>
+        </TouchableOpacity>
       </View>
       <ScrollView style={styles.commentsList} showsVerticalScrollIndicator={false}>
         {(!formData.comments || formData.comments.length === 0) ? (
@@ -78,6 +85,12 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
   // Estados de Inteligência (Kpis preditivos)
   const [probData, setProbData] = useState({ score: 0, text: '' });
 
+  // Disparo para salvar comentários instantaneamente sem fechar o modal
+  const handleSilentSave = (updatedComments) => {
+    let updatedData = { ...formData, comments: updatedComments, winProbability: String(probData.score) };
+    onSave(updatedData);
+  };
+
   useEffect(() => {
     if (visible) {
       setShowModalContent(true);
@@ -99,9 +112,9 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
     }
   }, [formData.dealClosed]);
 
-  // Motor Preditivo de Probabilidade de Fechamento
+  // Motor Preditivo Comportamental e Dinâmico
   useEffect(() => {
-    let score = 0;
+    let score = 8;
     let reasons = [];
     let dataPoints = 0;
 
@@ -110,56 +123,137 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
       return;
     }
 
-    const recentComments = formData.comments ? formData.comments.map(c => c.text.toLowerCase()).join(' ') : '';
-    if (formData.clientStatus === 'Cliente Cancelado' || recentComments.includes('perdido') || recentComments.includes('cancelado')) {
-      setProbData({ score: 0, text: "Lead marcado como cancelado ou perdido no histórico recente." });
-      return;
+    const comments = formData.comments || [];
+    
+    // Análise de Funil: Rastreador de Recuperação e Regressão
+    const lostIndex = comments.findIndex(c => {
+      const t = c.text.toLowerCase();
+      return t.includes('perdido') || t.includes('cancelado');
+    });
+
+    let isRecovered = false;
+    if (lostIndex !== -1) {
+      if (lostIndex > 0) isRecovered = true;
+      else {
+        setProbData({ score: 0, text: "Lead marcado como cancelado ou perdido no histórico recente sem novas movimentações." });
+        return;
+      }
     }
 
-    // 1. Temperatura do Lead
+    let simulacaoCount = 0;
+    let ligacaoCount = 0;
+    let mudancaFaseCount = 0;
+    let isInNegotiation = false;
+    let leftNegotiation = false;
+
+    // Escaneia a cronologia das fases no CRM
+    const phaseMovements = comments.filter(c => c.text.includes('movido da fase'));
+    mudancaFaseCount = phaseMovements.length;
+
+    if (mudancaFaseCount > 0) {
+       const lastMov = phaseMovements[0].text.toLowerCase();
+       if (lastMov.includes('para "negocia') || lastMov.includes('para "proposta')) {
+           isInNegotiation = true;
+       } else {
+           // Checa se o lead esteve em negociação antes, mas regrediu
+           const previousNegotiation = phaseMovements.some((m, idx) => idx > 0 && (m.text.toLowerCase().includes('para "negocia') || m.text.toLowerCase().includes('para "proposta')));
+           if (previousNegotiation) leftNegotiation = true;
+       }
+    }
+
+    comments.forEach(c => {
+      const t = c.text.toLowerCase();
+      if (t.includes('simulação') || t.includes('simulacao') || t.includes('proposta') || t.includes('pdf')) simulacaoCount++;
+      if (t.includes('ligou') || t.includes('ligação') || t.includes('chamada') || t.includes('telefone') || t.includes('ligar') || t.includes('whatsapp') || t.includes('mensagem')) ligacaoCount++;
+    });
+
+    // 1. TEMPERATURA E MULTIPLICADOR DE PROPULSÃO
     const temp = (formData.leadTemp || '').toLowerCase();
-    if (temp === 'quente') { score += 30; dataPoints++; reasons.push("A temperatura 'Quente' sinaliza um forte interesse e proximidade de compra."); }
-    else if (temp === 'morno') { score += 15; dataPoints++; reasons.push("A temperatura 'Morna' demonstra abertura de relacionamento, mas ainda requer acompanhamento."); }
-    else if (temp === 'frio') { dataPoints++; reasons.push("A temperatura 'Fria' aponta para um contato inicial em exploração ou com objeções severas."); }
+    let multiplier = 1.0;
+    if (temp === 'quente') { multiplier = 1.5; score += 25; dataPoints++; reasons.push("Temperatura 'Quente' atua como forte acelerador das interações ativas (Multiplicador x1.5)."); }
+    else if (temp === 'morno') { multiplier = 1.2; score += 12; dataPoints++; reasons.push("Temperatura 'Morna' garante uma subida moderada (Multiplicador x1.2)."); }
+    else if (temp === 'frio') { multiplier = 0.5; score += 4; dataPoints++; reasons.push("Temperatura 'Fria' atua como freio comportamental, reduzindo os ganhos das interações pela metade (Multiplicador x0.5)."); }
 
-    // 2. Lance Disponível
+    // 2. Escaneamento da Zona de Negociação
+    if (isInNegotiation) {
+        score += (25 * multiplier); dataPoints++; reasons.push("Lead atingiu a fase de 'Negociação/Proposta', disparando uma alta propensão imediata de fechamento.");
+    } else if (leftNegotiation) {
+        score -= 20; reasons.push("Alerta Crítico: O lead regrediu de fase após iniciar uma negociação, caracterizando esfriamento ou forte objeção.");
+    }
+
+    // 3. Poder de Compra (Lance)
     const hasBid = formData.bidAmount && formData.bidAmount.trim() !== '' && formData.bidAmount.trim().toLowerCase() !== 'não' && formData.bidAmount !== 'R$ 0,00';
-    if (hasBid) { score += 20; dataPoints++; reasons.push("Possuir lance disponível do próprio bolso acelera significativamente as chances matemáticas de contemplação."); }
+    if (hasBid) { score += (20 * multiplier); dataPoints++; reasons.push("Posse de lance declarada viabiliza a contemplação primária de forma matemática."); }
 
-    // 3. Nível de Urgência
+    // 4. Urgência
     const urgency = (formData.urgency || '').toLowerCase();
     if (urgency.includes('alta') || urgency.includes('urgente') || urgency.includes('imediato') || urgency.includes('para ontem')) {
-      score += 15; dataPoints++; reasons.push("A urgência declarada pelo cliente favorece as tratativas de curto prazo.");
+      score += (12 * multiplier); dataPoints++; reasons.push("Senso de urgência rastreado no perfil eleva as chances de decisão no curto prazo.");
     } else if (urgency !== '') {
-      dataPoints++;
+      score += (4 * multiplier); dataPoints++;
     }
 
-    // 4. Volume de Interações e Comentários
-    const commentsCount = formData.comments ? formData.comments.length : 0;
-    if (commentsCount >= 5) { score += 20; dataPoints++; reasons.push("O alto volume de interações indica uma negociação muito bem nutrida e ativa."); }
-    else if (commentsCount >= 2) { score += 10; dataPoints++; reasons.push("As interações constantes registradas no CRM validam o engajamento na negociação."); }
-    else if (commentsCount === 0) { reasons.push("A ausência de histórico de relacionamento registrado reduz a previsibilidade do algoritmo."); }
+    // 5. Incompatibilidade Financeira (Score de Risco)
+    const getNum = (val) => parseFloat(String(val || '').replace(/\D/g, '')) / 100 || 0;
+    const credit = getNum(formData.desiredCredit);
+    const installment = getNum(formData.idealInstallment);
 
-    // 5. Definição Financeira (Foco e Clareza)
-    if (formData.desiredCredit && formData.idealInstallment) {
-      score += 10; dataPoints++; reasons.push("Expectativas de crédito e parcela já definidas em funil trazem grande clareza e solidez à oferta.");
+    if (credit > 0 && installment > 0) {
+      const ratio = installment / credit;
+      if (ratio >= 0.03 || ratio < 0.004) {
+        score -= 15; dataPoints++; 
+        reasons.push(`Incompatibilidade Detectada: A parcela ideal representa ${(ratio*100).toFixed(1)}% do crédito, indicando altas chances de reprovação por renda ou um plano fora da realidade mercadológica.`);
+      } else {
+        score += (10 * multiplier); dataPoints++; reasons.push("Equação crédito/parcela coerente e aprovável sob as normas da administradora.");
+      }
     }
 
-    // 6. Indicadores de "Negociação" e Fases Avançadas
-    if (recentComments.includes('negocia') || recentComments.includes('proposta') || recentComments.includes('simulação')) {
-      score += 10; reasons.push("O envio registrado de simulações/propostas atesta a qualificação na fase avançada.");
-      if (score < 80) score = 85; // Aceleração paramétrica conforme regra (se tá negociando, é no mínimo 85%)
+    // 6. Fadiga de Agendamentos
+    const apptsCount = formData.appointments ? formData.appointments.length : 0;
+    if (apptsCount > 0 && apptsCount <= 3) {
+      score += (6 * multiplier); reasons.push("Compromissos agendados mantêm a constância.");
+    } else if (apptsCount > 3) {
+      score -= (8 * (2 - multiplier)); reasons.push(`Múltiplos reagendamentos ou agendamentos excedentes (${apptsCount}) demonstram falta de prioridade por parte do cliente.`);
     }
+
+    // 7. Fadiga de Simulações (Pipeline Stalling)
+    if (simulacaoCount > 0 && simulacaoCount <= 3) {
+      score += (12 * multiplier); reasons.push("Volume saudável de propostas e cálculos gerados.");
+    } else if (simulacaoCount > 3) {
+      score -= (12 * (2 - multiplier)); reasons.push(`Fadiga de Simulações: Excesso abusivo de cálculos (${simulacaoCount}) sugere especulação vazia e distanciamento da decisão.`);
+    }
+
+    // 8. Fadiga de Ligações e Contatos (Enrolação)
+    if (ligacaoCount > 6) {
+      score -= (12 * (2 - multiplier)); reasons.push(`Over-Contacting: Histórico intenso de ligações/mensagens (${ligacaoCount}) sem assinatura denota que o cliente está 'enrolando' a definição.`);
+    } else if (ligacaoCount > 0) {
+      score += (5 * multiplier); reasons.push("Abordagens e contatos orgânicos alimentaram o funil saudavelmente.");
+    }
+
+    // 9. Confusão de Funil e Movimentações Excedentes (0.5% a cada mov acima de 10)
+    if (mudancaFaseCount >= 10) {
+      const penalty = (mudancaFaseCount - 10) * 0.5;
+      score -= penalty; 
+      reasons.push(`Fadiga de Fluxo: ${mudancaFaseCount} movimentações entre as fases do CRM aplicam uma penalidade de -${penalty}% no score por falta de foco direcional.`);
+    }
+
+    // 10. Ressurreição de Lead
+    if (isRecovered) {
+      score += (15 * multiplier); reasons.push("Lead Ressuscitado! Retorno de interações após perda indica objeções severas liquidadas no passado e cliente aquecido novamente.");
+    }
+
+    const idHash = (formData.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 4;
+    score += idHash;
 
     if (dataPoints < 2) {
-      setProbData({ score: 50, text: "O algoritmo de inteligência artificial está aguardando mais dados do vendedor (como atualizar a Temperatura, Urgência, Valor de Lance ou gerar Comentários no histórico) para estipular uma probabilidade matemática precisa e acurada sobre este lead." });
+      const neutralScore = Math.floor(Math.min(Math.max(score, 25), 45));
+      setProbData({ score: neutralScore, text: "O algoritmo de inteligência artificial está aguardando mais dados do vendedor (como atualizar a Temperatura, Urgência, Crédito e Valor de Lance) para calibrar com precisão probabilística o perfil deste cliente." });
     } else {
-      if (score > 95) score = 95;
-      if (score < 5) score = 5;
-      setProbData({ score, text: reasons.join(' ') });
+      const finalScore = Math.floor(Math.min(Math.max(score, 3), 97));
+      setProbData({ score: finalScore, text: reasons.join(' ') });
     }
 
-  }, [formData.dealClosed, formData.leadTemp, formData.bidAmount, formData.urgency, formData.comments, formData.desiredCredit, formData.idealInstallment, formData.clientStatus]);
+  }, [formData.dealClosed, formData.leadTemp, formData.bidAmount, formData.urgency, formData.comments, formData.desiredCredit, formData.idealInstallment, formData.clientStatus, formData.appointments, formData.id]);
 
   const handleCloseModal = () => {
     Animated.parallel([
@@ -280,24 +374,23 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
     }
   }, [clientData]);
 
+  // Captura do WhatsApp - Auto Save Ativado
   useEffect(() => {
     setLeadUpdateCallback((leadId, messageText) => {
       if (clientData?.id === leadId) {
-        const newComment = { 
-          id: `zap_${Date.now()}`, 
-          text: messageText, 
-          date: new Date().toISOString() 
-        };
+        const newComment = { id: `zap_${Date.now()}`, text: messageText, date: new Date().toISOString() };
          
-        setFormData(prev => ({ 
-          ...prev, 
-          comments: [newComment, ...(prev.comments || [])] 
-        }));
+        setFormData(prev => {
+          const updatedComments = [newComment, ...(prev.comments || [])];
+          const updatedData = { ...prev, comments: updatedComments };
+          onSave({ ...updatedData, winProbability: String(probData.score) }); // Dispara auto-save
+          return updatedData;
+        });
       }
     });
 
     return () => setLeadUpdateCallback(null);
-  }, [clientData]);
+  }, [clientData, onSave, probData.score]);
 
   const handleChange = (field, value) => {
     let finalValue = value;
@@ -348,7 +441,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
   const toggleDealClosed = () => {
     setFormData(prev => {
       const isNowClosed = !prev.dealClosed;
-      return {
+      const updatedData = {
         ...prev,
         dealClosed: isNowClosed,
         dealClosedDate: isNowClosed ? (prev.dealClosedDate || new Date().toISOString()) : prev.dealClosedDate,
@@ -357,7 +450,11 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
           id: `contract_${Date.now()}`, administradora: '', numeroContrato: '', grupo: '', cota: '', valorContrato: '', valorParcela: '', prazo: '', categoria: '', diaVencimento: '', parcelasPagas: []
         }] : prev.contracts
       };
+      // Auto-Save de Mudança de Status
+      onSave({ ...updatedData, winProbability: String(probData.score) });
+      return updatedData;
     });
+    
     if (!formData.dealClosed) {
       setActiveTab('acompanhamento');
     }
@@ -377,7 +474,6 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
   };
 
   const handleSave = () => {
-    // Consolida e embute o Score Preditivo atualizado
     let updatedData = { ...formData, winProbability: String(probData.score) };
       
     if (updatedData.phone && updatedData.phone !== originalData.phone) {
@@ -415,6 +511,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
     handleCloseModal();
   };
 
+  // Cria e Salva Agendamento Imediatamente no Banco
   const handleAddAppointment = () => {
     if (!apptDate || !apptTime || apptDate.length < 10 || apptTime.length < 5) {
       showCustomAlert('error', 'Campos Incompletos', 'Preencha a data e o horário completos do agendamento.');
@@ -441,33 +538,33 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
         notified: false
       };
 
-      setFormData(prev => ({
-        ...prev,
-        appointments: [newAppointment, ...(prev.appointments || [])],
-        comments: [
-          { id: `sys_appt_${Date.now()}`, text: `⚙️ Sistema: Agendou para ${apptType} em ${apptDate} às ${apptTime}.`, date: new Date().toISOString() },
-          ...(prev.comments || [])
-        ]
-      }));
+      setFormData(prev => {
+        const updatedAppointments = [newAppointment, ...(prev.appointments || [])];
+        const newComment = { id: `sys_appt_${Date.now()}`, text: `⚙️ Sistema: Agendou para ${apptType} em ${apptDate} às ${apptTime}.`, date: new Date().toISOString() };
+        const updatedComments = [newComment, ...(prev.comments || [])];
+        
+        const updatedData = { ...prev, appointments: updatedAppointments, comments: updatedComments };
+        onSave({ ...updatedData, winProbability: String(probData.score) }); // Auto-Save
+        return updatedData;
+      });
        
-      showCustomAlert('success', 'Agendado!', 'Seu compromisso foi salvo e você será notificado no horário programado.');
+      showCustomAlert('success', 'Agendado!', 'Seu compromisso foi salvo no banco de dados com sucesso.');
        
     } catch (error) {
       showCustomAlert('error', 'Formato Inválido', 'Formato de data ou hora inválido. Use DD/MM/AAAA e HH:MM.');
     }
   };
 
+  // Remove Agendamento e Salva no Banco Imediatamente
   const handleDeleteAppointment = (apptId) => {
     setFormData(prev => {
       const updatedAppts = (prev.appointments || []).filter(a => a.id !== apptId);
-      return {
-        ...prev,
-        appointments: updatedAppts,
-        comments: [
-          { id: `sys_appt_del_${Date.now()}`, text: `⚙️ Sistema: Um agendamento pendente foi cancelado.`, date: new Date().toISOString() },
-          ...(prev.comments || [])
-        ]
-      };
+      const newComment = { id: `sys_appt_del_${Date.now()}`, text: `⚙️ Sistema: Um agendamento pendente foi cancelado.`, date: new Date().toISOString() };
+      const updatedComments = [newComment, ...(prev.comments || [])];
+      
+      const updatedData = { ...prev, appointments: updatedAppts, comments: updatedComments };
+      onSave({ ...updatedData, winProbability: String(probData.score) }); // Auto-Save
+      return updatedData;
     });
   };
 
@@ -503,6 +600,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
     }
   };
 
+  // Gerar PDF e Salvar no Banco Imediatamente
   const gerarEEnviarPDF = async () => {
     setLoadingPdf(true);
     
@@ -602,10 +700,14 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
       }
 
       const summaryText = `⚙️ Sistema: Proposta Gerada (${dadosSimulacao.administradora} - Crédito: R$ ${dadosSimulacao.credito}, Prazo: ${prazoNum}m).`;
-      setFormData(prev => ({
-         ...prev,
-         comments: [{ id: `sys_prop_${Date.now()}`, text: summaryText, date: new Date().toISOString() }, ...(prev.comments || [])]
-      }));
+      
+      setFormData(prev => {
+         const newComment = { id: `sys_prop_${Date.now()}`, text: summaryText, date: new Date().toISOString() };
+         const updatedComments = [newComment, ...(prev.comments || [])];
+         const updatedData = { ...prev, comments: updatedComments };
+         onSave({ ...updatedData, winProbability: String(probData.score) }); // Auto-Save
+         return updatedData;
+      });
 
       setLoadingPdf(false);
 
@@ -616,7 +718,6 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
     }
   };
 
-  // Funções Utilitárias para o UI de Inteligência
   const getTempStyleObj = (temp) => {
     const t = temp.toLowerCase();
     if (t === 'quente') return { backgroundColor: isDarkMode ? '#7f1d1d' : '#fee2e2', borderColor: isDarkMode ? '#dc2626' : '#f87171', borderWidth: 1 };
@@ -634,9 +735,10 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
   };
 
   const getProbColor = (score) => {
-    if (score >= 80) return isDarkMode ? '#34d399' : '#10b981';
-    if (score >= 40) return isDarkMode ? '#fbbf24' : '#f59e0b';
-    return isDarkMode ? '#f87171' : '#ef4444';
+    if (score >= 75) return isDarkMode ? '#34d399' : '#10b981'; 
+    if (score >= 50) return isDarkMode ? '#60a5fa' : '#2563eb'; 
+    if (score >= 30) return isDarkMode ? '#fbbf24' : '#d97706'; 
+    return isDarkMode ? '#f87171' : '#ef4444'; 
   };
 
   if (!clientData || !showModalContent) return null;
@@ -653,7 +755,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
           isMobile && styles.tabButtonMobile, 
           isActive && themeStyles.tabButtonActive, 
           isMobile && isActive && themeStyles.tabButtonMobileActive,
-          disabled && styles.tabButtonDisabled // Aplica a opacidade
+          disabled && styles.tabButtonDisabled 
         ]} 
         onPress={() => { if (!disabled) setActiveTab(id); }}
         activeOpacity={disabled ? 1 : 0.7}
@@ -791,10 +893,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                 <View style={styles.formSection}>
                   <Text style={[styles.sectionTitle, themeStyles.sectionTitle]}>Gerar Proposta em PDF</Text>
                   
-                  {/* Grid de 3 colunas otimizado */}
                   <View style={[styles.row3Col, isMobile && styles.rowMobile]}>
-                    
-                    {/* Coluna 1 */}
                     <View style={styles.col3Item}>
                       <View style={styles.inputGroupCompact}>
                         <Text style={[styles.label, themeStyles.label]}>Tipo de Bem</Text>
@@ -892,7 +991,6 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                       </View>
                     </View>
 
-                    {/* Coluna 2 */}
                     <View style={styles.col3Item}>
                       <View style={styles.inputGroupCompact}>
                         <Text style={[styles.label, themeStyles.label]}>Prazo (Meses)</Text>
@@ -931,7 +1029,6 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                       </View>
                     </View>
 
-                    {/* Coluna 3 */}
                     <View style={styles.col3Item}>
                       <View style={styles.inputGroupCompact}>
                         <Text style={[styles.label, themeStyles.label]}>Lance Embutido (%)</Text>
@@ -969,10 +1066,8 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                         </TouchableOpacity>
                       </View>
                     </View>
-
                   </View>
 
-                  {/* Configurações secundárias aproximadas logo abaixo sem folga vertical */}
                   <View style={[styles.row, isMobile && styles.rowMobile, { marginTop: 4 }]}>
                     <div style={styles.contractContainerCompact}>
                       <TouchableOpacity 
@@ -1068,7 +1163,6 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                     </TouchableOpacity>
                   </View>
 
-                  {/* Frase solicitada indicando o tempo de espera */}
                   <Text style={[styles.pdfNoticeText, themeStyles.pdfNoticeText]}>
                     Pode demorar cerca de 40 segundos
                   </Text>
@@ -1218,7 +1312,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                 </View>
               )}
 
-              {/* ABA INTELIGÊNCIA REFATORADA (TAGS + PREVISÃO DA IA) */}
+              {/* ABA INTELIGÊNCIA REFATORADA */}
               {activeTab === 'kpis' && (
                 <View style={styles.formSection}>
                   <Text style={[styles.sectionTitle, themeStyles.sectionTitle]}>Inteligência e Probabilidade</Text>
@@ -1323,6 +1417,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                     isDarkMode={isDarkMode} 
                     isMobile={isMobile} 
                     themeStyles={themeStyles} 
+                    onSilentSave={handleSilentSave}
                   />
               )}
             </ScrollView>
@@ -1337,6 +1432,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
                   isDarkMode={isDarkMode} 
                   isMobile={isMobile} 
                   themeStyles={themeStyles} 
+                  onSilentSave={handleSilentSave}
                 />
               </View>
             )}
@@ -1376,9 +1472,6 @@ const styles = StyleSheet.create({
   body: { flex: 1, flexDirection: 'row' },
   bodyMobile: { flexDirection: 'column' }, 
   
-  // Atualizado Sidebar: 100% de preenchimento, botões centralizados e distribuídos uniformemente
-  // Centralização simétrica vertical da barra lateral
-  // Sidebar perfeitamente harmoniosa, espaçamentos idênticos nas bordas superior e inferior
   sidebar: { 
     width: 220, 
     borderRightWidth: 1, 
@@ -1388,7 +1481,7 @@ const styles = StyleSheet.create({
     alignItems: 'stretch'
   },
   tabButton: { 
-    height: 38, // Altura exata para caber perfeitamente sem sobrar ou cortar espaço
+    height: 38, 
     borderRadius: 8, 
     borderWidth: 1, 
     borderColor: 'transparent', 
@@ -1503,7 +1596,6 @@ const styles = StyleSheet.create({
   checkmark: { color: '#ffffff', fontSize: 10, fontWeight: 'bold' },
   checkboxLabel: { fontSize: 11, flex: 1, flexWrap: 'wrap' },
 
-  // ESTILOS DA ABA INTELIGÊNCIA PREDITIVA
   tempBtn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, flex: 1, alignItems: 'center', borderWidth: 1, borderColor: 'transparent' },
   tempBtnText: { fontSize: 13, fontWeight: '600' },
   probContainer: { marginTop: 24, padding: 16, borderRadius: 8, borderWidth: 1 },

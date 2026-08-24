@@ -82,28 +82,26 @@ export default function KanbanColumn({ phase, onDropClient, onDeleteClient, onOp
         
         const targetCard = e.target.closest('[data-clientid]');
         if (targetCard) {
-          const targetId = targetCard.getAttribute('data-clientid');
-          // Evita auto-recuo do card que está sendo arrastado
-          if (targetId === window.__draggedClientId) return;
+          const draggedId = window.__draggedClientId;
           
           const rect = targetCard.getBoundingClientRect();
           const isTopHalf = e.clientY < rect.top + (rect.height / 2);
+          
+          let cardToPush = isTopHalf ? targetCard : targetCard.nextElementSibling;
+          
+          // Impede o auto-recuo se o card que o cursor tenta empurrar for o próprio card arrastado!
+          if (cardToPush && cardToPush.getAttribute('data-clientid') === draggedId) {
+             clearHoverSpaces();
+             return;
+          }
 
-          if (isTopHalf) {
-            if (!targetCard.classList.contains('drag-hover-space')) {
+          if (cardToPush) {
+            if (!cardToPush.classList.contains('drag-hover-space')) {
               clearHoverSpaces();
-              targetCard.classList.add('drag-hover-space');
+              cardToPush.classList.add('drag-hover-space');
             }
           } else {
-             const nextCard = targetCard.nextElementSibling;
-             if (nextCard && nextCard.getAttribute('data-clientid') !== window.__draggedClientId) {
-                if (!nextCard.classList.contains('drag-hover-space')) {
-                   clearHoverSpaces();
-                   nextCard.classList.add('drag-hover-space');
-                }
-             } else if (!nextCard) {
-                clearHoverSpaces(); // Soltar no fim da lista
-             }
+            clearHoverSpaces(); 
           }
         }
       };
@@ -118,7 +116,6 @@ export default function KanbanColumn({ phase, onDropClient, onDeleteClient, onOp
           const clientId = e.dataTransfer.getData('clientId') || window.__draggedClientId;
           const sourcePhaseId = e.dataTransfer.getData('sourcePhaseId');
           
-          // Captura onde o espaço virtual foi aberto para soltar o card nele
           const spacedCard = node.querySelector('.drag-hover-space');
           let targetClientId = spacedCard ? spacedCard.getAttribute('data-clientid') : null;
 

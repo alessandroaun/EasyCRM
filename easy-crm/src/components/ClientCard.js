@@ -61,7 +61,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
   }, [pulseColor, pulseAnim]);
 
   // =========================================================================
-  // MOTOR TÁTIL SUPREMO (FANTASMA + AUTO-SCROLL HORIZONTAL + TRAVA CLIQUE + ABRIR ESPAÇO)
+  // MOTOR TÁTIL SUPREMO (AUTO-SCROLL HORIZONTAL + DESTAQUE EM DRAG)
   // =========================================================================
   useEffect(() => {
     if (Platform.OS === 'web' && cardRef.current) {
@@ -78,18 +78,28 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
         e.dataTransfer.setData('clientId', client.id);
         e.dataTransfer.setData('sourcePhaseId', phaseId);
         
-        window.__draggedClientId = client.id; // Marca qual card está voando
+        window.__draggedClientId = client.id;
         
-        setTimeout(() => {
-          if (node) node.style.opacity = '0.4';
+        // Aplica o efeito visual de destaque no card original enquanto arrasta!
+        setTimeout(() => { 
+          if (node) {
+            node.style.boxShadow = isDarkMode ? '0px 0px 0px 2px #3b82f6, 0px 10px 25px rgba(59, 130, 246, 0.4)' : '0px 0px 0px 2px #2563eb, 0px 10px 25px rgba(37, 99, 235, 0.3)';
+            node.style.transform = 'scale(1.02)';
+            node.style.zIndex = '999';
+            node.style.opacity = '1';
+          }
         }, 0);
       };
 
       const handleDragEndNative = () => {
-        if (node) node.style.opacity = '1';
+        if (node) {
+          node.style.boxShadow = '';
+          node.style.transform = '';
+          node.style.zIndex = '';
+        }
         const spacedCards = document.querySelectorAll('.drag-hover-space');
         spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
-        window.__draggedClientId = null; // Limpa ao soltar
+        window.__draggedClientId = null;
       };
 
       let pressTimer = null;
@@ -106,10 +116,17 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
         if (ghost && document.body.contains(ghost)) document.body.removeChild(ghost);
         ghost = null;
         isDragging = false;
-        node.style.opacity = '1';
+        if (node) {
+          node.style.boxShadow = '';
+          node.style.transform = '';
+          node.style.zIndex = '';
+        }
         document.body.style.overflow = '';
         window.__draggedClientId = null;
         
+        const spacedCards = document.querySelectorAll('.drag-hover-space');
+        spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
+
         if (scrollInterval) {
           clearInterval(scrollInterval);
           scrollInterval = null;
@@ -125,7 +142,6 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
         }
 
         const pressDuration = Date.now() - touchStartTime;
-
         if (isDragging || (isTouchDevice && touchStartTime > 0 && pressDuration > 300)) {
           e.stopPropagation();
           e.preventDefault();
@@ -152,7 +168,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
 
         pressTimer = setTimeout(() => {
           isDragging = true;
-          window.__draggedClientId = client.id; // Marca para o touch
+          window.__draggedClientId = client.id;
           if (navigator.vibrate) navigator.vibrate(40);
           
           document.body.style.overflow = 'hidden';
@@ -176,7 +192,10 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
           ghost.style.height = `${rect.height}px`;
 
           document.body.appendChild(ghost);
-          node.style.opacity = '0.4';
+          
+          node.style.boxShadow = isDarkMode ? '0px 0px 0px 2px #3b82f6, 0px 10px 25px rgba(59, 130, 246, 0.4)' : '0px 0px 0px 2px #2563eb, 0px 10px 25px rgba(37, 99, 235, 0.3)';
+          node.style.transform = 'scale(1.02)';
+          node.style.zIndex = '999';
 
           scrollContainer = node.parentElement;
           while (scrollContainer && scrollContainer !== document.body) {
@@ -189,7 +208,6 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
             if (!isDragging) return;
             const edge = 80; 
             const speed = 12; 
-
             if (currentTouchX < edge) {
               scrollContainer.scrollLeft -= speed; 
             } else if (currentTouchX > window.innerWidth - edge) {
@@ -206,9 +224,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
         currentTouchX = touch.clientX;
 
         if (!isDragging) {
-          if (Math.abs(touch.clientX - initialX) > 10 || Math.abs(touch.clientY - initialY) > 10) {
-            clearTimeout(pressTimer);
-          }
+          if (Math.abs(touch.clientX - initialX) > 10 || Math.abs(touch.clientY - initialY) > 10) clearTimeout(pressTimer);
           return;
         }
 
@@ -226,26 +242,21 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
             if (targetId !== window.__draggedClientId) {
                const rect = targetCard.getBoundingClientRect();
                const isTopHalf = touch.clientY < rect.top + (rect.height / 2);
+               let cardToPush = isTopHalf ? targetCard : targetCard.nextElementSibling;
                
-               if (isTopHalf) {
-                 if (!targetCard.classList.contains('drag-hover-space')) {
+               if (cardToPush && cardToPush.getAttribute('data-clientid') !== window.__draggedClientId) {
+                 if (!cardToPush.classList.contains('drag-hover-space')) {
                    const spacedCards = document.querySelectorAll('.drag-hover-space');
                    spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
-                   targetCard.classList.add('drag-hover-space');
+                   cardToPush.classList.add('drag-hover-space');
                  }
-               } else {
-                 const nextCard = targetCard.nextElementSibling;
-                 if (nextCard && nextCard.getAttribute('data-clientid') !== window.__draggedClientId) {
-                    if (!nextCard.classList.contains('drag-hover-space')) {
-                       const spacedCards = document.querySelectorAll('.drag-hover-space');
-                       spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
-                       nextCard.classList.add('drag-hover-space');
-                    }
-                 } else if (!nextCard) {
-                    const spacedCards = document.querySelectorAll('.drag-hover-space');
-                    spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
-                 }
+               } else if (!cardToPush) {
+                 const spacedCards = document.querySelectorAll('.drag-hover-space');
+                 spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
                }
+            } else {
+               const spacedCards = document.querySelectorAll('.drag-hover-space');
+               spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
             }
           }
         }
@@ -263,11 +274,8 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
         const touch = e.changedTouches[0];
         const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
 
-        cleanupGhost();
-
         if (targetElement) {
           const targetColumn = targetElement.closest('[data-phaseid]');
-          
           if (targetColumn && onDropClient) {
             const targetPhaseId = targetColumn.getAttribute('data-phaseid');
             const spacedCard = targetColumn.querySelector('.drag-hover-space');
@@ -276,16 +284,12 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
             onDropClient(client.id, phaseId, targetPhaseId, targetClientId);
           }
         }
-        
-        const spacedCards = document.querySelectorAll('.drag-hover-space');
-        spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
+        cleanupGhost();
       };
 
       const handleTouchCancel = () => {
         clearTimeout(pressTimer);
         cleanupGhost();
-        const spacedCards = document.querySelectorAll('.drag-hover-space');
-        spacedCards.forEach(c => c.classList.remove('drag-hover-space'));
       };
 
       node.addEventListener('dragstart', handleDragStart);
@@ -308,7 +312,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
         node.removeEventListener('touchcancel', handleTouchCancel);
       };
     }
-  }, [client, phaseId, onOpen, onDropClient, isBulkSelecting, isSelected, onToggleSelect]);
+  }, [client, phaseId, onOpen, onDropClient, isBulkSelecting, isSelected, onToggleSelect, isDarkMode]);
 
   const openDeleteModal = (e) => {
     if (Platform.OS === 'web' && e && e.stopPropagation) e.stopPropagation();
@@ -384,6 +388,108 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
   const commentsCount = client.comments ? client.comments.length : 0;
   const completedApptsCount = client.appointments ? client.appointments.filter(a => a.notified).length : 0;
 
+  // Função auxiliar de cores dinâmicas para a tag de probabilidade
+  const getProbTagColors = (score, isDark) => {
+    if (score >= 75) return { bg: isDark ? '#064e3b' : '#dcfce7', color: isDark ? '#86efac' : '#16a34a' }; // Verde
+    if (score >= 50) return { bg: isDark ? '#1e3a8a' : '#e0f2fe', color: isDark ? '#93c5fd' : '#0284c7' }; // Azul
+    if (score >= 30) return { bg: isDark ? '#78350f' : '#fef3c7', color: isDark ? '#fde047' : '#d97706' }; // Amarelo/Dourado
+    return { bg: isDark ? '#7f1d1d' : '#fee2e2', color: isDark ? '#fca5a5' : '#dc2626' }; // Vermelho
+  };
+
+  // Motor Preditivo de Probabilidade Granular em Tempo Real (Card)
+  const calculateRealTimeProbability = () => {
+    if (client.dealClosed) return 100;
+
+    const comments = client.comments || [];
+    const lostIndex = comments.findIndex(c => {
+      const text = c.text.toLowerCase();
+      return text.includes('perdido') || text.includes('cancelado');
+    });
+
+    let isRecovered = false;
+    if (lostIndex !== -1) {
+      if (lostIndex > 0) isRecovered = true;
+      else return 0; // Mais recente foi cancelamento
+    }
+
+    let simulacaoCount = 0;
+    let ligacaoCount = 0;
+    let mudancaFaseCount = 0;
+    let isInNegotiation = false;
+    let leftNegotiation = false;
+
+    const phaseMovements = comments.filter(c => c.text.includes('movido da fase'));
+    mudancaFaseCount = phaseMovements.length;
+    
+    if (mudancaFaseCount > 0) {
+       const lastMov = phaseMovements[0].text.toLowerCase();
+       if (lastMov.includes('para "negocia') || lastMov.includes('para "proposta')) {
+           isInNegotiation = true;
+       } else {
+           const previousNegotiation = phaseMovements.some((m, idx) => idx > 0 && (m.text.toLowerCase().includes('para "negocia') || m.text.toLowerCase().includes('para "proposta')));
+           if (previousNegotiation) leftNegotiation = true;
+       }
+    }
+
+    comments.forEach(c => {
+      const t = c.text.toLowerCase();
+      if (t.includes('simulação') || t.includes('simulacao') || t.includes('proposta') || t.includes('pdf')) simulacaoCount++;
+      if (t.includes('ligou') || t.includes('ligação') || t.includes('chamada') || t.includes('telefone') || t.includes('ligar') || t.includes('whatsapp') || t.includes('mensagem')) ligacaoCount++;
+    });
+
+    let score = 8;
+    let dataPoints = 0;
+
+    const temp = (client.leadTemp || '').toLowerCase();
+    let multiplier = 1.0;
+    if (temp === 'quente') { multiplier = 1.5; score += 25; dataPoints++; }
+    else if (temp === 'morno') { multiplier = 1.2; score += 12; dataPoints++; }
+    else if (temp === 'frio') { multiplier = 0.5; score += 4; dataPoints++; }
+
+    if (isInNegotiation) { score += (25 * multiplier); dataPoints++; }
+    else if (leftNegotiation) { score -= 20; }
+
+    const hasBid = client.bidAmount && client.bidAmount.trim() !== '' && client.bidAmount.trim().toLowerCase() !== 'não' && client.bidAmount !== 'R$ 0,00';
+    if (hasBid) { score += (20 * multiplier); dataPoints++; }
+
+    const urgency = (client.urgency || '').toLowerCase();
+    if (urgency.includes('alta') || urgency.includes('urgente') || urgency.includes('imediato') || urgency.includes('para ontem')) {
+      score += (12 * multiplier); dataPoints++;
+    } else if (urgency !== '') {
+      score += (4 * multiplier); dataPoints++;
+    }
+
+    const getNum = (val) => parseFloat(String(val || '').replace(/\D/g, '')) / 100 || 0;
+    const credit = getNum(client.desiredCredit);
+    const installment = getNum(client.idealInstallment);
+
+    if (credit > 0 && installment > 0) {
+      const ratio = installment / credit;
+      if (ratio >= 0.03 || ratio < 0.004) { score -= 15; dataPoints++; }
+      else { score += (10 * multiplier); dataPoints++; }
+    }
+
+    const apptsCount = client.appointments ? client.appointments.length : 0;
+    if (apptsCount > 0 && apptsCount <= 3) score += (6 * multiplier);
+    else if (apptsCount > 3) score -= (8 * (2 - multiplier));
+
+    if (simulacaoCount > 0 && simulacaoCount <= 3) score += (12 * multiplier);
+    else if (simulacaoCount > 3) score -= (12 * (2 - multiplier));
+
+    if (ligacaoCount > 6) score -= (12 * (2 - multiplier));
+    else if (ligacaoCount > 0) score += (5 * multiplier);
+
+    if (mudancaFaseCount >= 10) score -= ((mudancaFaseCount - 10) * 0.5);
+
+    if (isRecovered) score += (15 * multiplier);
+
+    const idHash = (client.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 4;
+    score += idHash;
+
+    if (dataPoints < 2) return Math.floor(Math.min(Math.max(score, 25), 45));
+    return Math.floor(Math.min(Math.max(score, 3), 97));
+  };
+
   const buildTags = () => {
     const tags = [];
     
@@ -406,9 +512,12 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
     if (client.bidAmount && client.bidAmount.trim() !== '' && client.bidAmount.trim().toLowerCase() !== 'não') {
       tags.push({ id: 'bid', text: 'Com Lance', bg: isDarkMode ? '#064e3b' : '#dcfce7', color: isDarkMode ? '#86efac' : '#16a34a' });
     }
-    if (client.winProbability) {
-      tags.push({ id: 'prob', text: `${client.winProbability}%`, bg: isDarkMode ? '#065f46' : '#ecfdf5', color: isDarkMode ? '#6ee7b7' : '#059669' });
-    }
+
+    // PROBABILIDADE EM TEMPO REAL COM COR DINÂMICA
+    const liveProb = calculateRealTimeProbability();
+    const probColors = getProbTagColors(liveProb, isDarkMode);
+    tags.push({ id: 'prob', text: `${liveProb}%`, bg: probColors.bg, color: probColors.color });
+
     if (client.platform) {
       tags.push({ id: 'plat', text: client.platform, bg: isDarkMode ? '#1e3a8a' : '#e0e7ff', color: isDarkMode ? '#93c5fd' : '#4f46e5' });
     }
@@ -425,7 +534,6 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
   };
 
   // Separa e garante que apenas 2 linhas cheguem ao componente Text
-  // Assim, as reticências "..." só aparecerão se O TEXTO DAQUELAS 2 LINHAS for muito largo
   const displayInfoText = client.initialInfo 
     ? client.initialInfo.split('\n').filter(l => l.trim().length > 0).slice(0, 2).join('\n')
     : 'Clique para ver detalhes...';
@@ -464,7 +572,7 @@ export default function ClientCard({ client, phaseId, onDelete, onOpen, onAddCom
               
               {pulseColor && !client.dealClosed && (
                 <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-                  <Text style={styles.pulsingClock}>⏰</Text>
+                  <Text style={styles.pulsingClock}>⏳</Text>
                 </Animated.View>
               )}
 

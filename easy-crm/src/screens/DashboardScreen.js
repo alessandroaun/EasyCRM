@@ -215,16 +215,44 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
         const styleEl = document.createElement('style');
         styleEl.id = styleId;
         styleEl.innerHTML = `
-          /* Seletor corrigido para o padrão do RN Web */
           [data-card-container="true"] { 
             cursor: default !important; 
-            transition: margin-top 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease !important; 
+            /* Devolve a animação de recuo suave e o destaque fluido */
+            transition: margin-top 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.2s ease, box-shadow 0.2s ease !important; 
+            position: relative;
           }
           [data-card-container="true"] button, 
           [data-card-action-btn="true"] { cursor: pointer !important; }
           
+          /* O recuo suave abrindo espaço na lista */
           .drag-hover-space { 
-            margin-top: 86px !important; 
+            margin-top: 94px !important; 
+          }
+          
+          /* As linhas indicando onde o card vai ficar (Placeholder Tracejado) */
+          .drag-hover-space::before {
+            content: "";
+            position: absolute;
+            top: -86px; 
+            left: 0;
+            width: 100%;
+            height: 78px;
+            border-radius: 8px;
+            background-color: rgba(59, 130, 246, 0.1);
+            border: 2px dashed rgba(59, 130, 246, 0.4);
+            box-sizing: border-box;
+            pointer-events: none;
+          }
+          
+          /* Película invisível para evitar a tremedeira (flickering) ao passar o mouse */
+          .drag-hover-space::after {
+            content: "";
+            position: absolute;
+            top: -94px;
+            left: 0;
+            width: 100%;
+            height: 94px;
+            background: transparent;
           }
         `;
         document.head.appendChild(styleEl);
@@ -2168,7 +2196,7 @@ const styles = StyleSheet.create({
   menuItemActive: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0', borderLeftWidth: 3, borderLeftColor: '#2563eb' },
   menuItemActiveDark: { backgroundColor: '#334155', borderColor: '#475569', borderLeftWidth: 3, borderLeftColor: '#3b82f6' },
   menuItemText: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '600' },
-  menuItemTextMobile: { fontSize: 16 },
+  menuItemTextMobile: { fontSize: 14 },
   menuItemTextActive: { color: '#2563eb', fontWeight: '700' },
   adminSectionContainer: { marginTop: 8, paddingTop: 16, borderTopWidth: 1, flexShrink: 1 },
   adminMenuItem: { borderWidth: 1, paddingVertical: 9 },

@@ -234,7 +234,7 @@ export default function MentorChatScreen({ isDarkMode }) {
     inputTextRef.current = inputText;
   }, [inputText]);
 
-  // NOVO: "Espião" que reseta a altura da caixa caso o usuário apague todo o texto no backspace
+  // Espião que reseta a altura da caixa caso o usuário apague todo o texto no backspace
   useEffect(() => {
     if (inputText === '') {
       setInputHeight(36);
@@ -255,7 +255,6 @@ export default function MentorChatScreen({ isDarkMode }) {
   // Inicializa o Sistema Nativo de Voz e Estilos Globais
   useEffect(() => {
     if (Platform.OS === 'web') {
-      // Injeta CSS para criar o scrollbar elegante e super fino na caixa de texto
       const styleId = 'custom-chat-scrollbar';
       if (!document.getElementById(styleId)) {
         const styleEl = document.createElement('style');
@@ -275,7 +274,12 @@ export default function MentorChatScreen({ isDarkMode }) {
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
         recognition.continuous = true; 
-        recognition.interimResults = true; 
+        
+        // ESTRATÉGIA BIFURCADA: Celular vs PC
+        // Evita que o Android Chrome cuspa a string inteira duplicada ao usar interimResults.
+        const isMobileBrowser = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        recognition.interimResults = !isMobileBrowser; // No celular = false. No PC = true.
+        
         recognition.lang = 'pt-BR';
 
         let startText = '';
@@ -297,11 +301,15 @@ export default function MentorChatScreen({ isDarkMode }) {
 
         recognition.onresult = (event) => {
           resetSilenceTimer(); 
-          let currentTranscript = '';
+          let currentVoice = '';
+          
           for (let i = 0; i < event.results.length; ++i) {
-            currentTranscript += event.results[i][0].transcript;
+            currentVoice += event.results[i][0].transcript;
           }
-          const newText = startText ? startText + ' ' + currentTranscript : currentTranscript;
+          
+          const separator = (startText && currentVoice.trim()) ? ' ' : '';
+          const newText = startText + separator + currentVoice.trim();
+          
           setInputText(newText);
         };
 
@@ -551,7 +559,6 @@ export default function MentorChatScreen({ isDarkMode }) {
                 themeStyles.input, 
                 { 
                   height: animatedHeight,
-                  // NOVO: Esconde o scrollbar completamente até atingir o limite máximo
                   overflow: inputHeight >= 140 ? 'auto' : 'hidden' 
                 }
               ]}
