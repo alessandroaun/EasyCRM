@@ -227,7 +227,57 @@ export default function MentorChatScreen({ isDarkMode }) {
   const inputTextRef = useRef(inputText);
   const silenceTimerRef = useRef(null);
 
+  // BARREIRA DE ISOLAMENTO: Celular Web vs Desktop PC
+  const [isMobileWeb, setIsMobileWeb] = useState(false);
+  const isMobileBrowserRef = useRef(false);
+
+  // Trava para o Scroll Automático (Garante fluidez sem travar o touch do usuário)
+  const forceScrollRef = useRef(false);
+
+  // Controle de deslocamento dinâmico para o teclado no Celular
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+
   const themeStyles = isDarkMode ? darkStyles : lightStyles;
+
+  // Montagem da Barreira de Isolamento Logo na Inicialização
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const mobileCheck = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobileWeb(mobileCheck);
+      isMobileBrowserRef.current = mobileCheck;
+    }
+  }, []);
+
+  // Função Global para Tratar o Tamanho da Caixa de Digitação
+  const handleContentSizeChange = (event) => {
+    if (!inputText) return; // Se vazio, deixa o useEffect forçar o reset
+
+    const contentHeight = Math.floor(event.nativeEvent.contentSize.height);
+    const targetHeight = Math.min(Math.max(36, contentHeight), 140); // Limite máximo fluído em 140px
+
+    if (targetHeight !== inputHeight) {
+      setInputHeight(targetHeight);
+      Animated.timing(animatedHeight, {
+        toValue: targetHeight,
+        duration: 150,
+        useNativeDriver: false
+      }).start(() => scrollToBottom(true));
+    }
+  };
+
+  const scrollToBottom = (animated = true) => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToEnd({ animated });
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      recognitionRef.current?.start();
+    }
+  };
 
   // Mantém a referência do texto sempre atualizada
   useEffect(() => {
@@ -246,39 +296,86 @@ export default function MentorChatScreen({ isDarkMode }) {
     }
   }, [inputText]);
 
-  const scrollToBottom = (animated = true) => {
-    if (flatListRef.current) {
-      flatListRef.current.scrollToEnd({ animated });
+  // Motor Adaptativo Exclusivo Mobile Web (Anula o Gap do Android)
+  useEffect(() => {
+    if (Platform.OS === 'web' && isMobileWeb) {
+      const handleResize = () => {
+        if (window.visualViewport) {
+          // Calcula a diferença real gerada pelo teclado
+          const offset = window.innerHeight - window.visualViewport.height;
+          // Adiciona margem na base apenas se a diferença for significativa (>50px)
+          setKeyboardOffset(offset > 50 ? offset : 0);
+          
+          // O pulo do gato: Força a tela de volta pro topo, matando a subida da área branca (scroll fantasma)
+          setTimeout(() => {
+            window.scrollTo(0, 0);
+            document.body.scrollTop = 0;
+          }, 10);
+        }
+      };
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', handleResize);
+        window.visualViewport.addEventListener('scroll', handleResize); // Protege contra scroll
+        handleResize(); // Dispara na hora
+      }
+
+      return () => {
+        if (window.visualViewport) {
+          window.visualViewport.removeEventListener('resize', handleResize);
+          window.visualViewport.removeEventListener('scroll', handleResize);
+        }
+      };
     }
-  };
+  }, [isMobileWeb]);
+
+  // Injeção de CSS Dinâmico (Scrollbar e Prevenção do fundo offset do teclado)
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const styleId = 'custom-chat-scrollbar';
+      let styleEl = document.getElementById(styleId);
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = styleId;
+        document.head.appendChild(styleEl);
+      }
+      
+      const mobileCSS = isMobileWeb ? `
+        /* Bloqueia o empurrão do body no Android Chrome APENAS NO CELULAR */
+        html, body, #root {
+          background-color: ${isDarkMode ? '#0f172a' : '#f1f5f9'} !important;
+          overscroll-behavior-y: none !important;
+        }
+      ` : '';
+
+      styleEl.innerHTML = `
+        textarea::-webkit-scrollbar { width: 5px; height: 5px; }
+        textarea::-webkit-scrollbar-track { background: transparent; }
+        textarea::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 10px; }
+        textarea::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.7); }
+        textarea { scrollbar-width: thin; scrollbar-color: rgba(148, 163, 184, 0.4) transparent; }
+        ${mobileCSS}
+      `;
+    }
+  }, [isDarkMode, isMobileWeb]);
 
   // Inicializa o Sistema Nativo de Voz e Estilos Globais
   useEffect(() => {
     if (Platform.OS === 'web') {
-      const styleId = 'custom-chat-scrollbar';
-      if (!document.getElementById(styleId)) {
-        const styleEl = document.createElement('style');
-        styleEl.id = styleId;
-        styleEl.innerHTML = `
-          textarea::-webkit-scrollbar { width: 5px; height: 5px; }
-          textarea::-webkit-scrollbar-track { background: transparent; }
-          textarea::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 10px; }
-          textarea::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.7); }
-          textarea { scrollbar-width: thin; scrollbar-color: rgba(148, 163, 184, 0.4) transparent; }
-        `;
-        document.head.appendChild(styleEl);
-      }
-
-      // API de Voz
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
-        recognition.continuous = true; 
-        
-        // ESTRATÉGIA BIFURCADA: Celular vs PC
-        // Evita que o Android Chrome cuspa a string inteira duplicada ao usar interimResults.
-        const isMobileBrowser = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        recognition.interimResults = !isMobileBrowser; // No celular = false. No PC = true.
+
+        // ISOLAMENTO DE SISTEMAS
+        if (isMobileBrowserRef.current) {
+           // Celular: Não mostra resultados parciais (evita repetição em eco do Android)
+           recognition.continuous = true; 
+           recognition.interimResults = false; 
+        } else {
+           // PC: Mostra digitação em tempo real (Opção original perfeita para PC)
+           recognition.continuous = true; 
+           recognition.interimResults = true; 
+        }
         
         recognition.lang = 'pt-BR';
 
@@ -286,11 +383,16 @@ export default function MentorChatScreen({ isDarkMode }) {
 
         const resetSilenceTimer = () => {
           if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-          silenceTimerRef.current = setTimeout(() => {
-            if (recognitionRef.current) {
-              recognitionRef.current.stop(); 
-            }
-          }, 3000); 
+          
+          // No Celular, desativamos o timer de silêncio para ele não cortar você no meio da frase.
+          // No PC, mantemos o timer original que funciona perfeito.
+          if (!isMobileBrowserRef.current) {
+            silenceTimerRef.current = setTimeout(() => {
+              if (recognitionRef.current) {
+                recognitionRef.current.stop(); 
+              }
+            }, 3000); 
+          }
         };
 
         recognition.onstart = () => {
@@ -301,16 +403,26 @@ export default function MentorChatScreen({ isDarkMode }) {
 
         recognition.onresult = (event) => {
           resetSilenceTimer(); 
-          let currentVoice = '';
           
-          for (let i = 0; i < event.results.length; ++i) {
-            currentVoice += event.results[i][0].transcript;
+          if (isMobileBrowserRef.current) {
+             // LÓGICA DE CELULAR: 
+             // Pega o texto e envia, não lê interimResults, impossibilitando eco/gagueira
+             let currentVoice = '';
+             for (let i = 0; i < event.results.length; ++i) {
+               currentVoice += event.results[i][0].transcript;
+             }
+             const separator = (startText && currentVoice.trim()) ? ' ' : '';
+             setInputText(startText + separator + currentVoice.trim());
+          } else {
+             // LÓGICA DE PC:
+             // Exatamente a lógica original que funciona sem falhas no Edge/Chrome Desktop
+             let currentTranscript = '';
+             for (let i = 0; i < event.results.length; ++i) {
+               currentTranscript += event.results[i][0].transcript;
+             }
+             const newText = startText ? startText + ' ' + currentTranscript : currentTranscript;
+             setInputText(newText);
           }
-          
-          const separator = (startText && currentVoice.trim()) ? ' ' : '';
-          const newText = startText + separator + currentVoice.trim();
-          
-          setInputText(newText);
         };
 
         recognition.onerror = (e) => {
@@ -333,32 +445,7 @@ export default function MentorChatScreen({ isDarkMode }) {
     };
   }, []);
 
-  const toggleListening = () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-    } else {
-      recognitionRef.current?.start();
-    }
-  };
-
-  // Observador Dinâmico do Tamanho da Caixa de Digitação
-  const handleContentSizeChange = (event) => {
-    if (!inputText) return; // Se vazio, deixa o useEffect forçar o reset
-
-    const contentHeight = Math.floor(event.nativeEvent.contentSize.height);
-    const targetHeight = Math.min(Math.max(36, contentHeight), 140); // Limite máximo fluído em 140px
-
-    if (targetHeight !== inputHeight) {
-      setInputHeight(targetHeight);
-      Animated.timing(animatedHeight, {
-        toValue: targetHeight,
-        duration: 150,
-        useNativeDriver: false
-      }).start(() => scrollToBottom(true));
-    }
-  };
-
-  // Carrega o histórico do banco de dados ao iniciar
+  // Carrega o histórico do banco de dados ao iniciar com SCROLL FORÇADO NA INICIALIZAÇÃO
   useEffect(() => {
     const loadHistory = async () => {
       try {
@@ -380,8 +467,15 @@ export default function MentorChatScreen({ isDarkMode }) {
           }));
           setMessages(historyMessages);
 
+          // Puxa o scroll para baixo sem animação de forma forçada logo na carga
+          // O initialNumToRender ajuda a não travar no meio
+          forceScrollRef.current = true;
           setTimeout(() => scrollToBottom(false), 50);
-          setTimeout(() => scrollToBottom(false), 300);
+          setTimeout(() => scrollToBottom(false), 200);
+          setTimeout(() => {
+            scrollToBottom(false);
+            forceScrollRef.current = false; // Solta a trava para o usuário
+          }, 600);
         }
       } catch (error) {
         console.error("Erro ao carregar histórico:", error);
@@ -418,7 +512,13 @@ export default function MentorChatScreen({ isDarkMode }) {
     setInputText('');
     
     setIsLoading(true);
-    setTimeout(() => scrollToBottom(true), 50);
+    
+    // Auto-Scroll garantido no envio
+    forceScrollRef.current = true;
+    setTimeout(() => {
+      scrollToBottom(true);
+      forceScrollRef.current = false;
+    }, 50);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -463,6 +563,13 @@ export default function MentorChatScreen({ isDarkMode }) {
       };
 
       setMessages(prev => prev.filter(m => m.id !== 'thinking_temp').concat(aiMessage));
+      
+      // Auto-Scroll garantido no recebimento
+      forceScrollRef.current = true;
+      setTimeout(() => {
+        scrollToBottom(true);
+        forceScrollRef.current = false;
+      }, 50);
 
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -491,6 +598,12 @@ export default function MentorChatScreen({ isDarkMode }) {
       };
       
       setMessages(prev => prev.filter(m => m.id !== 'thinking_temp').concat(errorMessage));
+      
+      forceScrollRef.current = true;
+      setTimeout(() => {
+        scrollToBottom(true);
+        forceScrollRef.current = false;
+      }, 50);
     } finally {
       setIsLoading(false);
     }
@@ -533,8 +646,15 @@ export default function MentorChatScreen({ isDarkMode }) {
 
   return (
     <KeyboardAvoidingView 
-      style={[styles.container, themeStyles.container]} 
+      style={[
+        styles.container, 
+        themeStyles.container,
+        // ISOLAMENTO: Aplica offset dinâmico apenas se for celular, deixando a UI do PC intocável sem recortes
+        isMobileWeb && keyboardOffset > 0 ? { paddingBottom: keyboardOffset } : {}
+      ]} 
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      // No celular web desativa a lógica nativa defeituosa para não brigar com nossa trava customizada
+      enabled={!isMobileWeb}
     >
       <View style={styles.contentWrapper}>
         
@@ -545,8 +665,11 @@ export default function MentorChatScreen({ isDarkMode }) {
           keyExtractor={item => item.id}
           renderItem={renderMessage}
           contentContainerStyle={[styles.chatListContent, isMobile && styles.chatListContentMobile]}
-          onContentSizeChange={() => scrollToBottom(true)}
-          onLayout={() => scrollToBottom(false)}
+          // InitialNumToRender impede o chat de travar no meio em históricos grandes
+          initialNumToRender={50}
+          // O Auto-scroll do chat só é ativado de forma impositiva quando a trava forceScrollRef está True (inicialização ou nova msg)
+          onContentSizeChange={() => { if (forceScrollRef.current) scrollToBottom(true); }}
+          onLayout={() => { if (forceScrollRef.current) scrollToBottom(false); }}
           showsVerticalScrollIndicator={false}
         />
 
@@ -565,6 +688,20 @@ export default function MentorChatScreen({ isDarkMode }) {
               value={inputText}
               onChangeText={setInputText}
               onContentSizeChange={handleContentSizeChange}
+              // Ao clicar na caixa, cancela a sobra do navegador (Apenas no Mobile) e puxa o chat para a última mensagem
+              onFocus={() => {
+                if (isMobileWeb) {
+                  setTimeout(() => {
+                    window.scrollTo(0, 0);
+                    document.body.scrollTop = 0;
+                  }, 50);
+                }
+                forceScrollRef.current = true;
+                setTimeout(() => {
+                  scrollToBottom(true);
+                  forceScrollRef.current = false;
+                }, 300); 
+              }}
               placeholder={isListening ? "Ouvindo... Fale agora." : "Pergunte sobre lances, objeções..."}
               placeholderTextColor={isDarkMode ? '#64748b' : '#94a3b8'}
               multiline
@@ -592,6 +729,12 @@ export default function MentorChatScreen({ isDarkMode }) {
             </TouchableOpacity>
 
           </View>
+          
+          {/* Disclaimer de IA super discreto abaixo do input */}
+          <Text style={[styles.disclaimerText, themeStyles.disclaimerText]}>
+            O MentorIA é uma IA e pode cometer erros
+          </Text>
+
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -673,7 +816,15 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     marginLeft: 4 
   },
-  sendButtonDisabled: { opacity: 0.5 }
+  sendButtonDisabled: { opacity: 0.5 },
+
+  disclaimerText: {
+    textAlign: 'center',
+    fontSize: 10,
+    marginTop: 6,
+    fontStyle: 'italic',
+    fontFamily: MODERN_FONT,
+  }
 });
 
 const lightStyles = StyleSheet.create({
@@ -692,7 +843,9 @@ const lightStyles = StyleSheet.create({
   mdDivider: { backgroundColor: '#cbd5e1' },
   
   inputContainer: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
-  input: { color: '#0f172a' }
+  input: { color: '#0f172a' },
+  
+  disclaimerText: { color: '#94a3b8' }
 });
 
 const darkStyles = StyleSheet.create({
@@ -711,5 +864,7 @@ const darkStyles = StyleSheet.create({
   mdDivider: { backgroundColor: '#334155' },
   
   inputContainer: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  input: { color: '#f8fafc' }
+  input: { color: '#f8fafc' },
+
+  disclaimerText: { color: '#64748b' }
 });
