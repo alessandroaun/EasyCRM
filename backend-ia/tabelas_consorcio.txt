@@ -3045,3 +3045,1587 @@ VALORES E PARCELAS (GRUPO 10.022 - 240 MESES):
 * Crédito: R$ 140.000,00 | Parcela Integral: R$ 726,46 | Crédito Reduzido: R$ 98.000,00 | Parcela Reduzida: R$ 521,97[cite: 30]
 * Crédito: R$ 145.000,00 | Parcela Integral: R$ 752,41 | Crédito Reduzido: R$ 101.500,00 | Parcela Reduzida: R$ 540,61[cite: 30]
 * Crédito: R$ 150.000,00 | Parcela Integral: R$ 778,36 | Crédito Reduzido: R$ 105.000,00 | Parcela Reduzida: R$ 559,26[cite: 30]
+
+======================================================
+TABELAS YAMAHA - CAMINHÕES (PESADOS E LEVES)
+======================================================
+
+[GRUPO 20.004] - PROMOCIONAL CAMINHÕES[cite: 2]
+Vencimento: 23/11/2026 | Assembleia: 26/11/2026[cite: 2]
+Prazo: 120 meses | Taxa Adm Promocional: 10,85% | Participantes: 720[cite: 2]
+Regras: Sem adesão, sem fundo reserva. Até 8 contemplações (1 sorteio, até 3 lances livres, até 3 exclusivos, 1 fixo de 25%). Lance embutido de 30%. Parcelamento do lance em 4x. Diluição de 100%. IPCA na 14ª parcela (limite 10% a.a.). Desconto de R$ 580,00 no crédito para taxas[cite: 2].
+CRÉDITOS E PARCELAS:
+- R$ 200.000,00 -> Parcela: R$ 1.927,21[cite: 2]
+- R$ 210.000,00 -> Parcela: R$ 2.023,57[cite: 2]
+- R$ 220.000,00 -> Parcela: R$ 2.119,93[cite: 2]
+- R$ 230.000,00 -> Parcela: R$ 2.216,29[cite: 2]
+- R$ 240.000,00 -> Parcela: R$ 2.312,65[cite: 2]
+- R$ 250.000,00 -> Parcela: R$ 2.409,02[cite: 2]
+- R$ 260.000,00 -> Parcela: R$ 2.505,38[cite: 2]
+- R$ 270.000,00 -> Parcela: R$ 2.601,74[cite: 2]
+- R$ 280.000,00 -> Parcela: R$ 2.698,10[cite: 2]
+- R$ 290.000,00 -> Parcela: R$ 2.794,46[cite: 2]
+- R$ 300.000,00 -> Parcela: R$ 2.890,82[cite: 2]
+- R$ 310.000,00 -> Parcela: R$ 2.987,18[cite: 2]
+- R$ 320.000,00 -> Parcela: R$ 3.083,54[cite: 2]
+- R$ 330.000,00 -> Parcela: R$ 3.179,90[cite: 2]
+- R$ 340.000,00 -> Parcela: R$ 3.276,26[cite: 2]
+- R$ 350.000,00 -> Parcela: R$ 3.372,62[cite: 2]
+- R$ 360.000,00 -> Parcela: R$ 3.468,98[cite: 2]
+- R$ 370.000,00 -> Parcela: R$ 3.565,34[cite: 2]
+- R$ 380.000,00 -> Parcela: R$ 3.661,70[cite: 2]
+- R$ 390.000,00 -> Parcela: R$ 3.758,06[cite: 2]
+- R$ 400.000,00 -> Parcela: R$ 3.854,42[cite: 2]
+
+[GRUPO 20.003] - CAMINHÕES PADRÃO[cite: 9]
+Vencimento: 20/08/2026 | Prazo: 120 meses | Taxa Adm: 15,5% | Participantes: 720[cite: 9]
+CRÉDITOS E PARCELAS:
+- R$ 200.000,00 -> Parcela: R$ 2.008,16[cite: 9]
+- R$ 210.000,00 -> Parcela: R$ 2.108,57[cite: 9]
+- R$ 220.000,00 -> Parcela: R$ 2.208,98[cite: 9]
+- R$ 230.000,00 -> Parcela: R$ 2.309,38[cite: 9]
+- R$ 240.000,00 -> Parcela: R$ 2.409,79[cite: 9]
+- R$ 250.000,00 -> Parcela: R$ 2.510,20[cite: 9]
+- R$ 260.000,00 -> Parcela: R$ 2.610,61[cite: 9]
+- R$ 270.000,00 -> Parcela: R$ 2.711,02[cite: 9]
+- R$ 280.000,00 -> Parcela: R$ 2.811,42[cite: 9]
+- R$ 290.000,00 -> Parcela: R$ 2.911,83[cite: 9]
+- R$ 300.000,00 -> Parcela: R$ 3.012,24[cite: 9]
+- R$ 310.000,00 -> Parcela: R$ 3.112,65[cite: 9]
+- R$ 320.000,00 -> Parcela: R$ 3.213,06[cite: 9]
+- R$ 330.000,00 -> Parcela: R$ 3.313,46[cite: 9]
+- R$ 340.000,00 -> Parcela: R$ 3.413,87[cite: 9]
+- R$ 350.000,00 -> Parcela: R$ 3.514,28[cite: 9]
+- R$ 360.000,00 -> Parcela: R$ 3.614,69[cite: 9]
+- R$ 370.000,00 -> Parcela: R$ 3.715,10[cite: 9]
+- R$ 380.000,00 -> Parcela: R$ 3.815,50[cite: 9]
+- R$ 390.000,00 -> Parcela: R$ 3.915,91[cite: 9]
+- R$ 400.000,00 -> Parcela: R$ 4.016,32[cite: 9]
+
+[GRUPO 20.002] - CAMINHÕES (PRAZO MENOR)[cite: 7]
+Vencimento: 14/09/2026 | Assembleia: 17/09/2026[cite: 7]
+Prazo: 86 meses | Taxa Adm: 14,5% | Participantes: 720[cite: 7]
+Regras: Até 13 contemplações (1 sorteio, 6 livres, 5 exclusivos, 1 fixo 25% a partir da 5ª assembleia). Embutido 30%. Parcelamento 4x. Diluição 100%[cite: 7].
+CRÉDITOS E PARCELAS:
+- R$ 200.000,00 -> Parcela: R$ 2.745,24[cite: 7]
+- R$ 210.000,00 -> Parcela: R$ 2.882,50[cite: 7]
+- R$ 220.000,00 -> Parcela: R$ 3.019,76[cite: 7]
+- R$ 230.000,00 -> Parcela: R$ 3.157,03[cite: 7]
+- R$ 240.000,00 -> Parcela: R$ 3.294,29[cite: 7]
+- R$ 250.000,00 -> Parcela: R$ 3.431,55[cite: 7]
+- R$ 260.000,00 -> Parcela: R$ 3.568,81[cite: 7]
+- R$ 270.000,00 -> Parcela: R$ 3.706,07[cite: 7]
+- R$ 280.000,00 -> Parcela: R$ 3.843,34[cite: 7]
+- R$ 290.000,00 -> Parcela: R$ 3.980,60[cite: 7]
+- R$ 300.000,00 -> Parcela: R$ 4.117,86[cite: 7]
+- R$ 310.000,00 -> Parcela: R$ 4.255,12[cite: 7]
+- R$ 320.000,00 -> Parcela: R$ 4.392,38[cite: 7]
+- R$ 330.000,00 -> Parcela: R$ 4.529,65[cite: 7]
+- R$ 340.000,00 -> Parcela: R$ 4.666,91[cite: 7]
+- R$ 350.000,00 -> Parcela: R$ 4.804,17[cite: 7]
+- R$ 360.000,00 -> Parcela: R$ 4.941,43[cite: 7]
+- R$ 370.000,00 -> Parcela: R$ 5.078,69[cite: 7]
+- R$ 380.000,00 -> Parcela: R$ 5.215,96[cite: 7]
+- R$ 390.000,00 -> Parcela: R$ 5.353,22[cite: 7]
+- R$ 400.000,00 -> Parcela: R$ 5.490,48[cite: 7]
+
+
+======================================================
+TABELAS YAMAHA - AUTOMÓVEIS
+======================================================
+
+[GRUPO 9053] - CONTEMPLA + SUPER PRIME AUTO IPCA[cite: 3]
+Vencimento: 14/09/2026 | Assembleia: 17/09/2026[cite: 3]
+Prazo: 56 meses | Taxa Adm: 14,0% | Participantes: 720[cite: 3]
+Regras: Até 15 contemplações mensais (1 sorteio, 12 livres, 1 exclusivo, 1 fixo 25% a partir da 5ª ass.). Embutido 15%. Parcelamento 4x. IPCA[cite: 3].
+CRÉDITOS E PARCELAS:
+- R$ 80.000,00 -> Parcela: R$ 1.709,18[cite: 3]
+- R$ 85.000,00 -> Parcela: R$ 1.816,00[cite: 3]
+- R$ 90.000,00 -> Parcela: R$ 1.922,83[cite: 3]
+- R$ 95.000,00 -> Parcela: R$ 2.029,65[cite: 3]
+- R$ 100.000,00 -> Parcela: R$ 2.136,48[cite: 3]
+- R$ 105.000,00 -> Parcela: R$ 2.243,30[cite: 3]
+- R$ 110.000,00 -> Parcela: R$ 2.350,12[cite: 3]
+- R$ 115.000,00 -> Parcela: R$ 2.456,95[cite: 3]
+- R$ 120.000,00 -> Parcela: R$ 2.563,77[cite: 3]
+- R$ 125.000,00 -> Parcela: R$ 2.670,60[cite: 3]
+- R$ 130.000,00 -> Parcela: R$ 2.777,42[cite: 3]
+- R$ 135.000,00 -> Parcela: R$ 2.884,24[cite: 3]
+- R$ 140.000,00 -> Parcela: R$ 2.991,07[cite: 3]
+- R$ 145.000,00 -> Parcela: R$ 3.097,89[cite: 3]
+- R$ 150.000,00 -> Parcela: R$ 3.204,71[cite: 3]
+- R$ 155.000,00 -> Parcela: R$ 3.311,54[cite: 3]
+- R$ 160.000,00 -> Parcela: R$ 3.418,36[cite: 3]
+
+[GRUPO 9600] - SUPER PRIME IPCA+ PROMOCIONAL[cite: 4]
+Vencimento: 21/09/2026 | Assembleia: 24/09/2026[cite: 4]
+Prazo: 84 meses | Taxa Adm Promocional: 11,6% (era 15,5%) | Participantes: 720[cite: 4]
+Regras: Sorteio, Lance Livre (até 5), Lance Exclusivo (até 2), Lance Prime (até 2, válido até 60% do prazo do grupo), Lance Fixo 25%. Embutido 25%. Parcelamento 4x. IPCA limite 10%[cite: 4].
+CRÉDITOS E PARCELAS:
+- R$ 90.000,00 -> Parcela: R$ 1.284,82[cite: 4]
+- R$ 100.000,00 -> Parcela: R$ 1.427,58[cite: 4]
+- R$ 110.000,00 -> Parcela: R$ 1.570,33[cite: 4]
+- R$ 120.000,00 -> Parcela: R$ 1.713,09[cite: 4]
+- R$ 130.000,00 -> Parcela: R$ 1.855,85[cite: 4]
+- R$ 140.000,00 -> Parcela: R$ 1.998,61[cite: 4]
+- R$ 150.000,00 -> Parcela: R$ 2.141,37[cite: 4]
+
+[SUPER GRUPO MEGA E MASTER] - AUTOMÓVEIS DIVERSOS PRAZOS[cite: 8]
+Regras Gerais Auto: Lance Embutido 15%. Parcelamento 4x. Lances Fixos de 35% e 10%. Lance Prime e Exclusivo disponíveis[cite: 8].
+CRÉDITOS E PARCELAS (Por modelo/valor):
+- MOBI LIKE 1.0 (R$ 25.399,00): 36m (R$ 818,98) | 44m (R$ 680,65) | 60m (R$ 512,64) | 69m (R$ 454,99)[cite: 8]
+- KWID ZEN 1.0 (R$ 27.986,00): 36m (R$ 902,39) | 44m (R$ 749,98) | 60m (R$ 564,86) | 69m (R$ 501,34)[cite: 8]
+- ONIX HATCH 1.0 (R$ 29.097,00): 36m (R$ 938,22) | 44m (R$ 779,75) | 60m (R$ 587,28) | 69m (R$ 521,24)[cite: 8]
+- HB20 LIMITED 1.0 (R$ 31.956,00): 36m (R$ 1.030,41) | 44m (R$ 856,37) | 60m (R$ 644,99) | 69m (R$ 572,46)[cite: 8]
+- ARGO 1.0 (R$ 32.525,00): 36m (R$ 1.048,75) | 44m (R$ 871,62) | 60m (R$ 652,26) | 69m (R$ 582,65)[cite: 8]
+- KWID INTENSE 1.0 (R$ 37.260,00): 36m (R$ 1.201,43) | 44m (R$ 998,51) | 60m (R$ 752,05) | 69m (R$ 667,47)[cite: 8]
+- HB20S COMFORT 1.0 (R$ 38.972,00): 36m (R$ 1.256,63) | 44m (R$ 1.044,38) | 60m (R$ 786,60) | 69m (R$ 698,14)[cite: 8]
+- MOBI TREKKING 1.0 (R$ 40.327,00): 36m (R$ 1.300,32) | 44m (R$ 1.080,70) | 60m (R$ 813,95) | 69m (R$ 722,41)[cite: 8]
+
+
+======================================================
+TABELAS YAMAHA - NÁUTICA
+======================================================
+
+[GRUPO 9053] - CONTEMPLA + SUPER PRIME NÁUTICA[cite: 6]
+Vencimento: 14/09/2026 | Assembleia: 17/09/2026[cite: 6]
+Prazo: 56 meses | Taxa Adm: 14,0% | Participantes: 720[cite: 6]
+Regras: Motor de popa + embarcação. Até 15 contemplações mensais (1 sorteio, 12 livres, 1 exclusivo, 1 fixo 25% a partir da 5ª ass.). Embutido 15%. Parcelamento 4x. IPCA[cite: 6].
+CRÉDITOS E PARCELAS:
+- R$ 80.000,00 -> Parcela: R$ 1.739,92[cite: 6]
+- R$ 85.000,00 -> Parcela: R$ 1.848,66[cite: 6]
+- R$ 90.000,00 -> Parcela: R$ 1.957,40[cite: 6]
+- R$ 95.000,00 -> Parcela: R$ 2.066,15[cite: 6]
+- R$ 100.000,00 -> Parcela: R$ 2.174,89[cite: 6]
+- R$ 105.000,00 -> Parcela: R$ 2.283,64[cite: 6]
+- R$ 110.000,00 -> Parcela: R$ 2.392,38[cite: 6]
+- R$ 115.000,00 -> Parcela: R$ 2.501,13[cite: 6]
+- R$ 120.000,00 -> Parcela: R$ 2.609,87[cite: 6]
+- R$ 125.000,00 -> Parcela: R$ 2.718,62[cite: 6]
+- R$ 130.000,00 -> Parcela: R$ 2.827,36[cite: 6]
+- R$ 135.000,00 -> Parcela: R$ 2.936,11[cite: 6]
+- R$ 140.000,00 -> Parcela: R$ 3.044,85[cite: 6]
+- R$ 145.000,00 -> Parcela: R$ 3.153,60[cite: 6]
+- R$ 150.000,00 -> Parcela: R$ 3.262,34[cite: 6]
+- R$ 155.000,00 -> Parcela: R$ 3.371,09[cite: 6]
+- R$ 160.000,00 -> Parcela: R$ 3.479,83[cite: 6]
+
+
+======================================================
+TABELAS YAMAHA - MOTOCICLETAS
+======================================================
+
+[SUPER GRUPO MEGA E MASTER] - MOTOCICLETAS[cite: 8]
+Regras Gerais Motos: Lance Embutido 15%. Parcelamento 4x. Lances Fixos de 35% e 10%. Lance Prime e Exclusivo disponíveis. Taxas variam de 18% a 25% dependendo do prazo[cite: 8].
+CRÉDITOS E PARCELAS (Por valor/modelo listado):
+- R$ 13.475,00: 35m (R$ 473,71) | 48m (R$ 356,62) | 60m (R$ 294,07) | 69m (R$ 264,68)[cite: 8]
+- R$ 15.317,00: 35m (R$ 538,47) | 48m (R$ 405,37) | 60m (R$ 334,27) | 69m (R$ 300,86)[cite: 8]
+- R$ 16.089,00: 35m (R$ 565,61) | 48m (R$ 425,80) | 60m (R$ 351,12) | 69m (R$ 316,02)[cite: 8]
+- R$ 17.159,00: 35m (R$ 603,22) | 48m (R$ 454,12) | 60m (R$ 374,47) | 69m (R$ 337,04)[cite: 8]
+- R$ 17.640,00: 35m (R$ 620,13) | 48m (R$ 466,85) | 60m (R$ 384,97) | 69m (R$ 346,49)[cite: 8]
+- R$ 19.001,00: 35m (R$ 667,98) | 48m (R$ 502,87) | 60m (R$ 414,67) | 69m (R$ 373,22)[cite: 8]
+- R$ 20.843,00: 35m (R$ 732,73) | 48m (R$ 551,61) | 60m (R$ 454,87) | 69m (R$ 409,40)[cite: 8]
+- R$ 21.351,00: 35m (R$ 750,59) | 48m (R$ 565,06) | 60m (R$ 465,96) | 69m (R$ 419,38)[cite: 8]
+- R$ 21.688,00: 35m (R$ 762,44) | 48m (R$ 573,98) | 60m (R$ 473,31) | 69m (R$ 426,00)[cite: 8]
+- R$ 21.805,00: 35m (R$ 766,55) | 48m (R$ 577,07) | 60m (R$ 475,86) | 69m (R$ 428,30)[cite: 8]
+- R$ 22.329,00: 35m (R$ 784,97) | 48m (R$ 590,94) | 60m (R$ 487,30) | 69m (R$ 438,59)[cite: 8]
+- R$ 23.155,00: 35m (R$ 814,01) | 48m (R$ 612,80) | 60m (R$ 505,33) | 69m (R$ 454,82)[cite: 8]
+- R$ 23.428,00: 35m (R$ 823,61) | 48m (R$ 620,03) | 60m (R$ 511,28) | 69m (R$ 460,18)[cite: 8]
+- R$ 23.799,00: 35m (R$ 836,65) | 48m (R$ 629,85) | 60m (R$ 519,38) | 69m (R$ 467,47)[cite: 8]
+- R$ 23.928,00: 35m (R$ 841,18) | 48m (R$ 633,26) | 60m (R$ 522,20) | 69m (R$ 470,00)[cite: 8]
+- R$ 24.319,00: 35m (R$ 854,93) | 48m (R$ 643,61) | 60m (R$ 530,73) | 69m (R$ 477,68)[cite: 8]
+- R$ 24.504,00: 35m (R$ 861,43) | 48m (R$ 648,50) | 60m (R$ 534,77) | 69m (R$ 481,31)[cite: 8]
+- R$ 25.413,00: 35m (R$ 893,39) | 48m (R$ 672,56) | 60m (R$ 554,60) | 69m (R$ 499,17)[cite: 8]
+- R$ 25.967,00: 35m (R$ 912,86) | 48m (R$ 687,22) | 60m (R$ 566,69) | 69m (R$ 510,05)[cite: 8]
+- R$ 26.056,00: 35m (R$ 915,99) | 48m (R$ 689,58) | 60m (R$ 568,64) | 69m (R$ 511,80)[cite: 8]
+- R$ 26.073,00: 35m (R$ 916,59) | 48m (R$ 690,03) | 60m (R$ 569,01) | 69m (R$ 512,13)[cite: 8]
+- R$ 26.180,00: 35m (R$ 920,35) | 48m (R$ 692,86) | 60m (R$ 571,34) | 69m (R$ 514,23)[cite: 8]
+- R$ 26.693,00: 35m (R$ 938,39) | 48m (R$ 706,44) | 60m (R$ 582,54) | 69m (R$ 524,31)[cite: 8]
+
+CRÉDITOS MAIORES (Motos Alta Cilindrada):[cite: 8]
+- R$ 28.502,00: 36m (R$ 929,84) | 44m (R$ 774,71) | 60m (R$ 586,32)[cite: 8]
+- R$ 28.505,00: 36m (R$ 929,94) | 44m (R$ 774,79) | 60m (R$ 586,38)[cite: 8]
+- R$ 28.604,00: 36m (R$ 933,17) | 44m (R$ 777,48) | 60m (R$ 588,42)[cite: 8]
+- R$ 28.623,00: 36m (R$ 933,79) | 44m (R$ 778,00) | 60m (R$ 588,81)[cite: 8]
+- R$ 28.740,00: 36m (R$ 937,60) | 44m (R$ 781,18) | 60m (R$ 591,21)[cite: 8]
+- R$ 31.294,00: 36m (R$ 1.020,92)| 44m (R$ 850,60) | 60m (R$ 643,75)[cite: 8]
+- R$ 32.263,00: 36m (R$ 1.052,54)| 44m (R$ 876,94) | 60m (R$ 663,69)[cite: 8]
+- R$ 35.431,00: 36m (R$ 1.155,89)| 44m (R$ 963,04) | 60m (R$ 728,86)[cite: 8]
+- R$ 38.164,00: 36m (R$ 1.245,05)| 44m (R$ 1.037,33)| 60m (R$ 785,08)[cite: 8]
+- R$ 41.383,00: 36m (R$ 1.350,06)| 44m (R$ 1.124,82)| 60m (R$ 851,30)[cite: 8]
+- R$ 41.923,00: 36m (R$ 1.367,68)| 44m (R$ 1.139,50)| 60m (R$ 862,40)[cite: 8]
+- R$ 42.326,00: 36m (R$ 1.380,83)| 44m (R$ 1.150,46)| 60m (R$ 870,69)[cite: 8]
+
+
+======================================================
+REGRAS ADICIONAIS MAPEADAS PARA A YAMAHA (AUTO/MOTOS)
+======================================================
+[REGRA DO LANCE PRIME E EXCLUSIVO - SUPER GRUPO E IPCA+][cite: 4, 5, 8]
+- Lance Exclusivo: O cliente é obrigado a pagar SOMENTE com recursos próprios. É proibido usar lance embutido ou tentar parcelar esse lance. Quem oferta nessa modalidade ganha vantagem competitiva por ser uma "fila" separada para quem tem dinheiro em mãos[cite: 4, 5, 8].
+- Lance Prime: É um bônus exclusivo para quem contrata a cota nos prazos originais recomendados pelo grupo (ex: 80, 72, 60, 48 ou 36 meses). O cliente só pode usar esse tipo de lance até o grupo atingir 60% do andamento[cite: 4, 5, 8].
+
+[REGRA DE PARCELA REDUZIDA - MASTER IPCA][cite: 5]
+- O cliente paga parcelas baseadas em apenas 70% do valor do crédito até ser contemplado[cite: 5].
+- Após contemplar, se ele escolher pegar o crédito total (100%), a Yamaha recalcula a parcela para os 100% e dilui tudo o que ele deixou de pagar (os 30% faltantes das parcelas anteriores) nas próximas mensalidades[cite: 5].
+- O valor exigido para cobrir o lance também é calculado usando como base o crédito reduzido de 70%[cite: 5].
+
+
+================================================================================
+ADMINISTRADORA: CONSÓRCIO RECON
+================================================================================
+
+======================================================
+REGRAS GERAIS E POLÍTICAS DE LANCE CONSÓRCIO RECON:
+- Fundo de Reserva:
+  * 3,00% (Aplicado linearmente para todos os grupos de Autos, Motos e Imóveis).
+- Seguro de Vida (Prestamista):
+  * Autos e Motos: 0,084%.
+  * Imóveis: 0,059%.
+- Modalidade Plano Light 75%:
+  * O consorciado paga uma parcela reduzida correspondente a 75% do crédito até a contemplação.
+  * É obrigatório o envio do termo de aditamento devidamente assinado.
+  * Regras de diluição no Light: Na maioria dos grupos, a diluição é limitada a 60%. Porém, em grupos específicos (exemplo: Grupo 5120 Veículos Light), NÃO é permitida a diluição do valor do lance de forma alguma.
+- Modalidades e Condições de Lance:
+  * Lance Embutido: Permite utilizar até 25% do valor do crédito da cota como parte do pagamento do lance em TODOS os grupos.
+  * Lance Fixo: 
+    - Modalidade 25% ou 45%: Disponível na maioria dos grupos (2009, 2010, 2011, 3202, 5110, 5111, 5112, 5113, 5114, 5117, 5118, 5120, 5121, 5122 e 4101).
+    - Modalidade 15% ou 30%: Disponível exclusivamente para os grupos 3203 (Motos), 5115, 5116 e 5119 (Autos/Motos).
+  * Lance Livre: Conforme o saldo do grupo.
+  * Lance com FGTS: Permitido EXCLUSIVAMENTE para a categoria de Imóveis (Grupos 2009, 2010 e 2011). Não é aceito em Autos, Motos ou Serviços.
+  * Lance com Carta de Avaliação (Veículo na Troca): Aceito na grande maioria dos grupos de Imóveis, Motos e Autos. Restrição: NÃO aceito no Grupo 4101 (Serviços).
+- Diluição do Lance:
+  * Opção de usar o valor do lance pago para abater o valor das parcelas vincendas, rigorosamente limitadas a 60% do valor da parcela (exceto nos Planos Light que possuem veto contratual para diluição).
+- Regras Operacionais e Fechamentos:
+  * As vendas devem ser enviadas até as 18 horas de segunda-feira (para assembleias que ocorrem na quarta-feira) e até as 18 horas de quarta-feira (para assembleias que ocorrem no sábado). 
+  * Para vendas com fechamento nos dias 15 e 30, os envios devem ser feitos até as 18 horas do dia do fechamento.
+======================================================
+
+======================================================
+TABELA TA214 - VEÍCULOS 
+Vigência: 10/06/2026 à 14/12/2026
+Taxa de Administração: 19,00% | Fundo de Reserva: 3,00% | Seguro de Vida: 0,084%
+======================================================
+
+CRÉDITO: R$ 130.000,00 (CCA130000)
+- Prazo 36 meses: Com Seguro R$ 4.538,78 | Sem Seguro R$ 4.405,56
+- Prazo 25 meses: Com Seguro R$ 6.477,22 | Sem Seguro R$ 6.344,00
+
+CRÉDITO: R$ 120.000,00 (CCA120000)
+- Prazo 36 meses: Com Seguro R$ 4.189,64 | Sem Seguro R$ 4.066,67
+- Prazo 25 meses: Com Seguro R$ 5.978,98 | Sem Seguro R$ 5.856,00
+
+CRÉDITO: R$ 110.000,00 (CCA110000)
+- Prazo 36 meses: Com Seguro R$ 3.840,51 | Sem Seguro R$ 3.727,78
+- Prazo 25 meses: Com Seguro R$ 5.480,73 | Sem Seguro R$ 5.368,00
+
+CRÉDITO: R$ 100.000,00 (CCA100000)
+- Prazo 100 meses: Com Seguro R$ 1.322,48 | Sem Seguro R$ 1.220,00
+- Prazo 80 meses: Com Seguro R$ 1.627,48 | Sem Seguro R$ 1.525,00
+- Prazo 72 meses: Com Seguro R$ 1.796,92 | Sem Seguro R$ 1.694,44
+- Prazo 60 meses: Com Seguro R$ 2.135,81 | Sem Seguro R$ 2.033,33
+- Prazo 50 meses: Com Seguro R$ 2.542,48 | Sem Seguro R$ 2.440,00
+- Prazo 36 meses: Com Seguro R$ 3.491,37 | Sem Seguro R$ 3.388,89
+- Prazo 25 meses: Com Seguro R$ 4.982,48 | Sem Seguro R$ 4.880,00
+
+CRÉDITO: R$ 90.000,00 (CCA090000)
+- Prazo 100 meses: Com Seguro R$ 1.190,23 | Sem Seguro R$ 1.098,00
+- Prazo 80 meses: Com Seguro R$ 1.464,73 | Sem Seguro R$ 1.372,50
+- Prazo 72 meses: Com Seguro R$ 1.617,23 | Sem Seguro R$ 1.525,00
+- Prazo 60 meses: Com Seguro R$ 1.922,23 | Sem Seguro R$ 1.830,00
+- Prazo 50 meses: Com Seguro R$ 2.288,23 | Sem Seguro R$ 2.196,00
+- Prazo 36 meses: Com Seguro R$ 3.142,23 | Sem Seguro R$ 3.050,00
+- Prazo 25 meses: Com Seguro R$ 4.484,23 | Sem Seguro R$ 4.392,00
+
+CRÉDITO: R$ 80.000,00 (CCA080000)
+- Prazo 100 meses: Com Seguro R$ 1.057,98 | Sem Seguro R$ 976,00
+- Prazo 80 meses: Com Seguro R$ 1.301,98 | Sem Seguro R$ 1.220,00
+- Prazo 72 meses: Com Seguro R$ 1.437,54 | Sem Seguro R$ 1.355,56
+- Prazo 60 meses: Com Seguro R$ 1.708,65 | Sem Seguro R$ 1.626,67
+- Prazo 50 meses: Com Seguro R$ 2.033,98 | Sem Seguro R$ 1.952,00
+- Prazo 36 meses: Com Seguro R$ 2.793,10 | Sem Seguro R$ 2.711,11
+- Prazo 25 meses: Com Seguro R$ 3.985,98 | Sem Seguro R$ 3.904,00
+
+CRÉDITO: R$ 75.000,00 (CCA075000)
+- Prazo 100 meses: Com Seguro R$ 991,86 | Sem Seguro R$ 915,00
+- Prazo 80 meses: Com Seguro R$ 1.220,61 | Sem Seguro R$ 1.143,75
+- Prazo 72 meses: Com Seguro R$ 1.347,69 | Sem Seguro R$ 1.270,83
+- Prazo 60 meses: Com Seguro R$ 1.601,86 | Sem Seguro R$ 1.525,00
+- Prazo 50 meses: Com Seguro R$ 1.906,86 | Sem Seguro R$ 1.830,00
+- Prazo 36 meses: Com Seguro R$ 2.618,53 | Sem Seguro R$ 2.541,67
+- Prazo 25 meses: Com Seguro R$ 3.736,86 | Sem Seguro R$ 3.660,00
+
+CRÉDITO: R$ 70.000,00 (CCA070000)
+- Prazo 100 meses: Com Seguro R$ 925,74 | Sem Seguro R$ 854,00
+- Prazo 80 meses: Com Seguro R$ 1.139,24 | Sem Seguro R$ 1.067,50
+- Prazo 72 meses: Com Seguro R$ 1.257,85 | Sem Seguro R$ 1.186,11
+- Prazo 60 meses: Com Seguro R$ 1.495,07 | Sem Seguro R$ 1.423,33
+- Prazo 50 meses: Com Seguro R$ 1.779,74 | Sem Seguro R$ 1.708,00
+- Prazo 36 meses: Com Seguro R$ 2.443,96 | Sem Seguro R$ 2.372,22
+- Prazo 25 meses: Com Seguro R$ 3.487,74 | Sem Seguro R$ 3.416,00
+
+CRÉDITO: R$ 65.000,00 (CCA065000)
+- Prazo 100 meses: Com Seguro R$ 859,61 | Sem Seguro R$ 793,00
+- Prazo 80 meses: Com Seguro R$ 1.057,86 | Sem Seguro R$ 991,25
+- Prazo 72 meses: Com Seguro R$ 1.168,00 | Sem Seguro R$ 1.101,39
+- Prazo 60 meses: Com Seguro R$ 1.388,28 | Sem Seguro R$ 1.321,67
+- Prazo 50 meses: Com Seguro R$ 1.652,61 | Sem Seguro R$ 1.586,00
+- Prazo 36 meses: Com Seguro R$ 2.269,39 | Sem Seguro R$ 2.202,78
+- Prazo 25 meses: Com Seguro R$ 3.238,61 | Sem Seguro R$ 3.172,00
+
+
+======================================================
+TABELA TA241 - AUTOMÓVEIS GRUPO 5122 PLANO LIGHT 75%
+Vigência: 13/08/2026 à 14/09/2026
+Prazo Fixo: 103 Meses | Fundo de Reserva: 3,00% | Seguro de Vida: 0,084%
+======================================================
+
+CRÉDITO: R$ 50.000,00 (CCA050000)
+- Sem Antecipação (Taxa Adm 15,00%):
+  Parcelas 1ª a 103ª -> Com Seguro R$ 501,02 | Sem Seguro R$ 451,46
+- Plano com 0,5% de Antecipação (Taxa Adm 15,50%):
+  Parcela 1ª -> Com Seguro R$ 751,02 | Sem Seguro R$ 701,46
+  Parcelas 2ª a 103ª -> Com Seguro R$ 501,02 | Sem Seguro R$ 451,46
+- Plano com 1,0% de Antecipação (Taxa Adm 16,00%):
+  Parcela 1ª -> Com Seguro R$ 1.001,02 | Sem Seguro R$ 951,46
+  Parcelas 2ª a 103ª -> Com Seguro R$ 501,02 | Sem Seguro R$ 451,46
+- Plano com 2,0% de Antecipação (Taxa Adm 17,00%):
+  Parcela 1ª -> Com Seguro R$ 1.501,02 | Sem Seguro R$ 1.451,46
+  Parcelas 2ª a 103ª -> Com Seguro R$ 501,02 | Sem Seguro R$ 451,46
+
+CRÉDITO: R$ 45.000,00 (CCA045000)
+- Sem Antecipação (Taxa Adm 15,00%):
+  Parcelas 1ª a 103ª -> Com Seguro R$ 450,91 | Sem Seguro R$ 406,31
+- Plano com 0,5% de Antecipação (Taxa Adm 15,50%):
+  Parcela 1ª -> Com Seguro R$ 675,91 | Sem Seguro R$ 631,31
+  Parcelas 2ª a 103ª -> Com Seguro R$ 450,91 | Sem Seguro R$ 406,31
+- Plano com 1,0% de Antecipação (Taxa Adm 16,00%):
+  Parcela 1ª -> Com Seguro R$ 900,91 | Sem Seguro R$ 856,31
+  Parcelas 2ª a 103ª -> Com Seguro R$ 450,91 | Sem Seguro R$ 406,31
+- Plano com 2,0% de Antecipação (Taxa Adm 17,00%):
+  Parcela 1ª -> Com Seguro R$ 1.350,91 | Sem Seguro R$ 1.306,31
+  Parcelas 2ª a 103ª -> Com Seguro R$ 450,91 | Sem Seguro R$ 406,31
+
+CRÉDITO: R$ 40.000,00 (CCA040000)
+- Sem Antecipação (Taxa Adm 15,00%):
+  Parcelas 1ª a 103ª -> Com Seguro R$ 400,81 | Sem Seguro R$ 361,17
+- Plano com 0,5% de Antecipação (Taxa Adm 15,50%):
+  Parcela 1ª -> Com Seguro R$ 600,81 | Sem Seguro R$ 561,17
+  Parcelas 2ª a 103ª -> Com Seguro R$ 400,81 | Sem Seguro R$ 361,17
+- Plano com 1,0% de Antecipação (Taxa Adm 16,00%):
+  Parcela 1ª -> Com Seguro R$ 800,81 | Sem Seguro R$ 761,17
+  Parcelas 2ª a 103ª -> Com Seguro R$ 400,81 | Sem Seguro R$ 361,17
+- Plano com 2,0% de Antecipação (Taxa Adm 17,00%):
+  Parcela 1ª -> Com Seguro R$ 1.200,81 | Sem Seguro R$ 1.161,17
+  Parcelas 2ª a 103ª -> Com Seguro R$ 400,81 | Sem Seguro R$ 361,17
+
+CRÉDITO: R$ 35.000,00 (CCA035000)
+- Sem Antecipação (Taxa Adm 15,00%):
+  Parcelas 1ª a 103ª -> Com Seguro R$ 350,71 | Sem Seguro R$ 316,02
+- Plano com 0,5% de Antecipação (Taxa Adm 15,50%):
+  Parcela 1ª -> Com Seguro R$ 525,71 | Sem Seguro R$ 491,02
+  Parcelas 2ª a 103ª -> Com Seguro R$ 350,71 | Sem Seguro R$ 316,02
+- Plano com 1,0% de Antecipação (Taxa Adm 16,00%):
+  Parcela 1ª -> Com Seguro R$ 700,71 | Sem Seguro R$ 666,02
+  Parcelas 2ª a 103ª -> Com Seguro R$ 350,71 | Sem Seguro R$ 316,02
+- Plano com 2,0% de Antecipação (Taxa Adm 17,00%):
+  Parcela 1ª -> Com Seguro R$ 1.050,71 | Sem Seguro R$ 1.016,02
+  Parcelas 2ª a 103ª -> Com Seguro R$ 350,71 | Sem Seguro R$ 316,02
+
+
+======================================================
+TABELA TA240 - AUTOMÓVEIS GRUPO 5122 NORMAL (Sem Plano Light)
+Vigência: 13/08/2026 à 14/09/2026
+Prazo Fixo: 103 Meses | Fundo de Reserva: 3,00% | Seguro de Vida: 0,084%
+======================================================
+
+CRÉDITO: R$ 50.000,00 (CCA050000)
+- Sem Antecipação (Taxa Adm 15,00%):
+  Parcelas 1ª a 103ª -> Com Seguro R$ 622,38 | Sem Seguro R$ 572,82
+- Plano com 0,5% de Antecipação (Taxa Adm 15,50%):
+  Parcela 1ª -> Com Seguro R$ 872,38 | Sem Seguro R$ 822,82
+  Parcelas 2ª a 103ª -> Com Seguro R$ 622,38 | Sem Seguro R$ 572,82
+- Plano com 1,0% de Antecipação (Taxa Adm 16,00%):
+  Parcela 1ª -> Com Seguro R$ 1.122,38 | Sem Seguro R$ 1.072,82
+  Parcelas 2ª a 103ª -> Com Seguro R$ 622,38 | Sem Seguro R$ 572,82
+- Plano com 2,0% de Antecipação (Taxa Adm 17,00%):
+  Parcela 1ª -> Com Seguro R$ 1.622,38 | Sem Seguro R$ 1.572,82
+  Parcelas 2ª a 103ª -> Com Seguro R$ 622,38 | Sem Seguro R$ 572,82
+
+CRÉDITO: R$ 45.000,00 (CCA045000)
+- Sem Antecipação (Taxa Adm 15,00%):
+  Parcelas 1ª a 103ª -> Com Seguro R$ 560,14 | Sem Seguro R$ 515,53
+- Plano com 0,5% de Antecipação (Taxa Adm 15,50%):
+  Parcela 1ª -> Com Seguro R$ 785,14 | Sem Seguro R$ 740,53
+  Parcelas 2ª a 103ª -> Com Seguro R$ 560,14 | Sem Seguro R$ 515,53
+- Plano com 1,0% de Antecipação (Taxa Adm 16,00%):
+  Parcela 1ª -> Com Seguro R$ 1.010,14 | Sem Seguro R$ 965,53
+  Parcelas 2ª a 103ª -> Com Seguro R$ 560,14 | Sem Seguro R$ 515,53
+- Plano com 2,0% de Antecipação (Taxa Adm 17,00%):
+  Parcela 1ª -> Com Seguro R$ 1.460,14 | Sem Seguro R$ 1.415,53
+  Parcelas 2ª a 103ª -> Com Seguro R$ 560,14 | Sem Seguro R$ 515,53
+
+CRÉDITO: R$ 40.000,00 (CCA040000)
+- Sem Antecipação (Taxa Adm 15,00%):
+  Parcelas 1ª a 103ª -> Com Seguro R$ 497,90 | Sem Seguro R$ 458,25
+- Plano com 0,5% de Antecipação (Taxa Adm 15,50%):
+  Parcela 1ª -> Com Seguro R$ 697,90 | Sem Seguro R$ 658,25
+  Parcelas 2ª a 103ª -> Com Seguro R$ 497,90 | Sem Seguro R$ 458,25
+- Plano com 1,0% de Antecipação (Taxa Adm 16,00%):
+  Parcela 1ª -> Com Seguro R$ 897,90 | Sem Seguro R$ 858,25
+  Parcelas 2ª a 103ª -> Com Seguro R$ 497,90 | Sem Seguro R$ 458,25
+- Plano com 2,0% de Antecipação (Taxa Adm 17,00%):
+  Parcela 1ª -> Com Seguro R$ 1.297,90 | Sem Seguro R$ 1.258,25
+  Parcelas 2ª a 103ª -> Com Seguro R$ 497,90 | Sem Seguro R$ 458,25
+
+CRÉDITO: R$ 35.000,00 (CCA035000)
+- Sem Antecipação (Taxa Adm 15,00%):
+  Parcelas 1ª a 103ª -> Com Seguro R$ 435,66 | Sem Seguro R$ 400,97
+- Plano com 0,5% de Antecipação (Taxa Adm 15,50%):
+  Parcela 1ª -> Com Seguro R$ 610,66 | Sem Seguro R$ 575,97
+  Parcelas 2ª a 103ª -> Com Seguro R$ 435,66 | Sem Seguro R$ 400,97
+- Plano com 1,0% de Antecipação (Taxa Adm 16,00%):
+  Parcela 1ª -> Com Seguro R$ 785,66 | Sem Seguro R$ 750,97
+  Parcelas 2ª a 103ª -> Com Seguro R$ 435,66 | Sem Seguro R$ 400,97
+- Plano com 2,0% de Antecipação (Taxa Adm 17,00%):
+  Parcela 1ª -> Com Seguro R$ 1.135,66 | Sem Seguro R$ 1.100,97
+  Parcelas 2ª a 103ª -> Com Seguro R$ 435,66 | Sem Seguro R$ 400,97
+
+
+======================================================
+TABELA TA239 - AUTOMÓVEIS GRUPO 5121 PLANO LIGHT 75%
+Vigência: 13/08/2026 à 14/09/2026
+Prazo Fixo: 98 Meses | Fundo de Reserva: 3,00% | Seguro de Vida: 0,084%
+======================================================
+
+CRÉDITO: R$ 160.000,00 (CCA160000)
+- Sem Antecipação (Taxa Adm 20,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.765,31 | Sem Seguro R$ 1.600,00
+- Plano com 0,5% de Antecipação (Taxa Adm 20,50%):
+  Parcela 1ª -> Com Seguro R$ 2.565,31 | Sem Seguro R$ 2.400,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.765,31 | Sem Seguro R$ 1.600,00
+- Plano com 1,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 3.365,31 | Sem Seguro R$ 3.200,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.765,31 | Sem Seguro R$ 1.600,00
+- Plano com 2,0% de Antecipação (Taxa Adm 22,00%):
+  Parcela 1ª -> Com Seguro R$ 4.965,31 | Sem Seguro R$ 4.800,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.765,31 | Sem Seguro R$ 1.600,00
+
+CRÉDITO: R$ 150.000,00 (CCA150000)
+- Sem Antecipação (Taxa Adm 20,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.654,98 | Sem Seguro R$ 1.500,00
+- Plano com 0,5% de Antecipação (Taxa Adm 20,50%):
+  Parcela 1ª -> Com Seguro R$ 2.404,98 | Sem Seguro R$ 2.250,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.654,98 | Sem Seguro R$ 1.500,00
+- Plano com 1,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 3.154,98 | Sem Seguro R$ 3.000,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.654,98 | Sem Seguro R$ 1.500,00
+- Plano com 2,0% de Antecipação (Taxa Adm 22,00%):
+  Parcela 1ª -> Com Seguro R$ 4.654,98 | Sem Seguro R$ 4.500,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.654,98 | Sem Seguro R$ 1.500,00
+
+CRÉDITO: R$ 140.000,00 (CCA140000)
+- Sem Antecipação (Taxa Adm 20,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.544,65 | Sem Seguro R$ 1.400,00
+- Plano com 0,5% de Antecipação (Taxa Adm 20,50%):
+  Parcela 1ª -> Com Seguro R$ 2.244,65 | Sem Seguro R$ 2.100,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.544,65 | Sem Seguro R$ 1.400,00
+- Plano com 1,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 2.944,65 | Sem Seguro R$ 2.800,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.544,65 | Sem Seguro R$ 1.400,00
+- Plano com 2,0% de Antecipação (Taxa Adm 22,00%):
+  Parcela 1ª -> Com Seguro R$ 4.344,65 | Sem Seguro R$ 4.200,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.544,65 | Sem Seguro R$ 1.400,00
+
+CRÉDITO: R$ 130.000,00 (CCA130000)
+- Sem Antecipação (Taxa Adm 20,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.434,32 | Sem Seguro R$ 1.300,00
+- Plano com 0,5% de Antecipação (Taxa Adm 20,50%):
+  Parcela 1ª -> Com Seguro R$ 2.084,32 | Sem Seguro R$ 1.950,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.434,32 | Sem Seguro R$ 1.300,00
+- Plano com 1,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 2.734,32 | Sem Seguro R$ 2.600,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.434,32 | Sem Seguro R$ 1.300,00
+- Plano com 2,0% de Antecipação (Taxa Adm 22,00%):
+  Parcela 1ª -> Com Seguro R$ 4.034,32 | Sem Seguro R$ 3.900,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.434,32 | Sem Seguro R$ 1.300,00
+
+CRÉDITO: R$ 120.000,00 (CCA120000)
+- Sem Antecipação (Taxa Adm 20,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.323,98 | Sem Seguro R$ 1.200,00
+- Plano com 0,5% de Antecipação (Taxa Adm 20,50%):
+  Parcela 1ª -> Com Seguro R$ 1.923,98 | Sem Seguro R$ 1.800,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.323,98 | Sem Seguro R$ 1.200,00
+- Plano com 1,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 2.523,98 | Sem Seguro R$ 2.400,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.323,98 | Sem Seguro R$ 1.200,00
+- Plano com 2,0% de Antecipação (Taxa Adm 22,00%):
+  Parcela 1ª -> Com Seguro R$ 3.723,98 | Sem Seguro R$ 3.600,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.323,98 | Sem Seguro R$ 1.200,00
+
+CRÉDITO: R$ 110.000,00 (CCA110000)
+- Sem Antecipação (Taxa Adm 20,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.213,65 | Sem Seguro R$ 1.100,00
+- Plano com 0,5% de Antecipação (Taxa Adm 20,50%):
+  Parcela 1ª -> Com Seguro R$ 1.763,65 | Sem Seguro R$ 1.650,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.213,65 | Sem Seguro R$ 1.100,00
+- Plano com 1,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 2.313,65 | Sem Seguro R$ 2.200,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.213,65 | Sem Seguro R$ 1.100,00
+- Plano com 2,0% de Antecipação (Taxa Adm 22,00%):
+  Parcela 1ª -> Com Seguro R$ 3.413,65 | Sem Seguro R$ 3.300,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.213,65 | Sem Seguro R$ 1.100,00
+
+CRÉDITO: R$ 100.000,00 (CCA100000)
+- Sem Antecipação (Taxa Adm 20,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.103,32 | Sem Seguro R$ 1.000,00
+- Plano com 0,5% de Antecipação (Taxa Adm 20,50%):
+  Parcela 1ª -> Com Seguro R$ 1.603,32 | Sem Seguro R$ 1.500,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.103,32 | Sem Seguro R$ 1.000,00
+- Plano com 1,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 2.103,32 | Sem Seguro R$ 2.000,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.103,32 | Sem Seguro R$ 1.000,00
+- Plano com 2,0% de Antecipação (Taxa Adm 22,00%):
+  Parcela 1ª -> Com Seguro R$ 3.103,32 | Sem Seguro R$ 3.000,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.103,32 | Sem Seguro R$ 1.000,00
+
+CRÉDITO: R$ 90.000,00 (CCA090000)
+- Sem Antecipação (Taxa Adm 20,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 992,99 | Sem Seguro R$ 900,00
+- Plano com 0,5% de Antecipação (Taxa Adm 20,50%):
+  Parcela 1ª -> Com Seguro R$ 1.442,99 | Sem Seguro R$ 1.350,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 992,99 | Sem Seguro R$ 900,00
+- Plano com 1,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 1.892,99 | Sem Seguro R$ 1.800,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 992,99 | Sem Seguro R$ 900,00
+- Plano com 2,0% de Antecipação (Taxa Adm 22,00%):
+  Parcela 1ª -> Com Seguro R$ 2.792,99 | Sem Seguro R$ 2.700,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 992,99 | Sem Seguro R$ 900,00
+
+CRÉDITO: R$ 80.000,00 (CCA080000)
+- Sem Antecipação (Taxa Adm 20,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 882,66 | Sem Seguro R$ 800,00
+- Plano com 0,5% de Antecipação (Taxa Adm 20,50%):
+  Parcela 1ª -> Com Seguro R$ 1.282,66 | Sem Seguro R$ 1.200,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 882,66 | Sem Seguro R$ 800,00
+- Plano com 1,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 1.682,66 | Sem Seguro R$ 1.600,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 882,66 | Sem Seguro R$ 800,00
+- Plano com 2,0% de Antecipação (Taxa Adm 22,00%):
+  Parcela 1ª -> Com Seguro R$ 2.482,66 | Sem Seguro R$ 2.400,00
+  Parcelas 2ª a 98ª -> Com Seguro R$ 882,66 | Sem Seguro R$ 800,00
+
+
+======================================================
+TABELA TA238 - AUTOMÓVEIS GRUPO 5121 NORMAL (Sem Plano Light)
+Vigência: 13/08/2026 à 14/09/2026
+Prazo Fixo: 98 Meses | Fundo de Reserva: 3,00% | Seguro de Vida: 0,084%
+======================================================
+
+CRÉDITO: R$ 160.000,00 (CCA160000)
+- Sem Antecipação (Taxa Adm 19,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 2.155,80 | Sem Seguro R$ 1.991,84
+- Plano com 0,5% de Antecipação (Taxa Adm 19,50%):
+  Parcela 1ª -> Com Seguro R$ 2.955,80 | Sem Seguro R$ 2.791,84
+  Parcelas 2ª a 98ª -> Com Seguro R$ 2.155,80 | Sem Seguro R$ 1.991,84
+- Plano com 1,0% de Antecipação (Taxa Adm 20,00%):
+  Parcela 1ª -> Com Seguro R$ 3.755,80 | Sem Seguro R$ 3.591,84
+  Parcelas 2ª a 98ª -> Com Seguro R$ 2.155,80 | Sem Seguro R$ 1.991,84
+- Plano com 2,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 5.355,80 | Sem Seguro R$ 5.191,84
+  Parcelas 2ª a 98ª -> Com Seguro R$ 2.155,80 | Sem Seguro R$ 1.991,84
+
+CRÉDITO: R$ 150.000,00 (CCA150000)
+- Sem Antecipação (Taxa Adm 19,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 2.021,07 | Sem Seguro R$ 1.867,35
+- Plano com 0,5% de Antecipação (Taxa Adm 19,50%):
+  Parcela 1ª -> Com Seguro R$ 2.771,07 | Sem Seguro R$ 2.617,35
+  Parcelas 2ª a 98ª -> Com Seguro R$ 2.021,07 | Sem Seguro R$ 1.867,35
+- Plano com 1,0% de Antecipação (Taxa Adm 20,00%):
+  Parcela 1ª -> Com Seguro R$ 3.521,07 | Sem Seguro R$ 3.367,35
+  Parcelas 2ª a 98ª -> Com Seguro R$ 2.021,07 | Sem Seguro R$ 1.867,35
+- Plano com 2,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 5.021,07 | Sem Seguro R$ 4.867,35
+  Parcelas 2ª a 98ª -> Com Seguro R$ 2.021,07 | Sem Seguro R$ 1.867,35
+
+CRÉDITO: R$ 140.000,00 (CCA140000)
+- Sem Antecipação (Taxa Adm 19,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.886,33 | Sem Seguro R$ 1.742,86
+- Plano com 0,5% de Antecipação (Taxa Adm 19,50%):
+  Parcela 1ª -> Com Seguro R$ 2.586,33 | Sem Seguro R$ 2.442,86
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.886,33 | Sem Seguro R$ 1.742,86
+- Plano com 1,0% de Antecipação (Taxa Adm 20,00%):
+  Parcela 1ª -> Com Seguro R$ 3.286,33 | Sem Seguro R$ 3.142,86
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.886,33 | Sem Seguro R$ 1.742,86
+- Plano com 2,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 4.686,33 | Sem Seguro R$ 4.542,86
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.886,33 | Sem Seguro R$ 1.742,86
+
+CRÉDITO: R$ 130.000,00 (CCA130000)
+- Sem Antecipação (Taxa Adm 19,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.751,59 | Sem Seguro R$ 1.618,37
+- Plano com 0,5% de Antecipação (Taxa Adm 19,50%):
+  Parcela 1ª -> Com Seguro R$ 2.401,59 | Sem Seguro R$ 2.268,37
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.751,59 | Sem Seguro R$ 1.618,37
+- Plano com 1,0% de Antecipação (Taxa Adm 20,00%):
+  Parcela 1ª -> Com Seguro R$ 3.051,59 | Sem Seguro R$ 2.918,37
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.751,59 | Sem Seguro R$ 1.618,37
+- Plano com 2,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 4.351,59 | Sem Seguro R$ 4.218,37
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.751,59 | Sem Seguro R$ 1.618,37
+
+CRÉDITO: R$ 120.000,00 (CCA120000)
+- Sem Antecipação (Taxa Adm 19,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.616,85 | Sem Seguro R$ 1.493,88
+- Plano com 0,5% de Antecipação (Taxa Adm 19,50%):
+  Parcela 1ª -> Com Seguro R$ 2.216,85 | Sem Seguro R$ 2.093,88
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.616,85 | Sem Seguro R$ 1.493,88
+- Plano com 1,0% de Antecipação (Taxa Adm 20,00%):
+  Parcela 1ª -> Com Seguro R$ 2.816,85 | Sem Seguro R$ 2.693,88
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.616,85 | Sem Seguro R$ 1.493,88
+- Plano com 2,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 4.016,85 | Sem Seguro R$ 3.893,88
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.616,85 | Sem Seguro R$ 1.493,88
+
+CRÉDITO: R$ 110.000,00 (CCA110000)
+- Sem Antecipação (Taxa Adm 19,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.482,12 | Sem Seguro R$ 1.369,39
+- Plano com 0,5% de Antecipação (Taxa Adm 19,50%):
+  Parcela 1ª -> Com Seguro R$ 2.032,12 | Sem Seguro R$ 1.919,39
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.482,12 | Sem Seguro R$ 1.369,39
+- Plano com 1,0% de Antecipação (Taxa Adm 20,00%):
+  Parcela 1ª -> Com Seguro R$ 2.582,12 | Sem Seguro R$ 2.469,39
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.482,12 | Sem Seguro R$ 1.369,39
+- Plano com 2,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 3.682,12 | Sem Seguro R$ 3.569,39
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.482,12 | Sem Seguro R$ 1.369,39
+
+CRÉDITO: R$ 100.000,00 (CCA100000)
+- Sem Antecipação (Taxa Adm 19,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.347,38 | Sem Seguro R$ 1.244,90
+- Plano com 0,5% de Antecipação (Taxa Adm 19,50%):
+  Parcela 1ª -> Com Seguro R$ 1.847,38 | Sem Seguro R$ 1.744,90
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.347,38 | Sem Seguro R$ 1.244,90
+- Plano com 1,0% de Antecipação (Taxa Adm 20,00%):
+  Parcela 1ª -> Com Seguro R$ 2.347,38 | Sem Seguro R$ 2.244,90
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.347,38 | Sem Seguro R$ 1.244,90
+- Plano com 2,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 3.347,38 | Sem Seguro R$ 3.244,90
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.347,38 | Sem Seguro R$ 1.244,90
+
+CRÉDITO: R$ 90.000,00 (CCA090000)
+- Sem Antecipação (Taxa Adm 19,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.212,64 | Sem Seguro R$ 1.120,41
+- Plano com 0,5% de Antecipação (Taxa Adm 19,50%):
+  Parcela 1ª -> Com Seguro R$ 1.662,64 | Sem Seguro R$ 1.570,41
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.212,64 | Sem Seguro R$ 1.120,41
+- Plano com 1,0% de Antecipação (Taxa Adm 20,00%):
+  Parcela 1ª -> Com Seguro R$ 2.112,64 | Sem Seguro R$ 2.020,41
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.212,64 | Sem Seguro R$ 1.120,41
+- Plano com 2,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 3.012,64 | Sem Seguro R$ 2.920,41
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.212,64 | Sem Seguro R$ 1.120,41
+
+CRÉDITO: R$ 80.000,00 (CCA080000)
+- Sem Antecipação (Taxa Adm 19,00%):
+  Parcelas 1ª a 98ª -> Com Seguro R$ 1.077,90 | Sem Seguro R$ 995,92
+- Plano com 0,5% de Antecipação (Taxa Adm 19,50%):
+  Parcela 1ª -> Com Seguro R$ 1.477,90 | Sem Seguro R$ 1.395,92
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.077,90 | Sem Seguro R$ 995,92
+- Plano com 1,0% de Antecipação (Taxa Adm 20,00%):
+  Parcela 1ª -> Com Seguro R$ 1.877,90 | Sem Seguro R$ 1.795,92
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.077,90 | Sem Seguro R$ 995,92
+- Plano com 2,0% de Antecipação (Taxa Adm 21,00%):
+  Parcela 1ª -> Com Seguro R$ 2.677,90 | Sem Seguro R$ 2.595,92
+  Parcelas 2ª a 98ª -> Com Seguro R$ 1.077,90 | Sem Seguro R$ 995,92
+
+
+======================================================
+TABELA TA218 - VEÍCULOS PLANO LIGHT 75% (GRUPO 5120)
+Vigência: 10/06/2026 à 14/12/2026
+Taxa de Administração: 20,00% | Fundo de Reserva: 3,00% | Seguro de Vida: 0,084%
+Aviso: Esta tabela contempla *somente* parcelas com Seguro de Vida (C/ S.V.).
+======================================================
+
+CRÉDITO: R$ 130.000,00 (CCA130000)
+- Prazo 36 meses: Com Seguro R$ 3.673,20
+- Prazo 25 meses: Com Seguro R$ 5.230,32
+
+CRÉDITO: R$ 120.000,00 (CCA120000)
+- Prazo 36 meses: Com Seguro R$ 3.390,65
+- Prazo 25 meses: Com Seguro R$ 4.827,98
+
+CRÉDITO: R$ 110.000,00 (CCA110000)
+- Prazo 36 meses: Com Seguro R$ 3.108,10
+- Prazo 25 meses: Com Seguro R$ 4.425,65
+
+CRÉDITO: R$ 100.000,00 (CCA100000)
+- Prazo 80 meses: Com Seguro R$ 1.328,32
+- Prazo 72 meses: Com Seguro R$ 1.464,43
+- Prazo 60 meses: Com Seguro R$ 1.736,65
+- Prazo 50 meses: Com Seguro R$ 2.063,32
+- Prazo 36 meses: Com Seguro R$ 2.825,54
+- Prazo 25 meses: Com Seguro R$ 4.023,32
+
+CRÉDITO: R$ 90.000,00 (CCA090000)
+- Prazo 80 meses: Com Seguro R$ 1.195,49
+- Prazo 72 meses: Com Seguro R$ 1.317,99
+- Prazo 60 meses: Com Seguro R$ 1.562,99
+- Prazo 50 meses: Com Seguro R$ 1.856,99
+- Prazo 36 meses: Com Seguro R$ 2.542,99
+- Prazo 25 meses: Com Seguro R$ 3.620,99
+
+CRÉDITO: R$ 80.000,00 (CCA080000)
+- Prazo 80 meses: Com Seguro R$ 1.062,66
+- Prazo 72 meses: Com Seguro R$ 1.171,54
+- Prazo 60 meses: Com Seguro R$ 1.389,32
+- Prazo 50 meses: Com Seguro R$ 1.650,66
+- Prazo 36 meses: Com Seguro R$ 2.260,43
+- Prazo 25 meses: Com Seguro R$ 3.218,66
+
+CRÉDITO: R$ 75.000,00 (CCA075000)
+- Prazo 80 meses: Com Seguro R$ 996,24
+- Prazo 72 meses: Com Seguro R$ 1.098,32
+- Prazo 60 meses: Com Seguro R$ 1.302,49
+- Prazo 50 meses: Com Seguro R$ 1.547,49
+- Prazo 36 meses: Com Seguro R$ 2.119,16
+- Prazo 25 meses: Com Seguro R$ 3.017,49
+
+CRÉDITO: R$ 70.000,00 (CCA070000)
+- Prazo 80 meses: Com Seguro R$ 929,82
+- Prazo 72 meses: Com Seguro R$ 1.025,10
+- Prazo 60 meses: Com Seguro R$ 1.215,66
+- Prazo 50 meses: Com Seguro R$ 1.444,32
+- Prazo 36 meses: Com Seguro R$ 1.977,88
+- Prazo 25 meses: Com Seguro R$ 2.816,32
+
+CRÉDITO: R$ 65.000,00 (CCA065000)
+- Prazo 80 meses: Com Seguro R$ 863,41
+- Prazo 72 meses: Com Seguro R$ 951,88
+- Prazo 60 meses: Com Seguro R$ 1.128,82
+- Prazo 50 meses: Com Seguro R$ 1.341,16
+- Prazo 36 meses: Com Seguro R$ 1.836,60
+- Prazo 25 meses: Com Seguro R$ 2.615,16
+
+CRÉDITO: R$ 60.000,00 (CCA060000)
+- Prazo 80 meses: Com Seguro R$ 796,99
+- Prazo 72 meses: Com Seguro R$ 878,66
+- Prazo 60 meses: Com Seguro R$ 1.041,99
+- Prazo 50 meses: Com Seguro R$ 1.237,99
+- Prazo 36 meses: Com Seguro R$ 1.695,33
+- Prazo 25 meses: Com Seguro R$ 2.413,99
+
+CRÉDITO: R$ 55.000,00 (CCA055000)
+- Prazo 80 meses: Com Seguro R$ 730,58
+- Prazo 72 meses: Com Seguro R$ 805,44
+- Prazo 60 meses: Com Seguro R$ 955,16
+- Prazo 50 meses: Com Seguro R$ 1.134,83
+- Prazo 36 meses: Com Seguro R$ 1.554,05
+- Prazo 25 meses: Com Seguro R$ 2.212,83
+
+CRÉDITO: R$ 50.000,00 (CCA050000)
+- Prazo 80 meses: Com Seguro R$ 664,16
+- Prazo 72 meses: Com Seguro R$ 732,22
+- Prazo 60 meses: Com Seguro R$ 868,33
+- Prazo 50 meses: Com Seguro R$ 1.031,66
+- Prazo 36 meses: Com Seguro R$ 1.412,77
+- Prazo 25 meses: Com Seguro R$ 2.011,66
+
+CRÉDITO: R$ 45.000,00 (CCA045000)
+- Prazo 80 meses: Com Seguro R$ 597,74
+- Prazo 72 meses: Com Seguro R$ 658,99
+- Prazo 60 meses: Com Seguro R$ 781,49
+- Prazo 50 meses: Com Seguro R$ 928,49
+- Prazo 36 meses: Com Seguro R$ 1.271,49
+- Prazo 25 meses: Com Seguro R$ 1.810,49
+
+CRÉDITO: R$ 40.000,00 (CCA040000)
+- Prazo 80 meses: Com Seguro R$ 531,33
+- Prazo 72 meses: Com Seguro R$ 585,77
+- Prazo 60 meses: Com Seguro R$ 694,66
+- Prazo 50 meses: Com Seguro R$ 825,33
+- Prazo 36 meses: Com Seguro R$ 1.130,22
+- Prazo 25 meses: Com Seguro R$ 1.609,33
+
+CRÉDITO: R$ 35.000,00 (CCA035000)
+- Prazo 80 meses: Com Seguro R$ 464,91
+- Prazo 72 meses: Com Seguro R$ 512,55
+- Prazo 60 meses: Com Seguro R$ 607,83
+- Prazo 50 meses: Com Seguro R$ 722,16
+- Prazo 36 meses: Com Seguro R$ 988,94
+- Prazo 25 meses: Com Seguro R$ 1.408,16
+
+CRÉDITO: R$ 30.000,00 (CCA030000)
+- Prazo 72 meses: Com Seguro R$ 439,33
+- Prazo 60 meses: Com Seguro R$ 521,00
+- Prazo 50 meses: Com Seguro R$ 619,00
+- Prazo 36 meses: Com Seguro R$ 847,66
+- Prazo 25 meses: Com Seguro R$ 1.207,00
+
+CRÉDITO: R$ 27.500,00 (CCA027500)
+- Prazo 72 meses: Com Seguro R$ 402,72
+- Prazo 60 meses: Com Seguro R$ 477,58
+- Prazo 50 meses: Com Seguro R$ 567,41
+- Prazo 36 meses: Com Seguro R$ 777,02
+- Prazo 25 meses: Com Seguro R$ 1.106,41
+
+CRÉDITO: R$ 25.000,00 (CCA025000)
+- Prazo 72 meses: Com Seguro R$ 366,11
+- Prazo 60 meses: Com Seguro R$ 434,16
+- Prazo 50 meses: Com Seguro R$ 515,83
+- Prazo 36 meses: Com Seguro R$ 706,39
+- Prazo 25 meses: Com Seguro R$ 1.005,83
+
+======================================================
+TABELA TM049 - DUAS RODAS (MOTOS)
+Vigência: 13/07/2026 à 10/08/2026
+Taxa de Administração: 25,00% | Fundo de Reserva: 3,00% | Seguro de Vida: 0,084%
+======================================================
+
+CRÉDITO: R$ 30.000,00 (CCM030000)
+- Prazo 72 meses: Com Seguro R$ 565,59 | Sem Seguro R$ 533,33
+- Prazo 60 meses: Com Seguro R$ 672,26 | Sem Seguro R$ 640,00
+- Prazo 50 meses: Com Seguro R$ 800,26 | Sem Seguro R$ 768,00
+- Prazo 36 meses: Com Seguro R$ 1.098,92 | Sem Seguro R$ 1.066,67
+- Prazo 25 meses: Com Seguro R$ 1.568,26 | Sem Seguro R$ 1.536,00
+
+CRÉDITO: R$ 27.500,00 (CCM027500)
+- Prazo 72 meses: Com Seguro R$ 518,46 | Sem Seguro R$ 488,89
+- Prazo 60 meses: Com Seguro R$ 616,23 | Sem Seguro R$ 586,67
+- Prazo 50 meses: Com Seguro R$ 733,57 | Sem Seguro R$ 704,00
+- Prazo 36 meses: Com Seguro R$ 1.007,35 | Sem Seguro R$ 977,78
+- Prazo 25 meses: Com Seguro R$ 1.437,57 | Sem Seguro R$ 1.408,00
+
+CRÉDITO: R$ 25.000,00 (CCM025000)
+- Prazo 72 meses: Com Seguro R$ 471,32 | Sem Seguro R$ 444,44
+- Prazo 60 meses: Com Seguro R$ 560,21 | Sem Seguro R$ 533,33
+- Prazo 50 meses: Com Seguro R$ 666,88 | Sem Seguro R$ 640,00
+- Prazo 36 meses: Com Seguro R$ 915,77 | Sem Seguro R$ 888,89
+- Prazo 25 meses: Com Seguro R$ 1.306,88 | Sem Seguro R$ 1.280,00
+
+CRÉDITO: R$ 22.500,00 (CCM022500)
+- Prazo 72 meses: Com Seguro R$ 424,19 | Sem Seguro R$ 400,00
+- Prazo 60 meses: Com Seguro R$ 504,19 | Sem Seguro R$ 480,00
+- Prazo 50 meses: Com Seguro R$ 600,19 | Sem Seguro R$ 576,00
+- Prazo 36 meses: Com Seguro R$ 824,19 | Sem Seguro R$ 800,00
+- Prazo 25 meses: Com Seguro R$ 1.176,19 | Sem Seguro R$ 1.152,00
+
+CRÉDITO: R$ 20.000,00 (CCM020000)
+- Prazo 72 meses: Com Seguro R$ 377,06 | Sem Seguro R$ 355,56
+- Prazo 60 meses: Com Seguro R$ 448,17 | Sem Seguro R$ 426,67
+- Prazo 50 meses: Com Seguro R$ 533,50 | Sem Seguro R$ 512,00
+- Prazo 36 meses: Com Seguro R$ 732,62 | Sem Seguro R$ 711,11
+- Prazo 25 meses: Com Seguro R$ 1.045,50 | Sem Seguro R$ 1.024,00
+
+CRÉDITO: R$ 19.000,00 (CCM019000)
+- Prazo 72 meses: Com Seguro R$ 358,21 | Sem Seguro R$ 337,78
+- Prazo 60 meses: Com Seguro R$ 425,76 | Sem Seguro R$ 405,33
+- Prazo 50 meses: Com Seguro R$ 506,83 | Sem Seguro R$ 486,40
+- Prazo 36 meses: Com Seguro R$ 695,98 | Sem Seguro R$ 675,56
+- Prazo 25 meses: Com Seguro R$ 993,23 | Sem Seguro R$ 972,80
+
+CRÉDITO: R$ 18.000,00 (CCM018000)
+- Prazo 72 meses: Com Seguro R$ 339,35 | Sem Seguro R$ 320,00
+- Prazo 60 meses: Com Seguro R$ 403,35 | Sem Seguro R$ 384,00
+- Prazo 50 meses: Com Seguro R$ 480,15 | Sem Seguro R$ 460,80
+- Prazo 36 meses: Com Seguro R$ 659,35 | Sem Seguro R$ 640,00
+- Prazo 25 meses: Com Seguro R$ 940,95 | Sem Seguro R$ 921,60
+
+CRÉDITO: R$ 17.000,00 (CCM017000)
+- Prazo 72 meses: Com Seguro R$ 320,50 | Sem Seguro R$ 302,22
+- Prazo 60 meses: Com Seguro R$ 380,95 | Sem Seguro R$ 362,67
+- Prazo 50 meses: Com Seguro R$ 453,48 | Sem Seguro R$ 435,20
+- Prazo 36 meses: Com Seguro R$ 622,72 | Sem Seguro R$ 604,44
+- Prazo 25 meses: Com Seguro R$ 888,68 | Sem Seguro R$ 870,40
+
+CRÉDITO: R$ 16.000,00 (CCM016000)
+- Prazo 72 meses: Com Seguro R$ 301,65 | Sem Seguro R$ 284,44
+- Prazo 60 meses: Com Seguro R$ 358,54 | Sem Seguro R$ 341,33
+- Prazo 50 meses: Com Seguro R$ 426,80 | Sem Seguro R$ 409,60
+- Prazo 36 meses: Com Seguro R$ 586,09 | Sem Seguro R$ 568,89
+- Prazo 25 meses: Com Seguro R$ 836,40 | Sem Seguro R$ 819,20
+
+CRÉDITO: R$ 15.000,00 (CCM015000)
+- Prazo 50 meses: Com Seguro R$ 400,13 | Sem Seguro R$ 384,00
+- Prazo 36 meses: Com Seguro R$ 549,46 | Sem Seguro R$ 533,33
+- Prazo 25 meses: Com Seguro R$ 784,13 | Sem Seguro R$ 768,00
+
+CRÉDITO: R$ 14.000,00 (CCM014000)
+- Prazo 50 meses: Com Seguro R$ 373,45 | Sem Seguro R$ 358,40
+- Prazo 36 meses: Com Seguro R$ 512,83 | Sem Seguro R$ 497,78
+- Prazo 25 meses: Com Seguro R$ 731,85 | Sem Seguro R$ 716,80
+
+CRÉDITO: R$ 13.000,00 (CCM013000)
+- Prazo 50 meses: Com Seguro R$ 346,78 | Sem Seguro R$ 332,80
+- Prazo 36 meses: Com Seguro R$ 476,20 | Sem Seguro R$ 462,22
+- Prazo 25 meses: Com Seguro R$ 679,58 | Sem Seguro R$ 665,60
+
+
+======================================================
+TABELA TI197 - IMÓVEIS 2010 / 2009
+Vigência: 12/05/2026 à 31/12/2026
+Fundo de Reserva: 3,00% | Seguro de Vida: 0,059%
+Taxa de Administração Variável por Prazo: 
+180m (22%), 160m (22%), 130m (21%), 120m (19%), 100m (18%)
+======================================================
+
+CRÉDITO: R$ 250.000,00 (CCI250000)
+- Prazo 180 meses: Com Seguro R$ 1.920,49 | Sem Seguro R$ 1.736,11
+- Prazo 160 meses: Com Seguro R$ 2.137,50 | Sem Seguro R$ 1.953,13
+- Prazo 130 meses: Com Seguro R$ 2.567,52 | Sem Seguro R$ 2.384,62
+- Prazo 120 meses: Com Seguro R$ 2.721,62 | Sem Seguro R$ 2.541,67
+- Prazo 100 meses: Com Seguro R$ 3.203,48 | Sem Seguro R$ 3.025,00
+
+CRÉDITO: R$ 240.000,00 (CCI240000)
+- Prazo 180 meses: Com Seguro R$ 1.843,67 | Sem Seguro R$ 1.666,67
+- Prazo 160 meses: Com Seguro R$ 2.052,00 | Sem Seguro R$ 1.875,00
+- Prazo 130 meses: Com Seguro R$ 2.464,81 | Sem Seguro R$ 2.289,23
+- Prazo 120 meses: Com Seguro R$ 2.612,75 | Sem Seguro R$ 2.440,00
+- Prazo 100 meses: Com Seguro R$ 3.075,34 | Sem Seguro R$ 2.904,00
+
+CRÉDITO: R$ 230.000,00 (CCI230000)
+- Prazo 180 meses: Com Seguro R$ 1.766,85 | Sem Seguro R$ 1.597,22
+- Prazo 160 meses: Com Seguro R$ 1.966,50 | Sem Seguro R$ 1.796,88
+- Prazo 130 meses: Com Seguro R$ 2.362,11 | Sem Seguro R$ 2.193,85
+- Prazo 120 meses: Com Seguro R$ 2.503,89 | Sem Seguro R$ 2.338,33
+- Prazo 100 meses: Com Seguro R$ 2.947,20 | Sem Seguro R$ 2.783,00
+
+CRÉDITO: R$ 220.000,00 (CCI220000)
+- Prazo 180 meses: Com Seguro R$ 1.690,03 | Sem Seguro R$ 1.527,78
+- Prazo 160 meses: Com Seguro R$ 1.881,00 | Sem Seguro R$ 1.718,75
+- Prazo 130 meses: Com Seguro R$ 2.259,41 | Sem Seguro R$ 2.098,46
+- Prazo 120 meses: Com Seguro R$ 2.395,02 | Sem Seguro R$ 2.236,67
+- Prazo 100 meses: Com Seguro R$ 2.819,06 | Sem Seguro R$ 2.662,00
+
+CRÉDITO: R$ 210.000,00 (CCI210000)
+- Prazo 180 meses: Com Seguro R$ 1.613,21 | Sem Seguro R$ 1.458,33
+- Prazo 160 meses: Com Seguro R$ 1.795,50 | Sem Seguro R$ 1.640,63
+- Prazo 130 meses: Com Seguro R$ 2.156,71 | Sem Seguro R$ 2.003,08
+- Prazo 120 meses: Com Seguro R$ 2.286,16 | Sem Seguro R$ 2.135,00
+- Prazo 100 meses: Com Seguro R$ 2.690,92 | Sem Seguro R$ 2.541,00
+
+CRÉDITO: R$ 200.000,00 (CCI200000)
+- Prazo 180 meses: Com Seguro R$ 1.536,39 | Sem Seguro R$ 1.388,89
+- Prazo 160 meses: Com Seguro R$ 1.710,00 | Sem Seguro R$ 1.562,50
+- Prazo 130 meses: Com Seguro R$ 2.054,01 | Sem Seguro R$ 1.907,69
+- Prazo 120 meses: Com Seguro R$ 2.177,29 | Sem Seguro R$ 2.033,33
+- Prazo 100 meses: Com Seguro R$ 2.562,78 | Sem Seguro R$ 2.420,00
+
+CRÉDITO: R$ 190.000,00 (CCI190000)
+- Prazo 180 meses: Com Seguro R$ 1.459,57 | Sem Seguro R$ 1.319,44
+- Prazo 160 meses: Com Seguro R$ 1.624,50 | Sem Seguro R$ 1.484,38
+- Prazo 130 meses: Com Seguro R$ 1.951,31 | Sem Seguro R$ 1.812,31
+- Prazo 120 meses: Com Seguro R$ 2.068,43 | Sem Seguro R$ 1.931,67
+- Prazo 100 meses: Com Seguro R$ 2.434,64 | Sem Seguro R$ 2.299,00
+
+CRÉDITO: R$ 180.000,00 (CCI180000)
+- Prazo 180 meses: Com Seguro R$ 1.382,75 | Sem Seguro R$ 1.250,00
+- Prazo 160 meses: Com Seguro R$ 1.539,00 | Sem Seguro R$ 1.406,25
+- Prazo 130 meses: Com Seguro R$ 1.848,61 | Sem Seguro R$ 1.716,92
+- Prazo 120 meses: Com Seguro R$ 1.959,56 | Sem Seguro R$ 1.830,00
+- Prazo 100 meses: Com Seguro R$ 2.306,50 | Sem Seguro R$ 2.178,00
+
+CRÉDITO: R$ 170.000,00 (CCI170000)
+- Prazo 180 meses: Com Seguro R$ 1.305,93 | Sem Seguro R$ 1.180,56
+- Prazo 160 meses: Com Seguro R$ 1.453,50 | Sem Seguro R$ 1.328,13
+- Prazo 130 meses: Com Seguro R$ 1.745,91 | Sem Seguro R$ 1.621,54
+- Prazo 120 meses: Com Seguro R$ 1.850,70 | Sem Seguro R$ 1.728,33
+- Prazo 100 meses: Com Seguro R$ 2.178,36 | Sem Seguro R$ 2.057,00
+
+CRÉDITO: R$ 160.000,00 (CCI160000)
+- Prazo 180 meses: Com Seguro R$ 1.229,11 | Sem Seguro R$ 1.111,11
+- Prazo 160 meses: Com Seguro R$ 1.368,00 | Sem Seguro R$ 1.250,00
+- Prazo 130 meses: Com Seguro R$ 1.643,21 | Sem Seguro R$ 1.526,15
+- Prazo 120 meses: Com Seguro R$ 1.741,83 | Sem Seguro R$ 1.626,67
+- Prazo 100 meses: Com Seguro R$ 2.050,22 | Sem Seguro R$ 1.936,00
+
+CRÉDITO: R$ 150.000,00 (CCI150000)
+- Prazo 180 meses: Com Seguro R$ 1.152,29 | Sem Seguro R$ 1.041,67
+- Prazo 160 meses: Com Seguro R$ 1.282,50 | Sem Seguro R$ 1.171,88
+- Prazo 130 meses: Com Seguro R$ 1.540,51 | Sem Seguro R$ 1.430,77
+- Prazo 120 meses: Com Seguro R$ 1.632,97 | Sem Seguro R$ 1.525,00
+- Prazo 100 meses: Com Seguro R$ 1.922,09 | Sem Seguro R$ 1.815,00
+
+CRÉDITO: R$ 140.000,00 (CCI140000)
+- Prazo 180 meses: Com Seguro R$ 1.075,47 | Sem Seguro R$ 972,22
+- Prazo 160 meses: Com Seguro R$ 1.197,00 | Sem Seguro R$ 1.093,75
+- Prazo 130 meses: Com Seguro R$ 1.437,81 | Sem Seguro R$ 1.335,38
+- Prazo 120 meses: Com Seguro R$ 1.524,11 | Sem Seguro R$ 1.423,33
+- Prazo 100 meses: Com Seguro R$ 1.793,95 | Sem Seguro R$ 1.694,00
+
+CRÉDITO: R$ 100.000,00 (CCI100000)
+- Prazo 130 meses: Com Seguro R$ 1.027,01 | Sem Seguro R$ 953,85
+- Prazo 120 meses: Com Seguro R$ 1.088,65 | Sem Seguro R$ 1.016,67
+- Prazo 100 meses: Com Seguro R$ 1.281,39 | Sem Seguro R$ 1.210,00
+
+CRÉDITO: R$ 90.000,00 (CCI090000)
+- Prazo 130 meses: Com Seguro R$ 924,31 | Sem Seguro R$ 858,46
+- Prazo 120 meses: Com Seguro R$ 979,78 | Sem Seguro R$ 915,00
+- Prazo 100 meses: Com Seguro R$ 1.153,25 | Sem Seguro R$ 1.089,00
+
+CRÉDITO: R$ 80.000,00 (CCI080000)
+- Prazo 130 meses: Com Seguro R$ 821,60 | Sem Seguro R$ 763,08
+- Prazo 120 meses: Com Seguro R$ 870,92 | Sem Seguro R$ 813,33
+- Prazo 100 meses: Com Seguro R$ 1.025,11 | Sem Seguro R$ 968,00
+
+
+======================================================
+TABELA TI206 - IMÓVEIS 2011 NORMAL (Sem Plano Light)
+Vigência: 13/08/2026 à 14/09/2026
+Prazo Fixo: 193 Meses | Fundo de Reserva: 3,00% | Seguro de Vida: 0,059%
+======================================================
+
+CRÉDITO: R$ 400.000,00 (CCI400000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 2.954,93 | Sem Seguro R$ 2.652,85
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 4.954,93 | Sem Seguro R$ 4.652,85
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.954,93 | Sem Seguro R$ 2.652,85
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 6.954,93 | Sem Seguro R$ 6.652,85
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.954,93 | Sem Seguro R$ 2.652,85
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 10.954,93 | Sem Seguro R$ 10.652,85
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.954,93 | Sem Seguro R$ 2.652,85
+
+CRÉDITO: R$ 375.000,00 (CCI375000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 2.770,25 | Sem Seguro R$ 2.487,05
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 4.645,25 | Sem Seguro R$ 4.362,05
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.770,25 | Sem Seguro R$ 2.487,05
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 6.520,25 | Sem Seguro R$ 6.237,05
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.770,25 | Sem Seguro R$ 2.487,05
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 10.270,25 | Sem Seguro R$ 9.987,05
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.770,25 | Sem Seguro R$ 2.487,05
+
+CRÉDITO: R$ 350.000,00 (CCI350000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 2.585,56 | Sem Seguro R$ 2.321,24
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 4.335,56 | Sem Seguro R$ 4.071,24
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.585,56 | Sem Seguro R$ 2.321,24
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 6.085,56 | Sem Seguro R$ 5.821,24
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.585,56 | Sem Seguro R$ 2.321,24
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 9.585,56 | Sem Seguro R$ 9.321,24
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.585,56 | Sem Seguro R$ 2.321,24
+
+CRÉDITO: R$ 325.000,00 (CCI325000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 2.400,88 | Sem Seguro R$ 2.155,44
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 4.025,88 | Sem Seguro R$ 3.780,44
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.400,88 | Sem Seguro R$ 2.155,44
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 5.650,88 | Sem Seguro R$ 5.405,44
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.400,88 | Sem Seguro R$ 2.155,44
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 8.900,88 | Sem Seguro R$ 8.655,44
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.400,88 | Sem Seguro R$ 2.155,44
+
+CRÉDITO: R$ 300.000,00 (CCI300000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 2.216,20 | Sem Seguro R$ 1.989,64
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 3.716,20 | Sem Seguro R$ 3.489,64
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.216,20 | Sem Seguro R$ 1.989,64
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 5.216,20 | Sem Seguro R$ 4.989,64
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.216,20 | Sem Seguro R$ 1.989,64
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 8.216,20 | Sem Seguro R$ 7.989,64
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.216,20 | Sem Seguro R$ 1.989,64
+
+CRÉDITO: R$ 290.000,00 (CCI290000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 2.142,32 | Sem Seguro R$ 1.923,32
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 3.592,32 | Sem Seguro R$ 3.373,32
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.142,32 | Sem Seguro R$ 1.923,32
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 5.042,32 | Sem Seguro R$ 4.823,32
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.142,32 | Sem Seguro R$ 1.923,32
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 7.942,32 | Sem Seguro R$ 7.723,32
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.142,32 | Sem Seguro R$ 1.923,32
+
+CRÉDITO: R$ 280.000,00 (CCI280000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 2.068,45 | Sem Seguro R$ 1.856,99
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 3.468,45 | Sem Seguro R$ 3.256,99
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.068,45 | Sem Seguro R$ 1.856,99
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 4.868,45 | Sem Seguro R$ 4.656,99
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.068,45 | Sem Seguro R$ 1.856,99
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 7.668,45 | Sem Seguro R$ 7.456,99
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.068,45 | Sem Seguro R$ 1.856,99
+
+CRÉDITO: R$ 270.000,00 (CCI270000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.994,58 | Sem Seguro R$ 1.790,67
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 3.344,58 | Sem Seguro R$ 3.140,67
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.994,58 | Sem Seguro R$ 1.790,67
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 4.694,58 | Sem Seguro R$ 4.490,67
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.994,58 | Sem Seguro R$ 1.790,67
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 7.394,58 | Sem Seguro R$ 7.190,67
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.994,58 | Sem Seguro R$ 1.790,67
+
+CRÉDITO: R$ 260.000,00 (CCI260000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.920,70 | Sem Seguro R$ 1.724,35
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 3.220,70 | Sem Seguro R$ 3.024,35
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.920,70 | Sem Seguro R$ 1.724,35
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 4.520,70 | Sem Seguro R$ 4.324,35
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.920,70 | Sem Seguro R$ 1.724,35
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 7.120,70 | Sem Seguro R$ 6.924,35
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.920,70 | Sem Seguro R$ 1.724,35
+
+CRÉDITO: R$ 250.000,00 (CCI250000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.846,83 | Sem Seguro R$ 1.658,03
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 3.096,83 | Sem Seguro R$ 2.908,03
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.846,83 | Sem Seguro R$ 1.658,03
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 4.346,83 | Sem Seguro R$ 4.158,03
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.846,83 | Sem Seguro R$ 1.658,03
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 6.846,83 | Sem Seguro R$ 6.658,03
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.846,83 | Sem Seguro R$ 1.658,03
+
+CRÉDITO: R$ 240.000,00 (CCI240000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.772,96 | Sem Seguro R$ 1.591,71
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.972,96 | Sem Seguro R$ 2.791,71
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.772,96 | Sem Seguro R$ 1.591,71
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 4.172,96 | Sem Seguro R$ 3.991,71
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.772,96 | Sem Seguro R$ 1.591,71
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 6.572,96 | Sem Seguro R$ 6.391,71
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.772,96 | Sem Seguro R$ 1.591,71
+
+CRÉDITO: R$ 230.000,00 (CCI230000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.699,08 | Sem Seguro R$ 1.525,39
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.849,08 | Sem Seguro R$ 2.675,39
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.699,08 | Sem Seguro R$ 1.525,39
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 3.999,08 | Sem Seguro R$ 3.825,39
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.699,08 | Sem Seguro R$ 1.525,39
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 6.299,08 | Sem Seguro R$ 6.125,39
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.699,08 | Sem Seguro R$ 1.525,39
+
+CRÉDITO: R$ 220.000,00 (CCI220000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.625,21 | Sem Seguro R$ 1.459,07
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.725,21 | Sem Seguro R$ 2.559,07
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.625,21 | Sem Seguro R$ 1.459,07
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 3.825,21 | Sem Seguro R$ 3.659,07
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.625,21 | Sem Seguro R$ 1.459,07
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 6.025,21 | Sem Seguro R$ 5.859,07
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.625,21 | Sem Seguro R$ 1.459,07
+
+CRÉDITO: R$ 210.000,00 (CCI210000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.551,34 | Sem Seguro R$ 1.392,75
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.601,34 | Sem Seguro R$ 2.442,75
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.551,34 | Sem Seguro R$ 1.392,75
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 3.651,34 | Sem Seguro R$ 3.492,75
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.551,34 | Sem Seguro R$ 1.392,75
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 5.751,34 | Sem Seguro R$ 5.592,75
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.551,34 | Sem Seguro R$ 1.392,75
+
+CRÉDITO: R$ 200.000,00 (CCI200000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.477,46 | Sem Seguro R$ 1.326,42
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.477,46 | Sem Seguro R$ 2.326,42
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.477,46 | Sem Seguro R$ 1.326,42
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 3.477,46 | Sem Seguro R$ 3.326,42
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.477,46 | Sem Seguro R$ 1.326,42
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 5.477,46 | Sem Seguro R$ 5.326,42
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.477,46 | Sem Seguro R$ 1.326,42
+
+
+======================================================
+TABELA TI207 - IMÓVEIS 2011 PLANO LIGHT 75%
+Vigência: 13/08/2026 à 14/09/2026
+Prazo Fixo: 193 Meses | Fundo de Reserva: 3,00% | Seguro de Vida: 0,059%
+======================================================
+
+CRÉDITO: R$ 400.000,00 (CCI400000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 2.436,80 | Sem Seguro R$ 2.134,72
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 4.436,80 | Sem Seguro R$ 4.134,72
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.436,80 | Sem Seguro R$ 2.134,72
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 6.436,80 | Sem Seguro R$ 6.134,72
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.436,80 | Sem Seguro R$ 2.134,72
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 10.436,80 | Sem Seguro R$ 10.134,72
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.436,80 | Sem Seguro R$ 2.134,72
+
+CRÉDITO: R$ 375.000,00 (CCI375000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 2.284,50 | Sem Seguro R$ 2.001,30
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 4.159,50 | Sem Seguro R$ 3.876,30
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.284,50 | Sem Seguro R$ 2.001,30
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 6.034,50 | Sem Seguro R$ 5.751,30
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.284,50 | Sem Seguro R$ 2.001,30
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 9.784,50 | Sem Seguro R$ 9.501,30
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.284,50 | Sem Seguro R$ 2.001,30
+
+CRÉDITO: R$ 350.000,00 (CCI350000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 2.132,20 | Sem Seguro R$ 1.867,88
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 3.882,20 | Sem Seguro R$ 3.617,88
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.132,20 | Sem Seguro R$ 1.867,88
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 5.632,20 | Sem Seguro R$ 5.367,88
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.132,20 | Sem Seguro R$ 1.867,88
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 9.132,20 | Sem Seguro R$ 8.867,88
+  Parcelas 2ª a 193ª -> Com Seguro R$ 2.132,20 | Sem Seguro R$ 1.867,88
+
+CRÉDITO: R$ 325.000,00 (CCI325000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.979,90 | Sem Seguro R$ 1.734,46
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 3.604,90 | Sem Seguro R$ 3.359,46
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.979,90 | Sem Seguro R$ 1.734,46
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 5.229,90 | Sem Seguro R$ 4.984,46
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.979,90 | Sem Seguro R$ 1.734,46
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 8.479,90 | Sem Seguro R$ 8.234,46
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.979,90 | Sem Seguro R$ 1.734,46
+
+CRÉDITO: R$ 300.000,00 (CCI300000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.827,60 | Sem Seguro R$ 1.601,04
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 3.327,60 | Sem Seguro R$ 3.101,04
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.827,60 | Sem Seguro R$ 1.601,04
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 4.827,60 | Sem Seguro R$ 4.601,04
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.827,60 | Sem Seguro R$ 1.601,04
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 7.827,60 | Sem Seguro R$ 7.601,04
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.827,60 | Sem Seguro R$ 1.601,04
+
+CRÉDITO: R$ 290.000,00 (CCI290000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.766,68 | Sem Seguro R$ 1.547,67
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 3.216,68 | Sem Seguro R$ 2.997,67
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.766,68 | Sem Seguro R$ 1.547,67
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 4.666,68 | Sem Seguro R$ 4.447,67
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.766,68 | Sem Seguro R$ 1.547,67
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 7.566,68 | Sem Seguro R$ 7.347,67
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.766,68 | Sem Seguro R$ 1.547,67
+
+CRÉDITO: R$ 280.000,00 (CCI280000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.705,76 | Sem Seguro R$ 1.494,30
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 3.105,76 | Sem Seguro R$ 2.894,30
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.705,76 | Sem Seguro R$ 1.494,30
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 4.505,76 | Sem Seguro R$ 4.294,30
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.705,76 | Sem Seguro R$ 1.494,30
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 7.305,76 | Sem Seguro R$ 7.094,30
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.705,76 | Sem Seguro R$ 1.494,30
+
+CRÉDITO: R$ 270.000,00 (CCI270000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.644,84 | Sem Seguro R$ 1.440,93
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.994,84 | Sem Seguro R$ 2.790,93
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.644,84 | Sem Seguro R$ 1.440,93
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 4.344,84 | Sem Seguro R$ 4.140,93
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.644,84 | Sem Seguro R$ 1.440,93
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 7.044,84 | Sem Seguro R$ 6.840,93
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.644,84 | Sem Seguro R$ 1.440,93
+
+CRÉDITO: R$ 260.000,00 (CCI260000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.583,92 | Sem Seguro R$ 1.387,56
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.883,92 | Sem Seguro R$ 2.687,56
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.583,92 | Sem Seguro R$ 1.387,56
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 4.183,92 | Sem Seguro R$ 3.987,56
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.583,92 | Sem Seguro R$ 1.387,56
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 6.783,92 | Sem Seguro R$ 6.587,56
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.583,92 | Sem Seguro R$ 1.387,56
+
+CRÉDITO: R$ 250.000,00 (CCI250000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.523,00 | Sem Seguro R$ 1.334,20
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.773,00 | Sem Seguro R$ 2.584,20
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.523,00 | Sem Seguro R$ 1.334,20
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 4.023,00 | Sem Seguro R$ 3.834,20
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.523,00 | Sem Seguro R$ 1.334,20
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 6.523,00 | Sem Seguro R$ 6.334,20
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.523,00 | Sem Seguro R$ 1.334,20
+
+CRÉDITO: R$ 240.000,00 (CCI240000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.462,08 | Sem Seguro R$ 1.280,83
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.662,08 | Sem Seguro R$ 2.480,83
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.462,08 | Sem Seguro R$ 1.280,83
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 3.862,08 | Sem Seguro R$ 3.680,83
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.462,08 | Sem Seguro R$ 1.280,83
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 6.262,08 | Sem Seguro R$ 6.080,83
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.462,08 | Sem Seguro R$ 1.280,83
+
+CRÉDITO: R$ 230.000,00 (CCI230000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.401,16 | Sem Seguro R$ 1.227,46
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.551,16 | Sem Seguro R$ 2.377,46
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.401,16 | Sem Seguro R$ 1.227,46
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 3.701,16 | Sem Seguro R$ 3.527,46
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.401,16 | Sem Seguro R$ 1.227,46
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 6.001,16 | Sem Seguro R$ 5.827,46
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.401,16 | Sem Seguro R$ 1.227,46
+
+CRÉDITO: R$ 220.000,00 (CCI220000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.340,24 | Sem Seguro R$ 1.174,09
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.440,24 | Sem Seguro R$ 2.274,09
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.340,24 | Sem Seguro R$ 1.174,09
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 3.540,24 | Sem Seguro R$ 3.374,09
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.340,24 | Sem Seguro R$ 1.174,09
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 5.740,24 | Sem Seguro R$ 5.574,09
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.340,24 | Sem Seguro R$ 1.174,09
+
+CRÉDITO: R$ 210.000,00 (CCI210000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.279,32 | Sem Seguro R$ 1.120,73
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.329,32 | Sem Seguro R$ 2.170,73
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.279,32 | Sem Seguro R$ 1.120,73
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 3.379,32 | Sem Seguro R$ 3.220,73
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.279,32 | Sem Seguro R$ 1.120,73
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 5.479,32 | Sem Seguro R$ 5.320,73
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.279,32 | Sem Seguro R$ 1.120,73
+
+CRÉDITO: R$ 200.000,00 (CCI200000)
+- Sem Antecipação (Taxa Adm 25,00%):
+  Parcelas 1ª a 193ª -> Com Seguro R$ 1.218,40 | Sem Seguro R$ 1.067,36
+- Plano com 0,5% de Antecipação (Taxa Adm 25,50%):
+  Parcela 1ª -> Com Seguro R$ 2.218,40 | Sem Seguro R$ 2.067,36
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.218,40 | Sem Seguro R$ 1.067,36
+- Plano com 1,0% de Antecipação (Taxa Adm 26,00%):
+  Parcela 1ª -> Com Seguro R$ 3.218,40 | Sem Seguro R$ 3.067,36
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.218,40 | Sem Seguro R$ 1.067,36
+- Plano com 2,0% de Antecipação (Taxa Adm 27,00%):
+  Parcela 1ª -> Com Seguro R$ 5.218,40 | Sem Seguro R$ 5.067,36
+  Parcelas 2ª a 193ª -> Com Seguro R$ 1.218,40 | Sem Seguro R$ 1.067,36
+
+
+======================================================
+TABELA TA214 - VEÍCULOS (CONTINUAÇÃO - CRÉDITOS R$ 60 MIL A R$ 25 MIL)
+Vigência: 10/06/2026 à 14/12/2026
+Taxa de Administração: 19,00% | Fundo de Reserva: 3,00% | Seguro de Vida: 0,084%
+======================================================
+
+CRÉDITO: R$ 60.000,00 (CCA060000)
+- Prazo 100 meses: Com Seguro R$ 793,49 | Sem Seguro R$ 732,00
+- Prazo 80 meses: Com Seguro R$ 976,49 | Sem Seguro R$ 915,00
+- Prazo 72 meses: Com Seguro R$ 1.078,15 | Sem Seguro R$ 1.016,67
+- Prazo 60 meses: Com Seguro R$ 1.281,49 | Sem Seguro R$ 1.220,00
+- Prazo 50 meses: Com Seguro R$ 1.525,49 | Sem Seguro R$ 1.464,00
+- Prazo 36 meses: Com Seguro R$ 2.094,82 | Sem Seguro R$ 2.033,33
+- Prazo 25 meses: Com Seguro R$ 2.989,49 | Sem Seguro R$ 2.928,00
+
+CRÉDITO: R$ 55.000,00 (CCA055000)
+- Prazo 100 meses: Com Seguro R$ 727,36 | Sem Seguro R$ 671,00
+- Prazo 80 meses: Com Seguro R$ 895,11 | Sem Seguro R$ 838,75
+- Prazo 72 meses: Com Seguro R$ 988,31 | Sem Seguro R$ 931,94
+- Prazo 60 meses: Com Seguro R$ 1.174,70 | Sem Seguro R$ 1.118,33
+- Prazo 50 meses: Com Seguro R$ 1.398,36 | Sem Seguro R$ 1.342,00
+- Prazo 36 meses: Com Seguro R$ 1.920,25 | Sem Seguro R$ 1.863,89
+- Prazo 25 meses: Com Seguro R$ 2.740,36 | Sem Seguro R$ 2.684,00
+
+CRÉDITO: R$ 50.000,00 (CCA050000)
+- Prazo 72 meses: Com Seguro R$ 898,46 | Sem Seguro R$ 847,22
+- Prazo 60 meses: Com Seguro R$ 1.067,91 | Sem Seguro R$ 1.016,67
+- Prazo 50 meses: Com Seguro R$ 1.271,24 | Sem Seguro R$ 1.220,00
+- Prazo 36 meses: Com Seguro R$ 1.745,68 | Sem Seguro R$ 1.694,44
+- Prazo 25 meses: Com Seguro R$ 2.491,24 | Sem Seguro R$ 2.440,00
+
+CRÉDITO: R$ 45.000,00 (CCA045000)
+- Prazo 72 meses: Com Seguro R$ 808,62 | Sem Seguro R$ 762,50
+- Prazo 60 meses: Com Seguro R$ 961,12 | Sem Seguro R$ 915,00
+- Prazo 50 meses: Com Seguro R$ 1.144,12 | Sem Seguro R$ 1.098,00
+- Prazo 36 meses: Com Seguro R$ 1.571,12 | Sem Seguro R$ 1.525,00
+- Prazo 25 meses: Com Seguro R$ 2.242,12 | Sem Seguro R$ 2.196,00
+
+CRÉDITO: R$ 40.000,00 (CCA040000)
+- Prazo 72 meses: Com Seguro R$ 718,77 | Sem Seguro R$ 677,78
+- Prazo 60 meses: Com Seguro R$ 854,33 | Sem Seguro R$ 813,33
+- Prazo 50 meses: Com Seguro R$ 1.016,99 | Sem Seguro R$ 976,00
+- Prazo 36 meses: Com Seguro R$ 1.396,55 | Sem Seguro R$ 1.355,56
+- Prazo 25 meses: Com Seguro R$ 1.992,99 | Sem Seguro R$ 1.952,00
+
+CRÉDITO: R$ 35.000,00 (CCA035000)
+- Prazo 72 meses: Com Seguro R$ 628,92 | Sem Seguro R$ 593,06
+- Prazo 60 meses: Com Seguro R$ 747,53 | Sem Seguro R$ 711,67
+- Prazo 50 meses: Com Seguro R$ 889,87 | Sem Seguro R$ 854,00
+- Prazo 36 meses: Com Seguro R$ 1.221,98 | Sem Seguro R$ 1.186,11
+- Prazo 25 meses: Com Seguro R$ 1.743,87 | Sem Seguro R$ 1.708,00
+
+CRÉDITO: R$ 30.000,00 (CCA030000)
+- Prazo 60 meses: Com Seguro R$ 640,74 | Sem Seguro R$ 610,00
+- Prazo 50 meses: Com Seguro R$ 762,74 | Sem Seguro R$ 732,00
+- Prazo 36 meses: Com Seguro R$ 1.047,41 | Sem Seguro R$ 1.016,67
+- Prazo 25 meses: Com Seguro R$ 1.494,74 | Sem Seguro R$ 1.464,00
+
+CRÉDITO: R$ 27.500,00 (CCA027500)
+- Prazo 60 meses: Com Seguro R$ 587,35 | Sem Seguro R$ 559,17
+- Prazo 50 meses: Com Seguro R$ 699,18 | Sem Seguro R$ 671,00
+- Prazo 36 meses: Com Seguro R$ 960,13 | Sem Seguro R$ 931,94
+- Prazo 25 meses: Com Seguro R$ 1.370,18 | Sem Seguro R$ 1.342,00
+
+CRÉDITO: R$ 25.000,00 (CCA025000)
+- Prazo 60 meses: Com Seguro R$ 533,95 | Sem Seguro R$ 508,33
+- Prazo 50 meses: Com Seguro R$ 635,62 | Sem Seguro R$ 610,00
+- Prazo 36 meses: Com Seguro R$ 872,84 | Sem Seguro R$ 847,22
+- Prazo 25 meses: Com Seguro R$ 1.245,62 | Sem Seguro R$ 1.220,00
+
+======================================================
+RELAÇÃO DE GRUPOS E CARACTERÍSTICAS (Atualizado em 24/08/2026)
+======================================================
+VENCIMENTO DIA 10 - PRÓXIMA ASSEMBLEIA: 16/09/2026
+
+[IMÓVEIS - IMV]
+- Grupo 2009: 81 Ass. Realizadas | Prazo Máx: 135m | Crédito: R$80k a R$100k | Lances: Fixo 25/45%, Embutido 25%, Aceita FGTS, Aceita Avaliação.
+- Grupo 2010: 57 Ass. Realizadas | Prazo Máx: 180m | Crédito: R$140k a R$250k | Lances: Fixo 25/45%, Embutido 25%, Aceita FGTS, Aceita Avaliação.
+- Grupo 2011: 15 Ass. Realizadas | Prazo Máx: 193m | Crédito: R$200k a R$400k | Lances: Fixo 25/45%, Embutido 25%, Aceita FGTS, Aceita Avaliação.
+
+[AUTOMÓVEIS - AUT]
+- Grupo 5110: 72 Ass. Realizadas | Prazo Máx: 25m | Crédito: R$45k a R$60k | Lances: Fixo 25/45%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 5111: 71 Ass. Realizadas | Prazo Máx: 25m | Crédito: R$25k a R$30k | Lances: Fixo 25/45%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 5113: 66 Ass. Realizadas | Prazo Máx: 36m | Crédito: R$50k a R$130k | Lances: Fixo 25/45%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 5114: 63 Ass. Realizadas | Prazo Máx: 36m | Crédito: R$50k a R$80k | Lances: Fixo 25/45%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 5115: 55 Ass. Realizadas | Prazo Máx: 50m | Crédito: R$25k a R$40k | Lances: Fixo 15/30%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 5116: 43 Ass. Realizadas | Prazo Máx: 60m | Crédito: R$25k a R$40k | Lances: Fixo 15/30%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 5118: 35 Ass. Realizadas | Prazo Máx: 75m | Crédito: R$35k a R$55k | Lances: Fixo 25/45%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 5120: 26 Ass. Realizadas | Prazo Máx: 100m | Crédito: R$55k a R$100k | Lances: Fixo 25/45%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 5121: 12 Ass. Realizadas | Prazo Máx: 98m | Crédito: R$80k a R$160k | Lances: Fixo 25/45%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 5122: 2 Ass. Realizadas | Prazo Máx: 103m | Crédito: R$35k a R$50k | Lances: Fixo 25/45%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+
+[MOTOS - MOT]
+- Grupo 3202: 66 Ass. Realizadas | Prazo Máx: 24m | Crédito: R$17k a R$20k | Lances: Fixo 25/45%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 3203: 49 Ass. Realizadas | Prazo Máx: 50m | Crédito: R$13k a R$20k | Lances: Fixo 15/30%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 5119: 33 Ass. Realizadas | Prazo Máx: 72m | Crédito: R$17k a R$30k | Lances: Fixo 15/30%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+
+[SERVIÇOS - SRV]
+- Grupo 4101: 2 Ass. Realizadas | Prazo Máx: 63m | Crédito: R$10k a R$20k | Lances: Fixo 25/45%, Embutido 25%, Avaliação NÃO, FGTS NÃO.
+
+VENCIMENTO DIA 20 - PRÓXIMA ASSEMBLEIA: 26/08/2026
+[AUTOMÓVEIS - AUT]
+- Grupo 5112: 68 Ass. Realizadas | Prazo Máx: 36m | Crédito: R$45k a R$100k | Lances: Fixo 25/45%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+- Grupo 5117: 36 Ass. Realizadas | Prazo Máx: 72m | Crédito: R$65k a R$100k | Lances: Fixo 25/45%, Embutido 25%, Avaliação SIM, FGTS NÃO.
+
+
+======================================================
+RESULTADOS DA ASSEMBLEIA (16/08/2026) - HISTÓRICO DE CONTEMPLAÇÕES
+======================================================
+*Nota: A maioria dos grupos também contemplou cotas por Sorteio (0%).*
+
+[IMÓVEIS]
+- Grupo 2009: Lance Livre venceu de 73,52% a 85,47%. Lance Fixo contemplou com 45,00%.
+- Grupo 2010: Lance Livre venceu com 73,50%. Lance Fixo contemplou com 45,00%.
+- Grupo 2011: Lance Livre venceu com 85,00%. Lance Fixo contemplou com 25,00% e 45,00%.
+
+[MOTOS]
+- Grupo 3202: Lance Livre venceu de 8,23% a 25,00%. Lance Fixo contemplou com 45,00%. *(Grupo com lances baixíssimos)*.
+- Grupo 3203: Lance Livre venceu de 63,33% a 68,18%. Lance Fixo contemplou com 15,00% e 30,00%.
+
+[SERVIÇOS]
+- Grupo 4100: Lance Livre venceu de 12,57% a 25,00%.
+
+[AUTOMÓVEIS]
+- Grupo 5107: Lance Livre venceu de 25,82% a 25,84%.
+- Grupo 5108: Lance Livre venceu de 1,18% a 5,08%. *(Lances extremos de baixos)*.
+- Grupo 5109: Lance Livre venceu de 4,42% a 32,18%. Lance Fixo contemplou com 25,00%.
+- Grupo 5110: Lance Livre venceu de 36,00% a 40,15%. Lance Fixo contemplou com 45,00%. Quitação venceu com 45,61%.
+- Grupo 5111: Lance Livre venceu de 26,60% a 51,10%. Lance Fixo contemplou com 25,00%.
+- Grupo 5113: Lance Livre venceu de 62,01% a 62,30%. Lance Fixo contemplou com 25,00% e 45,00%. Quitação venceu de 43,14% a 73,99%.
+- Grupo 5114: Lance Livre venceu de 65,08% a 70,99%. Lance Fixo contemplou com 45,00%. Quitação venceu de 47,26% a 62,35%.
+- Grupo 5115: Lance Livre venceu de 60,21% a 68,62%. Lance Fixo contemplou com 15,00% e 30,00%. Quitação venceu com 62,52%.
+- Grupo 5116: Lance Livre venceu de 67,00% a 67,50%. Lance Fixo contemplou com 15,00% e 30,00%. Quitação venceu com 59,54%.
+- Grupo 5118: Lance Livre venceu de 67,24% a 74,38%. Lance Fixo contemplou com 25,00% e 45,00%.
+- Grupo 5119: Lance Livre venceu de 63,64% a 69,44%. Lance Fixo contemplou com 15,00% e 30,00%. Quitação venceu com 13,33%.
+- Grupo 5120: Lance Livre venceu de 80,97% a 83,07%. Lance Fixo contemplou com 25,00% e 45,00%. Quitação venceu com 81,12%.
+- Grupo 5121: Lance Livre venceu com 80,00%. Lance Fixo contemplou com 25,00% e 45,00%.
+- Grupo 5122: Lance Livre venceu com 70,00%.
+
+
+======================================================
+INTELIGÊNCIA ESTRATÉGICA E OPORTUNIDADES COMERCIAIS
+(REGRAS PARA A I.A. RECOMENDAR AOS VENDEDORES)
+======================================================
+
+OPORTUNIDADE 1: O LANCE EMBUTIDO PAGA O LANCE LIVRE (SEM TIRAR DINHEIRO DO BOLSO)
+- Regra do Sistema: O Consórcio Recon permite até 25% de Lance Embutido (usar parte da própria carta de crédito para pagar o lance).
+- Oportunidades Mapeadas: Os grupos 5108 (Média 1% a 5%), 5109 (Média 4% a 32%), 3202 (Média 8% a 25%), 4100 (Média 12% a 25%) e 5107 (Média ~25%) tiveram lances livres vencedores menores ou iguais a 25%.
+- Pitch de Vendas Sugerido pela IA: "O cliente pode ofertar um Lance Livre usando APENAS o Lance Embutido de 25%. Nestes grupos, lances abaixo de 25% estão contemplando! Ele tem altíssimas chances de pegar o bem rápido sem tirar 1 real do bolso para o lance."
+
+OPORTUNIDADE 2: GRUPOS COM LANCE FIXO DE 15% (REDUÇÃO DE ESFORÇO FINANCEIRO)
+- Oportunidades Mapeadas: Os Grupos 3203 (MOT), 5115 (AUT), 5116 (AUT) e 5119 (MOT) possuem a modalidade de Lance Fixo de 15%. E o melhor: o resultado do dia 16/08 confirmou que cotas foram contempladas com esse lance exato.
+- Pitch de Vendas Sugerido pela IA: "Para clientes sem muito dinheiro para lance, sugira grupos com Lance Fixo de 15% (ex: 5115, 5116). Como o Embutido permitido é de até 25%, o cliente oferta os 15% 100% embutidos, não paga nada do próprio bolso pelo lance e participa de um sorteio restrito com alta taxa de contemplação."
+
+OPORTUNIDADE 3: ALAVANCAGEM DE IMÓVEIS COM FGTS
+- Oportunidades Mapeadas: Todos os grupos de imóveis (2009, 2010, 2011) aceitam FGTS para lance. Como os Lances Livres de imóveis estão altos (73% a 85%), o cliente precisa de muito capital.
+- Pitch de Vendas Sugerido pela IA: "Em imóveis, some os 25% do Lance Embutido com 100% do saldo do FGTS do cliente para compor um super lance livre. Isso fará ele brigar de frente com os lances na casa dos 70% sem precisar descapitalizar as economias bancárias."
