@@ -18,7 +18,26 @@ import WhatsAppBulkModal from '../components/WhatsAppBulkModal';
 import AdminPanel from '../components/AdminPanel';
 import MentorChatScreen from '../components/MentorChatScreen';
 
+import { messaging, getToken, onMessage } from '../services/firebaseClient';
+
 const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
+
+// Função utilitária para disparar Notificações Nativas do Sistema Operacional (Windows/Mac/Android)
+const triggerNativeAlert = (title, body) => {
+  if (Platform.OS === 'web' && 'Notification' in window) {
+    if (Notification.permission === 'granted') {
+      const notif = new Notification(title, {
+        body: body,
+        icon: '/logo192.png',
+        vibrate: [200, 100, 200]
+      });
+      notif.onclick = () => {
+        window.focus();
+        notif.close();
+      };
+    }
+  }
+};
 
 export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   const [activeView, setActiveView] = useState('kanban'); 
@@ -28,7 +47,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   const [isElectron, setIsElectron] = useState(false);
   const [isAutoImportActive, setIsAutoImportActive] = useState(false);
 
-  // Estados e Refs para o Mentor IA Modal
   const [isChatOpen, setIsChatOpen] = useState(false);
   const chatScale = useRef(new Animated.Value(0.8)).current;
   const chatOpacity = useRef(new Animated.Value(0)).current;
@@ -63,6 +81,31 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
   const changePassScale = useRef(new Animated.Value(0.8)).current;
   const changePassOpacity = useRef(new Animated.Value(0)).current;
+  
+  const triggeredApptsRef = useRef(new Set());
+  
+  // Ref para controlar a abertura automática do Modal de Notificações apenas no carregamento inicial
+  const isFirstLoad = useRef(true);
+
+  // =========================================================================
+  // INTEGRADOR CENTRAL COM O PYTHON (RENDER)
+  // =========================================================================
+  const dispararPushBackend = async (userId, title, message) => {
+    try {
+      if (!userId) return;
+      await fetch('https://mentor-ia-crm.onrender.com/notificar', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_user_id: userId,
+          titulo: title,
+          mensagem: message
+        })
+      });
+    } catch (e) {
+      console.log('Erro ao disparar push via backend:', e);
+    }
+  };
 
   const openChangePassModal = () => {
     setIsChangePassModalVisible(true);
@@ -185,6 +228,46 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   const [activeNotifications, setActiveNotifications] = useState([]);
 
   useEffect(() => {
+    const registerPushNotifications = async () => {
+      if (Platform.OS !== 'web' || !loggedUserId || !messaging) return;
+
+      try {
+        const permission = await Notification.requestPermission();
+        
+        if (permission === 'granted') {
+          const token = await getToken(messaging, {
+            vapidKey: 'BN1iqr6YdpSRxBet21LQ7nwT7qTjZRRdPjvqn_U6br5K3Q0D4fHEs62poBCkNcleahBu8BoKcZktCmCtdpMgAQ0'
+          });
+
+          if (token) {
+            const { error } = await supabase
+              .from('user_push_tokens')
+              .upsert({ 
+                user_id: loggedUserId, 
+                token: token, 
+                updated_at: new Date().toISOString() 
+              }, { onConflict: 'user_id' });
+              
+            if (error) console.error('❌ Erro ao salvar token no Supabase:', error.message);
+          }
+
+          onMessage(messaging, (payload) => {
+            const title = payload.notification?.title || 'CRM Atualizado';
+            
+            // Exibe apenas o Toast suave no topo, sem apitar o sistema operacional.
+            // Também não injetamos no Modal manualmente, pois o Supabase já fará a injeção limpa e original!
+            showToastNotification(`🔔 ${title}`);
+          });
+        }
+      } catch (error) {
+        console.error('❌ Erro na configuração do Push:', error);
+      }
+    };
+
+    registerPushNotifications();
+  }, [loggedUserId]);
+
+  useEffect(() => {
     if (!loggedUserId) return;
 
     const profileSubscription = supabase
@@ -223,12 +306,10 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
           [data-card-container="true"] button, 
           [data-card-action-btn="true"] { cursor: pointer !important; }
           
-          /* Ajuste do recuo para o novo tamanho de card menor */
           .drag-hover-space { 
             margin-top: 76px !important; 
           }
           
-          /* Placeholder Tracejado reajustado */
           .drag-hover-space::before {
             content: "";
             position: absolute;
@@ -243,7 +324,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
             pointer-events: none;
           }
           
-          /* Película invisível reajustada */
           .drag-hover-space::after {
             content: "";
             position: absolute;
@@ -391,19 +471,29 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
                     const alreadyUnread = boardData.unreadNotifications?.some(n => n.id === notifId) || newUnreadSystems.some(n => n.id === notifId);
                     
                     if (!alreadyActive && !alreadyHistory && !alreadyUnread) {
+                      const msgText = `O boleto do contrato de ${client.name} (Cat: ${contract.categoria || 'N/A'}) vence em ${diffDays} dias (${dia}/${nextVencimento.getMonth() + 1}).`;
+                      
                       newUnreadSystems.push({
                         id: notifId,
                         type: 'Sistema',
-                        text: `💰 Alerta de Pós-Venda: O boleto do contrato de ${client.name} (Cat: ${contract.categoria || 'N/A'}) vence em ${diffDays} dias (${dia}/${nextVencimento.getMonth() + 1}).`,
+                        text: `💰 Alerta de Pós-Venda: ${msgText}`,
                         date: new Date().toISOString()
                       });
+
+                      dispararPushBackend(currentUserId, '💰 Alerta de Pós-Venda', msgText);
                     }
                   }
                 }
               });
             }
-
           });
+        });
+
+        notifs.forEach(n => {
+          if (!triggeredApptsRef.current.has(n.appt.id)) {
+            triggeredApptsRef.current.add(n.appt.id);
+            // APENAS ADICIONA LOCALMENTE, O PUSH AGORA É CONTROLADO PELO PYTHON NO MOMENTO DO CADASTRO DO AGENDAMENTO!
+          }
         });
 
         setActiveNotifications(notifs);
@@ -428,13 +518,19 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
             const adminNotifs = [];
             users.forEach(user => {
               if (user.reset_requested) {
+                const idNotif = `req_reset_${user.id}`;
                 adminNotifs.push({
-                  id: `req_reset_${user.id}`,
+                  id: idNotif,
                   userId: user.id,
                   email: user.email,
                   name: user.name || 'Nome não informado',
                   type: 'ResetRequest'
                 });
+                if (!triggeredApptsRef.current.has(idNotif)) {
+                  triggeredApptsRef.current.add(idNotif);
+                  const resetBody = `O usuário ${user.email} solicitou reset de senha.`;
+                  dispararPushBackend(loggedUserId, '🔐 Solicitação de Reset', resetBody);
+                }
               }
               if (user.name_change_requested) {
                 adminNotifs.push({
@@ -494,7 +590,15 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
       
       setBoardData(updatedBoard);
       syncBoardToDatabase(updatedBoard);
-      setIsNotifModalVisible(true);
+      
+      // Abre automaticamente APENAS na primeira renderização se houver pendências
+      if (isFirstLoad.current) {
+        setIsNotifModalVisible(true);
+      }
+    }
+
+    if (boardData) {
+      isFirstLoad.current = false;
     }
   }, [boardData]);
 
@@ -526,6 +630,26 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
     const adminIndex = adminNotifications.findIndex(n => n.id === id);
     if (adminIndex !== -1) {
       setAdminNotifications(prev => prev.filter(n => n.id !== id));
+    }
+  };
+
+  const handleDismissNotification = (clientId, phaseId, appointmentId) => {
+    if (!boardData) return;
+    const updatedBoard = JSON.parse(JSON.stringify(boardData));
+    
+    const phaseIndex = updatedBoard.phases.findIndex(p => p.id === phaseId);
+    if (phaseIndex !== -1) {
+      const clientIndex = updatedBoard.phases[phaseIndex].clients.findIndex(c => c.id === clientId);
+      if (clientIndex !== -1) {
+        const client = updatedBoard.phases[phaseIndex].clients[clientIndex];
+        const apptIndex = client.appointments.findIndex(a => a.id === appointmentId);
+        
+        if (apptIndex !== -1) {
+          client.appointments[apptIndex].notified = true; 
+          setBoardData(updatedBoard);
+          syncBoardToDatabase(updatedBoard);
+        }
+      }
     }
   };
 
@@ -629,9 +753,9 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
   const addSystemNotification = (title, message) => {
     const newNotif = {
-      id: `sys_${Date.now()}`,
+      id: `sys_${Date.now()}_${Math.random()}`,
       type: 'Sistema',
-      text: message,
+      text: `${title}: ${message}`,
       date: new Date().toISOString()
     };
     setSystemNotifications(prev => [newNotif, ...prev]);
@@ -655,26 +779,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
       syncBoardToDatabase(updatedBoard); 
     } else {
       showCustomAlert('error', 'Atenção', 'Crie pelo menos uma fase.');
-    }
-  };
-
-  const handleDismissNotification = (clientId, phaseId, appointmentId) => {
-    if (!boardData) return;
-    const updatedBoard = JSON.parse(JSON.stringify(boardData));
-    
-    const phaseIndex = updatedBoard.phases.findIndex(p => p.id === phaseId);
-    if (phaseIndex !== -1) {
-      const clientIndex = updatedBoard.phases[phaseIndex].clients.findIndex(c => c.id === clientId);
-      if (clientIndex !== -1) {
-        const client = updatedBoard.phases[phaseIndex].clients[clientIndex];
-        const apptIndex = client.appointments.findIndex(a => a.id === appointmentId);
-        
-        if (apptIndex !== -1) {
-          client.appointments[apptIndex].notified = true; 
-          setBoardData(updatedBoard);
-          syncBoardToDatabase(updatedBoard);
-        }
-      }
     }
   };
 
@@ -1009,6 +1113,9 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
               syncBoardToDatabase(updatedBoard);
               showToastNotification(`🤖 ${newImportsCount} novo(s) lead(s) importado(s) automaticamente!`);
               addSystemNotification('Auto-Importação Concluída', `O sistema detectou e importou ${newImportsCount} lead(s) diretamente do WhatsApp de forma automática.`);
+              
+              // GATILHO PARA O BACKEND
+              dispararPushBackend(loggedUserId, "🤖 Auto-Importação Concluída", `O sistema importou ${newImportsCount} lead(s) do WhatsApp.`);
             }
 
             if (leadsToClear.length > 0) {
@@ -1027,77 +1134,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
     return () => clearInterval(pollingInterval);
   }, [isAutoImportActive, isElectron, boardData]);
-
-  const getFilteredBoard = () => {
-    if (!boardData) return null;
-    const query = searchQuery.toLowerCase();
-    
-    const filteredPhases = (boardData.phases || []).map(phase => {
-      const filteredClients = (phase.clients || []).filter(client => {
-        
-        const matchesText = !query || 
-          (client.name?.toLowerCase().includes(query)) || 
-          (client.phone?.toLowerCase().includes(query)) || 
-          (client.initialInfo?.toLowerCase().includes(query));
-        
-        let matchesTag = true;
-        
-        const cat = client.category?.toLowerCase() || '';
-        const plat = client.platform?.toLowerCase() || '';
-        const isWaError = client.whatsappError === true;
-
-        switch(activeFilter) {
-          case 'AUTO': matchesTag = cat.includes('auto') || cat.includes('carro'); break;
-          case 'IMOVEL': matchesTag = cat.includes('imóvel') || cat.includes('casa') || cat.includes('apartamento'); break;
-          case 'INVESTIMENTO': matchesTag = cat.includes('investimento'); break;
-          case 'INSTAGRAM': matchesTag = plat.includes('instagram') || plat === 'ig'; break;
-          case 'FACEBOOK': matchesTag = plat.includes('facebook') || plat === 'fb'; break;
-          case 'COM_WA': matchesTag = !isWaError; break;
-          case 'SEM_WA': matchesTag = isWaError; break;
-          case 'TODOS': default: matchesTag = true; break;
-        }
-
-        return matchesText && matchesTag;
-      });
-      return { ...phase, clients: filteredClients };
-    });
-    
-    return { ...boardData, phases: filteredPhases };
-  };
-
-  const filteredBoardData = boardData ? getFilteredBoard() : { phases: [] };
-  const currentTheme = isDarkMode ? darkStyles : lightStyles;
-  const iconColor = isDarkMode ? '#94a3b8' : '#64748b';
-
-  if (loading) {
-    return (
-      <View style={[styles.container, currentTheme.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#2563eb" />
-      </View>
-    );
-  }
-
-  if (!userProfile || userProfile.status !== 'ativo') {
-    return (
-      <View style={[styles.container, currentTheme.container, { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
-        <Text style={{ fontSize: 48, marginBottom: 16 }}>⏳</Text>
-        <Text style={[styles.blockTitle, currentTheme.blockTitle]}>
-          {userProfile?.status === 'inativo' ? 'Conta Desativada' : 'Aguardando Liberação'}
-        </Text>
-        <Text style={[styles.blockText, currentTheme.blockText]}>
-          {userProfile?.status === 'inativo' 
-            ? 'Sua conta foi suspensa pelo administrador.' 
-            : 'Seu cadastro foi recebido! Aguarde o administrador aprovar o seu acesso ao CRM.'}
-        </Text>
-        <TouchableOpacity 
-          style={{ marginTop: 24, padding: 12, backgroundColor: isDarkMode ? '#334155' : '#e2e8f0', borderRadius: 8 }}
-          onPress={() => supabase.auth.signOut()}
-        >
-          <Text style={{ color: isDarkMode ? '#f8fafc' : '#475569', fontWeight: 'bold' }}>Sair / Voltar ao Login</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   const handleTransferLead = async (leadData, targetUserId, withoutComment) => {
     try {
@@ -1163,6 +1199,9 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
         await supabase.from('crm_boards').update({ data_payload: targetBoard }).eq('id', targetBoardRow.id);
           
         showCustomAlert('success', 'Transferência Concluída', `O lead foi transferido com sucesso.`);
+        
+        // GATILHO PARA O BACKEND
+        dispararPushBackend(targetUserId, "🎯 Novo Lead no seu CRM!", `O administrador transferiu "${leadData.name || 'Sem Nome'}" para você.`);
       } else {
         showCustomAlert('error', 'Erro', 'O quadro do vendedor destino não foi encontrado ou está vazio.');
       }
@@ -1237,10 +1276,84 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
       setIsBulkDropdownOpen(false);
 
       showCustomAlert('success', 'Sucesso na Transferência', `Os ${extractedLeads.length} leads foram transferidos com sucesso.`);
+      
+      // GATILHO PARA O BACKEND
+      dispararPushBackend(bulkTargetUserId, "🎯 Novos Leads Transferidos!", `O administrador transferiu ${extractedLeads.length} leads para você.`);
     } catch (err) {
       showCustomAlert('error', 'Erro', 'Falha na transferência em massa: ' + err.message);
     }
   };
+
+  const getFilteredBoard = () => {
+    if (!boardData) return null;
+    const query = searchQuery.toLowerCase();
+    
+    const filteredPhases = (boardData.phases || []).map(phase => {
+      const filteredClients = (phase.clients || []).filter(client => {
+        
+        const matchesText = !query || 
+          (client.name?.toLowerCase().includes(query)) || 
+          (client.phone?.toLowerCase().includes(query)) || 
+          (client.initialInfo?.toLowerCase().includes(query));
+        
+        let matchesTag = true;
+        
+        const cat = client.category?.toLowerCase() || '';
+        const plat = client.platform?.toLowerCase() || '';
+        const isWaError = client.whatsappError === true;
+
+        switch(activeFilter) {
+          case 'AUTO': matchesTag = cat.includes('auto') || cat.includes('carro'); break;
+          case 'IMOVEL': matchesTag = cat.includes('imóvel') || cat.includes('casa') || cat.includes('apartamento'); break;
+          case 'INVESTIMENTO': matchesTag = cat.includes('investimento'); break;
+          case 'INSTAGRAM': matchesTag = plat.includes('instagram') || plat === 'ig'; break;
+          case 'FACEBOOK': matchesTag = plat.includes('facebook') || plat === 'fb'; break;
+          case 'COM_WA': matchesTag = !isWaError; break;
+          case 'SEM_WA': matchesTag = isWaError; break;
+          case 'TODOS': default: matchesTag = true; break;
+        }
+
+        return matchesText && matchesTag;
+      });
+      return { ...phase, clients: filteredClients };
+    });
+    
+    return { ...boardData, phases: filteredPhases };
+  };
+
+  const filteredBoardData = boardData ? getFilteredBoard() : { phases: [] };
+  const currentTheme = isDarkMode ? darkStyles : lightStyles;
+  const iconColor = isDarkMode ? '#94a3b8' : '#64748b';
+
+  if (loading) {
+    return (
+      <View style={[styles.container, currentTheme.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  if (!userProfile || userProfile.status !== 'ativo') {
+    return (
+      <View style={[styles.container, currentTheme.container, { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
+        <Text style={{ fontSize: 48, marginBottom: 16 }}>⏳</Text>
+        <Text style={[styles.blockTitle, currentTheme.blockTitle]}>
+          {userProfile?.status === 'inativo' ? 'Conta Desativada' : 'Aguardando Liberação'}
+        </Text>
+        <Text style={[styles.blockText, currentTheme.blockText]}>
+          {userProfile?.status === 'inativo' 
+            ? 'Sua conta foi suspensa pelo administrador.' 
+            : 'Seu cadastro foi recebido! Aguarde o administrador aprovar o seu acesso ao CRM.'}
+        </Text>
+        <TouchableOpacity 
+          style={{ marginTop: 24, padding: 12, backgroundColor: isDarkMode ? '#334155' : '#e2e8f0', borderRadius: 8 }}
+          onPress={() => supabase.auth.signOut()}
+        >
+          <Text style={{ color: isDarkMode ? '#f8fafc' : '#475569', fontWeight: 'bold' }}>Sair / Voltar ao Login</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const handleBulkDeleteExecute = async () => {
     if (selectedLeadIds.length === 0 || !boardData) return;
@@ -1912,6 +2025,9 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
         onComplete={(stats) => {
           addSystemNotification('Disparo Concluído', `Os disparos para ${stats.total} leads foram finalizados. Sucesso: ${stats.success}, Erros: ${stats.error}.`);
           setIsNotifModalVisible(true);
+          
+          // GATILHO PARA O BACKEND
+          dispararPushBackend(loggedUserId, "✅ Disparos Concluídos", `Os disparos para ${stats.total} leads foram finalizados.`);
         }}
         isDarkMode={isDarkMode}
       />
@@ -2061,6 +2177,9 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   );
 }
 
+// ... [MANTER TODOS OS ESTILOS ORIGINAIS EXATAMENTE COMO ESTAVAM] ...
+// (Como os estilos não sofreram alterações em relação ao controle dos modais,
+// eles permanecem idênticos ao seu código fornecido para garantir o visual intacto).
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
@@ -2090,7 +2209,6 @@ const styles = StyleSheet.create({
   bellTop: { width: 14, height: 10, borderTopLeftRadius: 7, borderTopRightRadius: 7, borderBottomLeftRadius: 2, borderBottomRightRadius: 2 },
   bellBottom: { width: 4, height: 3, marginTop: 1, borderRadius: 2 },
 
-  // ÍCONE VETORIAL DO BOTÃO DA IA
   aiToggleBtnFancy: {
     width: 36,
     height: 36,

@@ -91,6 +91,25 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
     onSave(updatedData);
   };
 
+  // AGENDAMENTO NO BACKEND PYTHON
+  const agendarNotificacaoBackend = async (userId, title, message, notifyTimeIso) => {
+    try {
+      if (!userId) return;
+      await fetch('https://mentor-ia-crm.onrender.com/agendar-notificacao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_user_id: userId,
+          titulo: title,
+          mensagem: message,
+          data_hora: notifyTimeIso
+        })
+      });
+    } catch (e) {
+      console.log('Erro ao agendar push via backend:', e);
+    }
+  };
+
   useEffect(() => {
     if (visible) {
       setShowModalContent(true);
@@ -339,7 +358,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
       if (clientData.history) {
         mergedInfo = mergedInfo ? `${mergedInfo}\n\n=== DADOS DA IMPORTAÇÃO ===\n${clientData.history}` : clientData.history;
       }
-       
+        
       const formattedClientData = { ...clientData, initialInfo: mergedInfo };
       delete formattedClientData.history; 
 
@@ -360,7 +379,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
       setOriginalData(JSON.parse(JSON.stringify(formattedClientData))); 
       setActiveTab('informacoes');
       setNewCommentText('');
-       
+        
       const now = new Date();
       setApptDate(now.toLocaleDateString('pt-BR'));
       setApptTime(`${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
@@ -379,7 +398,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
     setLeadUpdateCallback((leadId, messageText) => {
       if (clientData?.id === leadId) {
         const newComment = { id: `zap_${Date.now()}`, text: messageText, date: new Date().toISOString() };
-         
+          
         setFormData(prev => {
           const updatedComments = [newComment, ...(prev.comments || [])];
           const updatedData = { ...prev, comments: updatedComments };
@@ -530,6 +549,9 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
         return;
       }
 
+      // Calcula a data real que a notificação deve ser enviada
+      const notifyTime = new Date(eventDateTime.getTime() - apptReminder * 60000);
+
       const newAppointment = {
         id: `appt_${Date.now()}`,
         type: apptType,
@@ -537,6 +559,14 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
         reminderMinutes: apptReminder,
         notified: false
       };
+
+      // --- MANDA PARA O PYTHON AGENDAR ---
+      agendarNotificacaoBackend(
+        currentUserId,
+        '⏰ Lembrete de Agendamento!',
+        `Compromisso com ${formData.name || 'Cliente'} agendado: ${apptType}`,
+        notifyTime.toISOString()
+      );
 
       setFormData(prev => {
         const updatedAppointments = [newAppointment, ...(prev.appointments || [])];
@@ -1453,6 +1483,8 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
     </Modal>
   );
 }
+
+// ... [MANTER TODOS OS ESTILOS ORIGINAIS AQUI] ...
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center' },
