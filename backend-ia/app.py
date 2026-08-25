@@ -3,6 +3,8 @@ from firebase_admin import credentials, messaging
 from supabase import create_client, Client
 import os
 import time
+import threading
+from datetime import datetime, timezone
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from google import genai
@@ -32,9 +34,6 @@ else:
 # 2. FUNÇÃO DE DISPARO DE NOTIFICAÇÃO PUSH
 # ==============================================================================
 def enviar_notificacao_push(user_id: str, titulo: str, mensagem: str):
-    """
-    Busca o token do usuário no Supabase e dispara a notificação via Firebase.
-    """
     try:
         response = supabase.table('user_push_tokens').select('token').eq('user_id', user_id).execute()
         
@@ -49,7 +48,6 @@ def enviar_notificacao_push(user_id: str, titulo: str, mensagem: str):
                 title=titulo,
                 body=mensagem,
             ),
-            # ADICIONAMOS A CONFIGURAÇÃO ESPECÍFICA PARA WEB (LOGO E VIBRAÇÃO) AQUI:
             webpush=messaging.WebpushConfig(
                 notification=messaging.WebpushNotification(
                     icon="/logo192.png",
@@ -72,7 +70,7 @@ def enviar_notificacao_push(user_id: str, titulo: str, mensagem: str):
         return False
 
 # ==============================================================================
-# 3. ROTA GENÉRICA PARA DISPARO DE NOTIFICAÇÕES (CHAMADA PELO FRONT-END)
+# 3. ROTAS PARA DISPARO E AGENDAMENTO DE NOTIFICAÇÕES
 # ==============================================================================
 @app.route('/notificar', methods=['POST'])
 def notificar_usuario():
@@ -89,6 +87,39 @@ def notificar_usuario():
         return jsonify({"success": sucesso}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/agendar-notificacao', methods=['POST'])
+def agendar_notificacao():
+    try:
+        data = request.json
+        target_user_id = data.get('target_user_id')
+        titulo = data.get('titulo')
+        mensagem = data.get('mensagem')
+        data_hora_iso = data.get('data_hora')
+
+        if not target_user_id or not data_hora_iso:
+            return jsonify({"error": "Parâmetros incompletos"}), 400
+
+        # Converte a string ISO do JS (com Z de timezone UTC) para o formato Python
+        dt_evento = datetime.fromisoformat(data_hora_iso.replace("Z", "+00:00"))
+        dt_agora = datetime.now(timezone.utc)
+        segundos_espera = (dt_evento - dt_agora).total_seconds()
+
+        if segundos_espera > 0:
+            # Cria um "cronômetro" que fica rodando na memória do servidor e dispara no momento certo
+            timer = threading.Timer(segundos_espera, enviar_notificacao_push, args=[target_user_id, titulo, mensagem])
+            timer.start()
+            print(f"⏰ Agendamento salvo! Disparo ocorrerá em {segundos_espera} segundos.")
+            return jsonify({"success": True, "message": "Push agendado com sucesso."}), 200
+        else:
+            # Se o agendamento foi pra agora ou no passado, dispara imediatamente
+            enviar_notificacao_push(target_user_id, titulo, mensagem)
+            return jsonify({"success": True, "message": "Push disparado imediatamente."}), 200
+
+    except Exception as e:
+        print(f"❌ Erro ao agendar push: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 # ==============================================================================
 # 4. INTELIGÊNCIA DO MENTORIA E LEITURA DE ARQUIVO
