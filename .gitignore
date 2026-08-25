@@ -37,3 +37,8 @@ __pycache__/
 # Variáveis de ambiente
 .env
 **/.env
+
+firebase-adminsdk.json
+
+# Arquivo temporário de teste
+test_push.py

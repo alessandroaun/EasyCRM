@@ -1,3 +1,6 @@
+import firebase_admin
+from firebase_admin import credentials, messaging
+from supabase import create_client, Client
 import os
 import time
 from flask import Flask, request, jsonify
@@ -11,7 +14,75 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app) 
 
-# Função para ler o arquivo de tabelas
+# ==============================================================================
+# 1. INICIALIZAÇÃO DO FIREBASE E SUPABASE
+# ==============================================================================
+if not firebase_admin._apps:
+    cred = credentials.Certificate("firebase-adminsdk.json")
+    firebase_admin.initialize_app(cred)
+
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+if url and key:
+    supabase: Client = create_client(url, key)
+else:
+    print("⚠️ AVISO: SUPABASE_URL ou SUPABASE_KEY não encontrados no .env")
+
+# ==============================================================================
+# 2. FUNÇÃO DE DISPARO DE NOTIFICAÇÃO PUSH
+# ==============================================================================
+def enviar_notificacao_push(user_id: str, titulo: str, mensagem: str):
+    try:
+        response = supabase.table('user_push_tokens').select('token').eq('user_id', user_id).execute()
+        
+        if not response.data:
+            print(f"⚠️ Usuário {user_id} não possui token de push registrado.")
+            return False
+
+        token_destino = response.data[0]['token']
+
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=titulo,
+                body=mensagem,
+            ),
+            data={
+                "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                "url": "https://a11crm.netlify.app"
+            },
+            token=token_destino
+        )
+
+        resposta_firebase = messaging.send(message)
+        print(f"✅ Notificação enviada com sucesso! ID da Mensagem: {resposta_firebase}")
+        return True
+
+    except Exception as e:
+        print(f"❌ Erro crítico ao enviar push notification: {e}")
+        return False
+
+# ==============================================================================
+# 3. ROTA GENÉRICA PARA DISPARO DE NOTIFICAÇÕES (CHAMADA PELO FRONT-END)
+# ==============================================================================
+@app.route('/notificar', methods=['POST'])
+def notificar_usuario():
+    try:
+        data = request.json
+        target_user_id = data.get('target_user_id')
+        titulo = data.get('titulo', 'Notificação do CRM')
+        mensagem = data.get('mensagem', 'Você tem uma nova atualização.')
+
+        if not target_user_id:
+            return jsonify({"error": "target_user_id obrigatório"}), 400
+
+        sucesso = enviar_notificacao_push(target_user_id, titulo, mensagem)
+        return jsonify({"success": sucesso}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ==============================================================================
+# 4. INTELIGÊNCIA DO MENTORIA E LEITURA DE ARQUIVO
+# ==============================================================================
 def ler_tabelas_consorcio():
     caminho_arquivo = os.path.join(os.path.dirname(__file__), 'tabelas_consorcio.txt')
     if os.path.exists(caminho_arquivo):
@@ -24,6 +95,7 @@ def chat_mentor():
     try:
         data = request.json
         history = data.get('history', [])
+        user_id = data.get('user_id')
 
         client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
@@ -36,10 +108,8 @@ def chat_mentor():
                 )
             )
 
-        # Lê os dados do TXT no momento da requisição
         dados_tabelas = ler_tabelas_consorcio()
 
-        # Instrução de Sistema - Injetando as Tabelas na Memória da IA
         instrucao_sistema = f"""Você é um mentor de alta performance especializado em vendas de consórcios da GT Consórcios, uma representante autorizada a vender consórcio pelo Consórcio Embracon, Consórcio Recon, Consórco Renault, Consórcio Nissan, Consórcio Âncora, Consórcio Yamaha, Consórcio Rodobens, Consórcio Canopus e Consórcio Itaú.
         Sua missão é treinar, tirar dúvidas, ajudar com simulações e fornecer roteiros matadores para os vendedores / consultores de vendas.
         
@@ -73,9 +143,17 @@ def chat_mentor():
                     contents=contents,
                     config=types.GenerateContentConfig(
                         system_instruction=instrucao_sistema,
-                        temperature=0.2 # Temperatura baixa para exatidão matemática
+                        temperature=0.2 
                     )
                 )
+                
+                if user_id:
+                    enviar_notificacao_push(
+                        user_id=user_id,
+                        titulo="🤖 MentorIA Respondeu!",
+                        mensagem="Sua resposta já está pronta no chat. Confira!"
+                    )
+
                 return jsonify({"reply": response.text}), 200
 
             except Exception as e:
