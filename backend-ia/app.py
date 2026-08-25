@@ -32,6 +32,9 @@ else:
 # 2. FUNÇÃO DE DISPARO DE NOTIFICAÇÃO PUSH
 # ==============================================================================
 def enviar_notificacao_push(user_id: str, titulo: str, mensagem: str):
+    """
+    Busca o token do usuário no Supabase e dispara a notificação via Firebase.
+    """
     try:
         response = supabase.table('user_push_tokens').select('token').eq('user_id', user_id).execute()
         
@@ -45,6 +48,13 @@ def enviar_notificacao_push(user_id: str, titulo: str, mensagem: str):
             notification=messaging.Notification(
                 title=titulo,
                 body=mensagem,
+            ),
+            # ADICIONAMOS A CONFIGURAÇÃO ESPECÍFICA PARA WEB (LOGO E VIBRAÇÃO) AQUI:
+            webpush=messaging.WebpushConfig(
+                notification=messaging.WebpushNotification(
+                    icon="/logo192.png",
+                    vibrate=[200, 100, 200]
+                )
             ),
             data={
                 "click_action": "FLUTTER_NOTIFICATION_CLICK",
