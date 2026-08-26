@@ -1,4 +1,3 @@
-// DashboardScreen
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Platform, useWindowDimensions, Animated, Image, Modal } from 'react-native';
 import KanbanColumn from '../components/KanbanColumn';
@@ -47,9 +46,46 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   const [isElectron, setIsElectron] = useState(false);
   const [isAutoImportActive, setIsAutoImportActive] = useState(false);
 
+  // Estados e Refs do MentorIA Chat
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatMounted, setIsChatMounted] = useState(false); 
+  const [chatDisplay, setChatDisplay] = useState('none'); 
+  const [isAiThinking, setIsAiThinking] = useState(false); 
+  
   const chatScale = useRef(new Animated.Value(0.8)).current;
   const chatOpacity = useRef(new Animated.Value(0)).current;
+
+  const isChatOpenRef = useRef(isChatOpen);
+  useEffect(() => {
+    isChatOpenRef.current = isChatOpen;
+  }, [isChatOpen]);
+
+  // Ícone Neon Pulsante (Substitui o diamante da IA quando ela está pensando em background)
+  const NeonThinkingIcon = () => {
+    const pulse = useRef(new Animated.Value(0)).current;
+    useEffect(() => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulse, { toValue: 1, duration: 600, useNativeDriver: false }),
+          Animated.timing(pulse, { toValue: 0, duration: 600, useNativeDriver: false })
+        ])
+      ).start();
+    }, []);
+
+    return (
+      <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center', justifyContent: 'center' }}>
+        {[0, 1, 2].map((i) => (
+          <Animated.View key={i} style={{
+            width: 5, height: 5, borderRadius: 2.5,
+            backgroundColor: pulse.interpolate({ inputRange: [0, 1], outputRange: ['#3b82f6', '#06b6d4'] }),
+            opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.5, 1] }),
+            shadowColor: '#06b6d4', shadowOpacity: 0.8, shadowRadius: 6,
+            transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1.2] }) }]
+          }} />
+        ))}
+      </View>
+    );
+  };
 
   const { width } = useWindowDimensions();
   const isMobile = width < 850; 
@@ -93,7 +129,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   const dispararPushBackend = async (userId, title, message) => {
     try {
       if (!userId) return;
-      await fetch('https://mentor-ia-crm.onrender.com/notificar', { 
+      await fetch('https://backend-ia-569310383004.southamerica-east1.run.app/notificar', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -177,9 +213,14 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
       Animated.parallel([
         Animated.timing(chatScale, { toValue: 0.8, duration: 150, useNativeDriver: Platform.OS !== 'web' }),
         Animated.timing(chatOpacity, { toValue: 0, duration: 150, useNativeDriver: Platform.OS !== 'web' })
-      ]).start(() => setIsChatOpen(false));
+      ]).start(() => {
+        setIsChatOpen(false);
+        setChatDisplay('none');
+      });
     } else {
+      setIsChatMounted(true);
       setIsChatOpen(true);
+      setChatDisplay('flex');
       chatScale.setValue(0.8);
       chatOpacity.setValue(0);
       Animated.parallel([
@@ -254,8 +295,11 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
           onMessage(messaging, (payload) => {
             const title = payload.notification?.title || 'CRM Atualizado';
             
-            // Exibe apenas o Toast suave no topo, sem apitar o sistema operacional.
-            // Também não injetamos no Modal manualmente, pois o Supabase já fará a injeção limpa e original!
+            // Se for notificação do MentorIA e o chat estiver aberto (visível), silencia o Toast.
+            if (title.includes('MentorIA') && isChatOpenRef.current) {
+                return; 
+            }
+            
             showToastNotification(`🔔 ${title}`);
           });
         }
@@ -1466,16 +1510,20 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
                 </View>
               </TouchableOpacity>
 
-              {/* MENTOR IA TOGGLE */}
+              {/* MENTOR IA TOGGLE NO HEADER MOBILE */}
               <TouchableOpacity 
-                style={[styles.aiToggleBtnFancy, currentTheme.notificationBtnFancy, isChatOpen && { borderColor: '#3b82f6', backgroundColor: isDarkMode ? '#1e3a8a' : '#eff6ff' }]} 
+                style={[styles.aiToggleBtnFancy, currentTheme.notificationBtnFancy, (isChatOpen || isAiThinking) && { borderColor: '#3b82f6', backgroundColor: isDarkMode ? '#1e3a8a' : '#eff6ff' }]} 
                 onPress={toggleChat}
                 activeOpacity={0.8}
               >
-                <View style={styles.aiToggleVector}>
-                  <View style={[styles.aiToggleDiamond, { borderColor: isChatOpen ? '#3b82f6' : iconColor }]} />
-                  <View style={[styles.aiToggleCore, { backgroundColor: isChatOpen ? '#2563eb' : iconColor }]} />
-                </View>
+                {isAiThinking && !isChatOpen ? (
+                  <NeonThinkingIcon />
+                ) : (
+                  <View style={styles.aiToggleVector}>
+                    <View style={[styles.aiToggleDiamond, { borderColor: isChatOpen ? '#3b82f6' : iconColor }]} />
+                    <View style={[styles.aiToggleCore, { backgroundColor: isChatOpen ? '#2563eb' : iconColor }]} />
+                  </View>
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -1662,16 +1710,20 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
               </View>
             </TouchableOpacity>
 
-            {/* MENTOR IA TOGGLE */}
+            {/* MENTOR IA TOGGLE NO HEADER DESKTOP */}
             <TouchableOpacity 
-              style={[styles.aiToggleBtnFancy, currentTheme.notificationBtnFancy, isChatOpen && { borderColor: '#3b82f6', backgroundColor: isDarkMode ? '#1e3a8a' : '#eff6ff' }]} 
+              style={[styles.aiToggleBtnFancy, currentTheme.notificationBtnFancy, (isChatOpen || isAiThinking) && { borderColor: '#3b82f6', backgroundColor: isDarkMode ? '#1e3a8a' : '#eff6ff' }]} 
               onPress={toggleChat}
               activeOpacity={0.8}
             >
-              <View style={styles.aiToggleVector}>
-                <View style={[styles.aiToggleDiamond, { borderColor: isChatOpen ? '#3b82f6' : iconColor }]} />
-                <View style={[styles.aiToggleCore, { backgroundColor: isChatOpen ? '#2563eb' : iconColor }]} />
-              </View>
+              {isAiThinking && !isChatOpen ? (
+                <NeonThinkingIcon />
+              ) : (
+                <View style={styles.aiToggleVector}>
+                  <View style={[styles.aiToggleDiamond, { borderColor: isChatOpen ? '#3b82f6' : iconColor }]} />
+                  <View style={[styles.aiToggleCore, { backgroundColor: isChatOpen ? '#2563eb' : iconColor }]} />
+                </View>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -1817,16 +1869,25 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
           {activeView === 'admin_panel' && (<AdminPanel isDarkMode={isDarkMode} />)}
         </View>
 
-        {isChatOpen && (
+        {/* RENDERIZAÇÃO DO CHAT LATERAL */}
+        {isChatMounted && (
           <Animated.View 
             style={[
               styles.chatSidePanel, 
               currentTheme.chatSidePanel,
               isMobile && styles.chatSidePanelMobile,
-              { opacity: chatOpacity, transform: [{ scale: chatScale }] }
+              { 
+                opacity: chatOpacity, 
+                transform: [{ scale: chatScale }],
+                display: chatDisplay // Mantém na memória, mas solta o espaço na tela
+              }
             ]}
           >
-            <MentorChatScreen isDarkMode={isDarkMode} />
+            <MentorChatScreen 
+              isDarkMode={isDarkMode} 
+              isChatOpen={isChatOpen} 
+              onAiThinking={setIsAiThinking} 
+            />
           </Animated.View>
         )}
 
@@ -2177,9 +2238,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   );
 }
 
-// ... [MANTER TODOS OS ESTILOS ORIGINAIS EXATAMENTE COMO ESTAVAM] ...
-// (Como os estilos não sofreram alterações em relação ao controle dos modais,
-// eles permanecem idênticos ao seu código fornecido para garantir o visual intacto).
 const styles = StyleSheet.create({
   container: { flex: 1 },
 

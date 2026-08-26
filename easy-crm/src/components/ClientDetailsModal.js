@@ -95,7 +95,7 @@ export default function ClientDetailsModal({ visible, onClose, clientData, onSav
   const agendarNotificacaoBackend = async (userId, title, message, notifyTimeIso) => {
     try {
       if (!userId) return;
-      await fetch('https://mentor-ia-crm.onrender.com/agendar-notificacao', {
+      await fetch('https://backend-ia-569310383004.southamerica-east1.run.app/agendar-notificacao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
