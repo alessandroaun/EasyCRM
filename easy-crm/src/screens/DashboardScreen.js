@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Platform, useWindowDimensions, Animated, Image, Modal } from 'react-native';
 import KanbanColumn from '../components/KanbanColumn';
 import AddClientModal from '../components/AddClientModal';
@@ -18,6 +18,7 @@ import AdminPanel from '../components/AdminPanel';
 import MentorChatScreen from '../components/MentorChatScreen';
 
 import { messaging, getToken, onMessage } from '../services/firebaseClient';
+import { HistoryContext } from '../../App';
 
 const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
 
@@ -39,6 +40,8 @@ const triggerNativeAlert = (title, body) => {
 };
 
 export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
+  const { pushRoute, popRoute, logout } = useContext(HistoryContext);
+
   const [activeView, setActiveView] = useState('kanban'); 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSellersDropdownOpen, setIsSellersDropdownOpen] = useState(false);
@@ -60,7 +63,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
     isChatOpenRef.current = isChatOpen;
   }, [isChatOpen]);
 
-  // Ícone Neon Pulsante (Substitui o diamante da IA quando ela está pensando em background)
+  // Ícone Neon Pulsante (Quando a IA está pensando)
   const NeonThinkingIcon = () => {
     const pulse = useRef(new Animated.Value(0)).current;
     useEffect(() => {
@@ -89,6 +92,21 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
   const { width } = useWindowDimensions();
   const isMobile = width < 850; 
+
+  // Estado para capturar o mouse (Olhos do Robô)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && !isMobile) {
+      const handleMouseMove = (e) => {
+        const x = (e.clientX / window.innerWidth) * 2 - 1;
+        const y = (e.clientY / window.innerHeight) * 2 - 1;
+        setMousePos({ x, y });
+      };
+      window.addEventListener('mousemove', handleMouseMove);
+      return () => window.removeEventListener('mousemove', handleMouseMove);
+    }
+  }, [isMobile]);
 
   const [boardData, setBoardData] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
@@ -120,12 +138,18 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   
   const triggeredApptsRef = useRef(new Set());
   
-  // Ref para controlar a abertura automática do Modal de Notificações apenas no carregamento inicial
   const isFirstLoad = useRef(true);
 
   // =========================================================================
-  // INTEGRADOR CENTRAL COM O PYTHON (RENDER)
+  // GESTÃO DE VIEWS COM HISTÓRICO
   // =========================================================================
+  const changeView = (newView, path) => {
+    if (newView === activeView) return;
+    const previousView = activeView;
+    setActiveView(newView);
+    pushRoute(path, () => setActiveView(previousView));
+  };
+
   const dispararPushBackend = async (userId, title, message) => {
     try {
       if (!userId) return;
@@ -145,6 +169,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
   const openChangePassModal = () => {
     setIsChangePassModalVisible(true);
+    pushRoute('/##senha', () => closeChangePassModalAnim());
     changePassScale.setValue(0.8);
     changePassOpacity.setValue(0);
     Animated.parallel([
@@ -153,7 +178,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
     ]).start();
   };
 
-  const closeChangePassModal = () => {
+  const closeChangePassModalAnim = () => {
     Animated.parallel([
       Animated.timing(changePassScale, { toValue: 0.8, duration: 150, useNativeDriver: Platform.OS !== 'web' }),
       Animated.timing(changePassOpacity, { toValue: 0, duration: 150, useNativeDriver: Platform.OS !== 'web' })
@@ -165,6 +190,8 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
       setShowNewPassConfirm(false);
     });
   };
+
+  const closeChangePassModal = () => popRoute();
 
   const slideAnim = useRef(new Animated.Value(-280)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
@@ -192,35 +219,39 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   const openSidebar = () => {
     setIsMenuRendered(true);
     setIsMenuOpen(true);
+    pushRoute('/##menu', () => {
+      Animated.parallel([
+        Animated.timing(slideAnim, { toValue: -280, duration: 250, useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(backdropOpacity, { toValue: 0, duration: 250, useNativeDriver: Platform.OS !== 'web' }),
+      ]).start(() => {
+        setIsMenuRendered(false);
+        setIsMenuOpen(false);
+      });
+    });
     Animated.parallel([
       Animated.timing(slideAnim, { toValue: 0, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
       Animated.timing(backdropOpacity, { toValue: 1, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
   };
 
-  const closeSidebar = () => {
-    Animated.parallel([
-      Animated.timing(slideAnim, { toValue: -280, duration: 250, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.timing(backdropOpacity, { toValue: 0, duration: 250, useNativeDriver: Platform.OS !== 'web' }),
-    ]).start(() => {
-      setIsMenuRendered(false);
-      setIsMenuOpen(false);
-    });
-  };
+  const closeSidebar = () => popRoute();
 
   const toggleChat = () => {
     if (isChatOpen) {
-      Animated.parallel([
-        Animated.timing(chatScale, { toValue: 0.8, duration: 150, useNativeDriver: Platform.OS !== 'web' }),
-        Animated.timing(chatOpacity, { toValue: 0, duration: 150, useNativeDriver: Platform.OS !== 'web' })
-      ]).start(() => {
-        setIsChatOpen(false);
-        setChatDisplay('none');
-      });
+      popRoute();
     } else {
       setIsChatMounted(true);
       setIsChatOpen(true);
       setChatDisplay('flex');
+      pushRoute('/##mentoria', () => {
+        Animated.parallel([
+          Animated.timing(chatScale, { toValue: 0.8, duration: 150, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(chatOpacity, { toValue: 0, duration: 150, useNativeDriver: Platform.OS !== 'web' })
+        ]).start(() => {
+          setIsChatOpen(false);
+          setChatDisplay('none');
+        });
+      });
       chatScale.setValue(0.8);
       chatOpacity.setValue(0);
       Animated.parallel([
@@ -236,6 +267,14 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
   const showCustomAlert = (type, title, message) => {
     setAlertConfig({ visible: true, type, title, message });
+    pushRoute('/##alerta', () => {
+      Animated.parallel([
+        Animated.timing(alertScale, { toValue: 0.8, duration: 200, useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(alertOpacity, { toValue: 0, duration: 200, useNativeDriver: Platform.OS !== 'web' })
+      ]).start(() => {
+        setAlertConfig({ visible: false, type: 'success', title: '', message: '' });
+      });
+    });
     alertScale.setValue(0.8);
     alertOpacity.setValue(0);
     Animated.parallel([
@@ -244,14 +283,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
     ]).start();
   };
 
-  const closeCustomAlert = () => {
-    Animated.parallel([
-      Animated.timing(alertScale, { toValue: 0.8, duration: 200, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.timing(alertOpacity, { toValue: 0, duration: 200, useNativeDriver: Platform.OS !== 'web' })
-    ]).start(() => {
-      setAlertConfig({ visible: false, type: 'success', title: '', message: '' });
-    });
-  };
+  const closeCustomAlert = () => popRoute();
 
   const [isPhaseModalVisible, setIsPhaseModalVisible] = useState(false);
   const [isTrashModalVisible, setIsTrashModalVisible] = useState(false);
@@ -295,7 +327,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
           onMessage(messaging, (payload) => {
             const title = payload.notification?.title || 'CRM Atualizado';
             
-            // Se for notificação do MentorIA e o chat estiver aberto (visível), silencia o Toast.
             if (title.includes('MentorIA') && isChatOpenRef.current) {
                 return; 
             }
@@ -536,7 +567,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
         notifs.forEach(n => {
           if (!triggeredApptsRef.current.has(n.appt.id)) {
             triggeredApptsRef.current.add(n.appt.id);
-            // APENAS ADICIONA LOCALMENTE, O PUSH AGORA É CONTROLADO PELO PYTHON NO MOMENTO DO CADASTRO DO AGENDAMENTO!
           }
         });
 
@@ -635,9 +665,9 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
       setBoardData(updatedBoard);
       syncBoardToDatabase(updatedBoard);
       
-      // Abre automaticamente APENAS na primeira renderização se houver pendências
       if (isFirstLoad.current) {
         setIsNotifModalVisible(true);
+        pushRoute('/##notificacoes', () => setIsNotifModalVisible(false));
       }
     }
 
@@ -645,6 +675,68 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
       isFirstLoad.current = false;
     }
   }, [boardData]);
+
+  // Polling de importação automática do WhatsApp Web (Node API)
+  useEffect(() => {
+    let pollingInterval;
+
+    if (isAutoImportActive && Platform.OS === 'web' && boardData && boardData.phases && boardData.phases.length > 0) {
+      pollingInterval = setInterval(async () => {
+        try {
+          const res = await fetch('http://127.0.0.1:3001/auto-leads');
+          const data = await res.json();
+          
+          if (data.leads && data.leads.length > 0) {
+            let leadsToClear = [];
+            let updatedBoard = JSON.parse(JSON.stringify(boardData));
+            let newImportsCount = 0;
+
+            const existingPhones = new Set();
+            updatedBoard.phases.forEach(p => p.clients.forEach(c => {
+                if (c.phone) existingPhones.add(c.phone.replace(/\D/g, ''));
+            }));
+
+            data.leads.forEach(leadRecord => {
+              leadsToClear.push(leadRecord.id); 
+
+              const parsedClientsArray = processLeadsIntelligence(leadRecord.text, true);
+              
+              parsedClientsArray.forEach(newClient => {
+                const cleanPhone = (newClient.phone || '').replace(/\D/g, '');
+                
+                if (cleanPhone && !existingPhones.has(cleanPhone)) {
+                   existingPhones.add(cleanPhone); 
+                   updatedBoard.phases[0].clients.unshift(newClient); 
+                   newImportsCount++;
+                }
+              });
+            });
+
+            if (newImportsCount > 0) {
+              setBoardData(updatedBoard);
+              syncBoardToDatabase(updatedBoard);
+              showToastNotification(`🤖 ${newImportsCount} novo(s) lead(s) importado(s) automaticamente!`);
+              addSystemNotification('Auto-Importação Concluída', `O sistema detectou e importou ${newImportsCount} lead(s) diretamente do WhatsApp de forma automática.`);
+              
+              dispararPushBackend(loggedUserId, "🤖 Auto-Importação Concluída", `O sistema importou ${newImportsCount} lead(s) do WhatsApp.`);
+            }
+
+            if (leadsToClear.length > 0) {
+                await fetch('http://127.0.0.1:3001/auto-leads/clear', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: leadsToClear })
+                });
+            }
+          }
+        } catch (e) {
+            // Ignorado silenciosamente
+        }
+      }, 5000);
+    }
+
+    return () => clearInterval(pollingInterval);
+  }, [isAutoImportActive, boardData, loggedUserId]);
 
   const handleClearNotificationHistory = () => {
     if (!boardData) return;
@@ -930,7 +1022,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   const handleDismissNameChangeAlert = async (targetUserId, notificationId) => {
     await supabase.from('user_profiles').update({ name_change_alert: false }).eq('id', targetUserId);
     setAdminNotifications(prev => prev.filter(n => n.id !== notificationId));
-    addAdminActionToHistory(`Confirmou visualização de mudança de identidade de um vendedor.`);
   };
 
   const handlePermanentDelete = (clientId) => {
@@ -962,6 +1053,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   const handleOpenClientDetails = (client, phaseId) => {
     setSelectedClient({ ...client, currentPhaseId: phaseId });
     setIsDetailsModalVisible(true);
+    pushRoute('/##detalhes', () => { setIsDetailsModalVisible(false); setSelectedClient(null); });
   };
 
   const handleUpdateClientDetails = (updatedClientData) => {
@@ -1041,11 +1133,10 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
       if (error) throw error;
       
       await supabase.from('user_profiles').update({ reset_requested: false }).eq('id', targetUserId);
-      await supabase.auth.resetPasswordForEmail(targetEmail, { redirectTo: 'https://seu-app.com/update-password' });
+      await supabase.auth.resetPasswordForEmail(targetEmail, { redirectTo: 'https://a11crm.netlify.app/update-password' });
 
       showCustomAlert('success', 'Sucesso', `Senha de ${targetEmail} redefinida para 'Senha123!' e e-mail de notificação enviado.`);
       setAdminNotifications(prev => prev.filter(n => n.userId !== targetUserId));
-      addAdminActionToHistory(`Aprovou reset de senha para o e-mail ${targetEmail}`);
     } catch (err) {
       showCustomAlert('error', 'Erro', "Erro ao resetar: " + err.message);
     }
@@ -1054,7 +1145,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   const handleRejectReset = async (targetUserId) => {
     await supabase.from('user_profiles').update({ reset_requested: false }).eq('id', targetUserId);
     setAdminNotifications(prev => prev.filter(n => n.userId !== targetUserId));
-    addAdminActionToHistory(`Recusou pedido de reset de senha.`);
   };
 
   const handleApproveNameChange = async (targetUserId, notificationId) => {
@@ -1080,7 +1170,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
       setAdminNotifications(prev => prev.filter(n => n.id !== notificationId));
       setSystemNotifications(prev => prev.filter(n => n.id !== notificationId));
-      addAdminActionToHistory(`Autorizou a alteração de nome de um vendedor.`);
     } catch (err) {
       console.error("Erro ao aprovar mudança de nome:", err);
     }
@@ -1090,7 +1179,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
     await supabase.from('user_profiles').update({ name_change_requested: false }).eq('id', targetUserId);
     setAdminNotifications(prev => prev.filter(n => n.id !== notificationId));
     setSystemNotifications(prev => prev.filter(n => n.id !== notificationId));
-    addAdminActionToHistory(`Recusou a alteração de nome de um vendedor.`);
   };
 
   const handleUpdateOwnPassword = async () => {
@@ -1112,72 +1200,10 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
     if (error) {
       showCustomAlert('error', 'Erro', "Erro ao alterar senha: " + error.message);
     } else {
-      showCustomAlert('success', 'Sucesso', 'Sua senha foi atualizada com sucesso!');
-      closeChangePassModal();
+      popRoute(); // Fecha o modal via history
+      setTimeout(() => showCustomAlert('success', 'Sucesso', 'Sua senha foi atualizada com sucesso!'), 200);
     }
   };
-
-  useEffect(() => {
-    let pollingInterval;
-
-    if (isAutoImportActive && isElectron && boardData && boardData.phases && boardData.phases.length > 0) {
-      pollingInterval = setInterval(async () => {
-        try {
-          const res = await fetch('http://localhost:3001/auto-leads');
-          const data = await res.json();
-          
-          if (data.leads && data.leads.length > 0) {
-            let leadsToClear = [];
-            let updatedBoard = JSON.parse(JSON.stringify(boardData));
-            let newImportsCount = 0;
-
-            const existingPhones = new Set();
-            updatedBoard.phases.forEach(p => p.clients.forEach(c => {
-                if (c.phone) existingPhones.add(c.phone.replace(/\D/g, ''));
-            }));
-
-            data.leads.forEach(leadRecord => {
-              leadsToClear.push(leadRecord.id); 
-
-              const parsedClientsArray = processLeadsIntelligence(leadRecord.text, true);
-              
-              parsedClientsArray.forEach(newClient => {
-                const cleanPhone = (newClient.phone || '').replace(/\D/g, '');
-                
-                if (cleanPhone && !existingPhones.has(cleanPhone)) {
-                   existingPhones.add(cleanPhone); 
-                   updatedBoard.phases[0].clients.unshift(newClient); 
-                   newImportsCount++;
-                }
-              });
-            });
-
-            if (newImportsCount > 0) {
-              setBoardData(updatedBoard);
-              syncBoardToDatabase(updatedBoard);
-              showToastNotification(`🤖 ${newImportsCount} novo(s) lead(s) importado(s) automaticamente!`);
-              addSystemNotification('Auto-Importação Concluída', `O sistema detectou e importou ${newImportsCount} lead(s) diretamente do WhatsApp de forma automática.`);
-              
-              // GATILHO PARA O BACKEND
-              dispararPushBackend(loggedUserId, "🤖 Auto-Importação Concluída", `O sistema importou ${newImportsCount} lead(s) do WhatsApp.`);
-            }
-
-            if (leadsToClear.length > 0) {
-                await fetch('http://localhost:3001/auto-leads/clear', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ids: leadsToClear })
-                });
-            }
-          }
-        } catch (e) {
-            // Ignorado silenciosamente
-        }
-      }, 5000);
-    }
-
-    return () => clearInterval(pollingInterval);
-  }, [isAutoImportActive, isElectron, boardData]);
 
   const handleTransferLead = async (leadData, targetUserId, withoutComment) => {
     try {
@@ -1244,7 +1270,6 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
           
         showCustomAlert('success', 'Transferência Concluída', `O lead foi transferido com sucesso.`);
         
-        // GATILHO PARA O BACKEND
         dispararPushBackend(targetUserId, "🎯 Novo Lead no seu CRM!", `O administrador transferiu "${leadData.name || 'Sem Nome'}" para você.`);
       } else {
         showCustomAlert('error', 'Erro', 'O quadro do vendedor destino não foi encontrado ou está vazio.');
@@ -1321,10 +1346,48 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
       showCustomAlert('success', 'Sucesso na Transferência', `Os ${extractedLeads.length} leads foram transferidos com sucesso.`);
       
-      // GATILHO PARA O BACKEND
       dispararPushBackend(bulkTargetUserId, "🎯 Novos Leads Transferidos!", `O administrador transferiu ${extractedLeads.length} leads para você.`);
     } catch (err) {
       showCustomAlert('error', 'Erro', 'Falha na transferência em massa: ' + err.message);
+    }
+  };
+
+  const handleBulkDeleteExecute = async () => {
+    if (selectedLeadIds.length === 0 || !boardData) return;
+    try {
+      const updatedCurrentBoard = JSON.parse(JSON.stringify(boardData));
+      if (!updatedCurrentBoard.trash) updatedCurrentBoard.trash = [];
+      const extractedLeads = [];
+
+      updatedCurrentBoard.phases.forEach(phase => {
+        phase.clients = phase.clients.filter(client => {
+          if (selectedLeadIds.includes(client.id)) {
+            client.originalPhaseId = phase.id;
+            const deleteComment = {
+              id: `sys_del_${Date.now()}_${Math.random()}`,
+              text: `⚙️ Sistema: Lead enviado para a lixeira via Exclusão em Massa.`,
+              date: new Date().toISOString()
+            };
+            client.comments = [deleteComment, ...(client.comments || [])];
+            extractedLeads.push(client);
+            return false;
+          }
+          return true;
+        });
+      });
+
+      if (extractedLeads.length === 0) return;
+
+      updatedCurrentBoard.trash.push(...extractedLeads);
+      setBoardData(updatedCurrentBoard);
+      await syncBoardToDatabase(updatedCurrentBoard);
+
+      setIsBulkDeleteActive(false);
+      setSelectedLeadIds([]);
+
+      showCustomAlert('success', 'Sucesso', `${extractedLeads.length} lead(s) enviado(s) para a lixeira com sucesso.`);
+    } catch (err) {
+      showCustomAlert('error', 'Erro', 'Falha ao excluir em massa: ' + err.message);
     }
   };
 
@@ -1369,6 +1432,68 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   const currentTheme = isDarkMode ? darkStyles : lightStyles;
   const iconColor = isDarkMode ? '#94a3b8' : '#64748b';
 
+  const FilterVector = ({ color }) => (
+    <View style={{ alignItems: 'center', justifyContent: 'center', height: 16 }}>
+      <View style={{ width: 0, height: 0, borderLeftWidth: 6, borderRightWidth: 6, borderTopWidth: 7, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: color }} />
+      <View style={{ width: 2, height: 5, backgroundColor: color }} />
+    </View>
+  );
+
+  const TrashVector = ({ color }) => (
+    <View style={{alignItems: 'center'}}>
+      <View style={{width: 6, height: 2, backgroundColor: color, borderTopLeftRadius: 2, borderTopRightRadius: 2}}/>
+      <View style={{width: 14, height: 2, backgroundColor: color, borderRadius: 1}}/>
+      <View style={{width: 10, height: 11, borderWidth: 1.5, borderColor: color, borderTopWidth: 0, borderBottomLeftRadius: 2, borderBottomRightRadius: 2, flexDirection: 'row', justifyContent: 'space-evenly', paddingTop: 2}}>
+        <View style={{width: 1.5, height: 6, backgroundColor: color}}/>
+        <View style={{width: 1.5, height: 6, backgroundColor: color}}/>
+      </View>
+    </View>
+  );
+
+  const TurboTrashVector = ({ color }) => (
+    <View style={{alignItems: 'center', position: 'relative'}}>
+      <TrashVector color={color} />
+      <View style={{position: 'absolute', right: -6, bottom: -4, backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', borderRadius: 6, paddingHorizontal: 1}}>
+         <Text style={{fontSize: 9}}>⚡</Text>
+      </View>
+    </View>
+  );
+
+  const TransferVector = ({ color }) => (
+    <View style={{width: 16, height: 16, borderRadius: 8, borderWidth: 1.5, borderColor: color, borderTopColor: 'transparent', transform: [{rotate: '45deg'}], alignItems: 'center', justifyContent: 'center'}}>
+       <View style={{position: 'absolute', top: -3, right: -1, width: 0, height: 0, borderLeftWidth: 4, borderRightWidth: 4, borderBottomWidth: 5, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderBottomColor: color, transform: [{rotate: '45deg'}]}} />
+    </View>
+  );
+
+  const ImportVector = ({ color }) => (
+    <View style={{alignItems: 'center', justifyContent: 'center', height: 16}}>
+      <View style={{width: 2, height: 7, backgroundColor: color}}/>
+      <View style={{width: 0, height: 0, borderLeftWidth: 4, borderRightWidth: 4, borderTopWidth: 5, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: color}}/>
+      <View style={{width: 14, height: 2, backgroundColor: color, marginTop: 2, borderRadius: 1}}/>
+    </View>
+  );
+
+  const PlusVector = ({ color }) => (
+    <View style={{width: 12, height: 12, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{position: 'absolute', width: 12, height: 2, backgroundColor: color, borderRadius: 1}}/>
+      <View style={{position: 'absolute', width: 2, height: 12, backgroundColor: color, borderRadius: 1}}/>
+    </View>
+  );
+
+  const RobotFaceVector = ({ isThinking, isOpen, color }) => {
+    const activeColor = '#3b82f6';
+    const c = (isOpen || isThinking) ? activeColor : color;
+    return (
+      <View style={{alignItems: 'center'}}>
+        <View style={{width: 2, height: 3, backgroundColor: c, borderTopLeftRadius: 1, borderTopRightRadius: 1}} />
+        <View style={{width: 18, height: 13, borderRadius: 4, borderWidth: 1.5, borderColor: c, flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center'}}>
+          <View style={{width: 3, height: 3, borderRadius: 1.5, backgroundColor: c, transform: [{translateX: mousePos.x * 2}, {translateY: mousePos.y * 2}]}} />
+          <View style={{width: 3, height: 3, borderRadius: 1.5, backgroundColor: c, transform: [{translateX: mousePos.x * 2}, {translateY: mousePos.y * 2}]}} />
+        </View>
+      </View>
+    );
+  };
+
   if (loading) {
     return (
       <View style={[styles.container, currentTheme.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -1399,65 +1524,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
     );
   }
 
-  const handleBulkDeleteExecute = async () => {
-    if (selectedLeadIds.length === 0 || !boardData) return;
-    try {
-      const updatedCurrentBoard = JSON.parse(JSON.stringify(boardData));
-      if (!updatedCurrentBoard.trash) updatedCurrentBoard.trash = [];
-      const extractedLeads = [];
-
-      updatedCurrentBoard.phases.forEach(phase => {
-        phase.clients = phase.clients.filter(client => {
-          if (selectedLeadIds.includes(client.id)) {
-            client.originalPhaseId = phase.id;
-            const deleteComment = {
-              id: `sys_del_${Date.now()}_${Math.random()}`,
-              text: `⚙️ Sistema: Lead enviado para a lixeira via Exclusão em Massa.`,
-              date: new Date().toISOString()
-            };
-            client.comments = [deleteComment, ...(client.comments || [])];
-            extractedLeads.push(client);
-            return false;
-          }
-          return true;
-        });
-      });
-
-      if (extractedLeads.length === 0) return;
-
-      updatedCurrentBoard.trash.push(...extractedLeads);
-      setBoardData(updatedCurrentBoard);
-      await syncBoardToDatabase(updatedCurrentBoard);
-
-      setIsBulkDeleteActive(false);
-      setSelectedLeadIds([]);
-
-      showCustomAlert('success', 'Sucesso', `${extractedLeads.length} lead(s) enviado(s) para a lixeira com sucesso.`);
-    } catch (err) {
-      showCustomAlert('error', 'Erro', 'Falha ao excluir em massa: ' + err.message);
-    }
-  };
-
-  const addAdminActionToHistory = (message) => {
-    if (!boardData) return;
-    const updatedBoard = JSON.parse(JSON.stringify(boardData));
-    if (!updatedBoard.notificationHistory) updatedBoard.notificationHistory = [];
-    
-    updatedBoard.notificationHistory.unshift({
-      id: `hist_admin_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-      text: `Admin: ${message}`,
-      date: new Date().toISOString(),
-      type: 'Sistema' 
-    });
-    
-    setBoardData(updatedBoard);
-    syncBoardToDatabase(updatedBoard);
-  };
-
   const selectedTargetUserObj = usersList.find(u => u.id === bulkTargetUserId);
-  const bulkButtonLabel = selectedTargetUserObj 
-    ? `Transferir Leads (${(selectedTargetUserObj.name || selectedTargetUserObj.email).split(' ')[0]})`
-    : 'Transferir Leads';
 
   return (
     <View style={[styles.container, currentTheme.container]} onStartShouldSetResponder={() => {
@@ -1479,163 +1546,147 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
       
       {isMobile ? (
         <View style={[styles.topHeaderMobileContainer, currentTheme.topHeader]}>
+          
           <View style={styles.mobileRowTop}>
-            <View style={styles.headerLeftGroup}>
-              <TouchableOpacity style={styles.menuButton} onPress={openSidebar}>
-                <Text style={[styles.menuIcon, currentTheme.menuIcon]}>☰</Text>
-              </TouchableOpacity>
-              <Image source={require('../../assets/logoCRM.png')} style={styles.logoImage} resizeMode="contain" />
-            </View>
+            <TouchableOpacity style={styles.menuButton} onPress={openSidebar}>
+              <Text style={[styles.menuIcon, currentTheme.menuIcon]}>☰</Text>
+            </TouchableOpacity>
             
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <TouchableOpacity 
-                style={[styles.themeToggleButtonFancy, currentTheme.themeToggleButtonFancy]} 
-                onPress={() => toggleDarkMode(!isDarkMode)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.themeToggleInner}>
-                  {isDarkMode ? (
-                    <View style={styles.sunContainer}>
-                      <View style={styles.sunCore} />
-                      <View style={[styles.sunRay, { transform: [{ rotate: '0deg' }] }]} />
-                      <View style={[styles.sunRay, { transform: [{ rotate: '45deg' }] }]} />
-                      <View style={[styles.sunRay, { transform: [{ rotate: '90deg' }] }]} />
-                      <View style={[styles.sunRay, { transform: [{ rotate: '135deg' }] }]} />
-                    </View>
-                  ) : (
-                    <View style={styles.moonContainer}>
-                      <View style={styles.moonCrescent} />
-                    </View>
-                  )}
-                </View>
-              </TouchableOpacity>
-
-              {/* MENTOR IA TOGGLE NO HEADER MOBILE */}
-              <TouchableOpacity 
-                style={[styles.aiToggleBtnFancy, currentTheme.notificationBtnFancy, (isChatOpen || isAiThinking) && { borderColor: '#3b82f6', backgroundColor: isDarkMode ? '#1e3a8a' : '#eff6ff' }]} 
-                onPress={toggleChat}
-                activeOpacity={0.8}
-              >
-                {isAiThinking && !isChatOpen ? (
-                  <NeonThinkingIcon />
-                ) : (
-                  <View style={styles.aiToggleVector}>
-                    <View style={[styles.aiToggleDiamond, { borderColor: isChatOpen ? '#3b82f6' : iconColor }]} />
-                    <View style={[styles.aiToggleCore, { backgroundColor: isChatOpen ? '#2563eb' : iconColor }]} />
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={[styles.notificationBtnFancy, currentTheme.notificationBtnFancy]} 
-                onPress={() => setIsNotifModalVisible(true)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.bellContainer}>
-                  <View style={[styles.bellTop, { backgroundColor: isDarkMode ? '#cbd5e1' : '#475569' }]} />
-                  <View style={[styles.bellBottom, { backgroundColor: isDarkMode ? '#cbd5e1' : '#475569' }]} />
-                </View>
-                
-                {(activeNotifications.length + systemNotifications.length + adminNotifications.length) > 0 && (
-                  <View style={styles.notificationBadge}>
-                    <Text style={styles.notificationBadgeText}>
-                      {activeNotifications.length + systemNotifications.length + adminNotifications.length}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.mobileRowMiddle}>
-            <View style={[styles.searchContainer, currentTheme.searchContainer]}>
+            <Image source={require('../../assets/logoCRM.png')} style={[styles.logoImage, {width: 80, marginLeft: 4, marginRight: 6}]} resizeMode="contain" />
+            
+            <View style={[styles.searchContainer, currentTheme.searchContainer, { flex: 1 }]}>
               <TextInput
                 style={[styles.searchInput, currentTheme.searchInput]}
-                placeholder="Buscar Lead..."
+                placeholder="Buscar..."
                 placeholderTextColor={isDarkMode ? '#64748b' : '#94a3b8'}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
             </View>
-            <TouchableOpacity 
-              style={[styles.filterBtn, currentTheme.filterBtn, activeFilter !== 'TODOS' && styles.filterBtnActive]} 
-              onPress={() => setIsFilterModalVisible(true)}
-            >
-              <Text style={[styles.filterBtnText, currentTheme.filterBtnText, activeFilter !== 'TODOS' && styles.filterBtnTextActive]}>
-                Filtro
-              </Text>
-            </TouchableOpacity>
 
-            {userProfile?.role === 'admin' && (
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 6, marginLeft: 6}}>
               <TouchableOpacity 
-                style={[styles.filterBtn, currentTheme.filterBtn, isBulkDeleteActive && { backgroundColor: isDarkMode ? '#450a0a' : '#fee2e2', borderColor: '#ef4444' }]} 
-                onPress={() => {
-                  if (!isBulkDeleteActive) {
-                    setIsBulkDeleteActive(true);
-                    setIsBulkTransferActive(false);
-                  } else {
-                    setIsBulkDeleteActive(false);
-                    setSelectedLeadIds([]);
-                  }
-                }}
+                title="Filtros"
+                style={[styles.fancyBtn, currentTheme.fancyBtn, activeFilter !== 'TODOS' && styles.fancyBtnActive]} 
+                onPress={() => { setIsFilterModalVisible(true); pushRoute('/##filtro', () => setIsFilterModalVisible(false)); }}
               >
-                <Text style={[styles.filterBtnText, currentTheme.filterBtnText, isBulkDeleteActive && { color: '#ef4444' }]}>
-                  Excluir em Massa
-                </Text>
+                <FilterVector color={activeFilter !== 'TODOS' ? '#2563eb' : iconColor} />
               </TouchableOpacity>
-            )}
+
+              {userProfile?.role === 'admin' && (
+                <TouchableOpacity 
+                  title="Excluir em Massa"
+                  style={[styles.fancyBtn, currentTheme.fancyBtn, isBulkDeleteActive && styles.fancyBtnDanger]} 
+                  onPress={() => {
+                    if (!isBulkDeleteActive) { setIsBulkDeleteActive(true); setIsBulkTransferActive(false); } else { setIsBulkDeleteActive(false); setSelectedLeadIds([]); }
+                  }}>
+                  <TurboTrashVector color={isBulkDeleteActive ? '#ef4444' : iconColor} />
+                </TouchableOpacity>
+              )}
+
+              {userProfile?.role === 'admin' && (
+                <View style={{ position: 'relative' }} onStartShouldSetResponder={(e) => { e.stopPropagation(); return false; }}>
+                  <TouchableOpacity 
+                    title="Transferir Leads"
+                    style={[styles.fancyBtn, currentTheme.fancyBtn, isBulkTransferActive && styles.fancyBtnActive, selectedTargetUserObj && { width: 'auto', paddingHorizontal: 10 }]} 
+                    onPress={() => {
+                      if (!isBulkTransferActive) { setIsBulkTransferActive(true); setIsBulkDeleteActive(false); setIsBulkDropdownOpen(true); } else { setIsBulkTransferActive(false); setBulkTargetUserId(null); setSelectedLeadIds([]); setIsBulkDropdownOpen(false); }
+                    }}>
+                    {selectedTargetUserObj ? (
+                      <Text style={styles.fancyBtnTextActive}>{selectedTargetUserObj.name.split(' ')[0]}</Text>
+                    ) : (
+                      <TransferVector color={isBulkTransferActive ? '#2563eb' : iconColor} />
+                    )}
+                  </TouchableOpacity>
+                  {isBulkTransferActive && isBulkDropdownOpen && (
+                    <View style={[styles.bulkDropdownMenu, currentTheme.bulkDropdownMenu, { right: 0, left: 'auto' }]}>
+                      <Text style={[styles.bulkDropdownTitle, currentTheme.bulkDropdownTitle]}>Selecione o Vendedor:</Text>
+                      {usersList.map(u => (
+                        <TouchableOpacity key={u.id} style={[styles.bulkDropdownItem, currentTheme.bulkDropdownItem]} onPress={() => { setBulkTargetUserId(u.id); setIsBulkDropdownOpen(false); }}>
+                          <Text style={[styles.bulkDropdownItemText, currentTheme.bulkDropdownItemText]}>{u.name || u.email}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              )}
+            </View>
           </View>
 
           <View style={styles.mobileRowBottom}>
-            {userProfile?.role === 'admin' && (
-              <View style={{ position: 'relative', flex: 1 }} onStartShouldSetResponder={(e) => { e.stopPropagation(); return false; }}>
-                <TouchableOpacity 
-                  style={[styles.actionBtnSecondary, currentTheme.actionBtnSecondary, styles.mobileActionBtn, isBulkTransferActive && { backgroundColor: isDarkMode ? '#1e3a8a' : '#eff6ff', borderColor: '#3b82f6' }]} 
-                  onPress={() => {
-                    if (!isBulkTransferActive) {
-                      setIsBulkTransferActive(true);
-                      setIsBulkDeleteActive(false);
-                      setIsBulkDropdownOpen(true);
-                    } else {
-                      setIsBulkTransferActive(false);
-                      setBulkTargetUserId(null);
-                      setSelectedLeadIds([]);
-                      setIsBulkDropdownOpen(false);
-                    }
-                  }}
-                >
-                  <Text style={[styles.actionBtnSecondaryText, currentTheme.actionBtnSecondaryText, isBulkTransferActive && { color: '#2563eb' }]} numberOfLines={1}>
-                    {bulkButtonLabel}
-                  </Text>
-                </TouchableOpacity>
-
-                {isBulkTransferActive && isBulkDropdownOpen && (
-                  <View style={[styles.bulkDropdownMenu, currentTheme.bulkDropdownMenu]}>
-                    <Text style={[styles.bulkDropdownTitle, currentTheme.bulkDropdownTitle]}>Selecione o Vendedor:</Text>
-                    {usersList.map(u => (
-                      <TouchableOpacity 
-                        key={u.id} 
-                        style={[styles.bulkDropdownItem, currentTheme.bulkDropdownItem]}
-                        onPress={() => {
-                          setBulkTargetUserId(u.id);
-                          setIsBulkDropdownOpen(false);
-                        }}
-                      >
-                        <Text style={[styles.bulkDropdownItemText, currentTheme.bulkDropdownItemText]}>{u.name || u.email}</Text>
-                      </TouchableOpacity>
-                    ))}
+            <TouchableOpacity 
+              title={isDarkMode ? "Modo Claro" : "Modo Escuro"}
+              style={[styles.fancyBtn, currentTheme.fancyBtn]} 
+              onPress={() => toggleDarkMode(!isDarkMode)} 
+              activeOpacity={0.8}
+            >
+              <View style={styles.themeToggleInner}>
+                {isDarkMode ? (
+                  <View style={styles.sunContainer}>
+                    <View style={styles.sunCore} />
+                    <View style={[styles.sunRay, { transform: [{ rotate: '0deg' }] }]} />
+                    <View style={[styles.sunRay, { transform: [{ rotate: '45deg' }] }]} />
+                    <View style={[styles.sunRay, { transform: [{ rotate: '90deg' }] }]} />
+                    <View style={[styles.sunRay, { transform: [{ rotate: '135deg' }] }]} />
+                  </View>
+                ) : (
+                  <View style={styles.moonContainer}>
+                    <View style={styles.moonCrescent} />
                   </View>
                 )}
               </View>
-            )}
-            <TouchableOpacity style={[styles.actionBtnSecondary, currentTheme.actionBtnSecondary, styles.mobileActionBtn]} onPress={() => setIsTrashModalVisible(true)}>
-              <Text style={[styles.actionBtnSecondaryText, currentTheme.actionBtnSecondaryText]}>Lixeira</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtnSecondary, currentTheme.actionBtnSecondary, styles.mobileActionBtn]} onPress={() => setIsImportModalVisible(true)}>
-              <Text style={[styles.actionBtnSecondaryText, currentTheme.actionBtnSecondaryText]}>Importar</Text>
+
+            <TouchableOpacity 
+              title="Notificações"
+              style={[styles.fancyBtn, currentTheme.fancyBtn]} 
+              onPress={() => { setIsNotifModalVisible(true); pushRoute('/##notificacoes', () => setIsNotifModalVisible(false)); }} 
+              activeOpacity={0.8}
+            >
+              <View style={styles.bellContainer}>
+                <View style={[styles.bellTop, { backgroundColor: iconColor }]} />
+                <View style={[styles.bellBottom, { backgroundColor: iconColor }]} />
+              </View>
+              {(activeNotifications.length + systemNotifications.length + adminNotifications.length) > 0 && (
+                <View style={styles.notificationBadge}>
+                  <Text style={styles.notificationBadgeText}>
+                    {activeNotifications.length + systemNotifications.length + adminNotifications.length}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtnPrimary, styles.mobileActionBtn, { flex: 1.2 }]} onPress={() => setIsClientModalVisible(true)}>
-              <Text style={styles.actionBtnPrimaryText}>+ Novo</Text>
+
+            <TouchableOpacity 
+              title="MentorIA"
+              style={[styles.fancyBtn, currentTheme.fancyBtn, (isChatOpen || isAiThinking) && styles.fancyBtnActive]} 
+              onPress={toggleChat} 
+              activeOpacity={0.8}
+            >
+              {isAiThinking && !isChatOpen ? <NeonThinkingIcon /> : <RobotFaceVector isThinking={isAiThinking} isOpen={isChatOpen} color={iconColor} />}
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              title="Lixeira"
+              style={[styles.fancyBtn, currentTheme.fancyBtn]} 
+              onPress={() => { setIsTrashModalVisible(true); pushRoute('/##lixeira', () => setIsTrashModalVisible(false)); }}
+            >
+              <TrashVector color={iconColor} />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              title="Importar Leads"
+              style={[styles.fancyBtn, currentTheme.fancyBtn]} 
+              onPress={() => { setIsImportModalVisible(true); pushRoute('/##importar', () => setIsImportModalVisible(false)); }}
+            >
+              <ImportVector color={iconColor} />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              title="Novo Lead"
+              style={[styles.fancyBtn, { backgroundColor: '#2563eb', borderColor: '#1d4ed8', width: 60 }]} 
+              onPress={() => { setIsClientModalVisible(true); pushRoute('/##novo-lead', () => setIsClientModalVisible(false)); }}
+            >
+              <PlusVector color="#ffffff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -1657,40 +1708,60 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
                   onChangeText={setSearchQuery}
                 />
               </View>
+
               <TouchableOpacity 
-                style={[styles.filterBtn, currentTheme.filterBtn, activeFilter !== 'TODOS' && styles.filterBtnActive]} 
-                onPress={() => setIsFilterModalVisible(true)}
+                title="Filtros"
+                style={[styles.fancyBtn, currentTheme.fancyBtn, activeFilter !== 'TODOS' && styles.fancyBtnActive]} 
+                onPress={() => { setIsFilterModalVisible(true); pushRoute('/##filtro', () => setIsFilterModalVisible(false)); }}
               >
-                <Text style={[styles.filterBtnText, currentTheme.filterBtnText, activeFilter !== 'TODOS' && styles.filterBtnTextActive]}>
-                  Filtro
-                </Text>
+                <FilterVector color={activeFilter !== 'TODOS' ? '#2563eb' : iconColor} />
               </TouchableOpacity>
 
               {userProfile?.role === 'admin' && (
                 <TouchableOpacity 
-                  style={[styles.filterBtn, currentTheme.filterBtn, isBulkDeleteActive && { backgroundColor: isDarkMode ? '#450a0a' : '#fee2e2', borderColor: '#ef4444' }]} 
+                  title="Excluir em Massa"
+                  style={[styles.fancyBtn, currentTheme.fancyBtn, isBulkDeleteActive && styles.fancyBtnDanger]} 
                   onPress={() => {
-                    if (!isBulkDeleteActive) {
-                      setIsBulkDeleteActive(true);
-                      setIsBulkTransferActive(false);
-                    } else {
-                      setIsBulkDeleteActive(false);
-                      setSelectedLeadIds([]);
-                    }
-                  }}
-                >
-                  <Text style={[styles.filterBtnText, currentTheme.filterBtnText, isBulkDeleteActive && { color: '#ef4444' }]}>
-                    Excluir em Massa
-                  </Text>
+                    if (!isBulkDeleteActive) { setIsBulkDeleteActive(true); setIsBulkTransferActive(false); } else { setIsBulkDeleteActive(false); setSelectedLeadIds([]); }
+                  }}>
+                  <TurboTrashVector color={isBulkDeleteActive ? '#ef4444' : iconColor} />
                 </TouchableOpacity>
+              )}
+
+              {userProfile?.role === 'admin' && (
+                <View style={{ position: 'relative' }} onStartShouldSetResponder={(e) => { e.stopPropagation(); return false; }}>
+                  <TouchableOpacity 
+                    title="Transferir Leads"
+                    style={[styles.fancyBtn, currentTheme.fancyBtn, isBulkTransferActive && styles.fancyBtnActive, selectedTargetUserObj && { width: 'auto', paddingHorizontal: 12 }]} 
+                    onPress={() => {
+                      if (!isBulkTransferActive) { setIsBulkTransferActive(true); setIsBulkDeleteActive(false); setIsBulkDropdownOpen(true); } else { setIsBulkTransferActive(false); setBulkTargetUserId(null); setSelectedLeadIds([]); setIsBulkDropdownOpen(false); }
+                    }}>
+                    {selectedTargetUserObj ? (
+                      <Text style={styles.fancyBtnTextActive}>{selectedTargetUserObj.name.split(' ')[0]}</Text>
+                    ) : (
+                      <TransferVector color={isBulkTransferActive ? '#2563eb' : iconColor} />
+                    )}
+                  </TouchableOpacity>
+                  {isBulkTransferActive && isBulkDropdownOpen && (
+                    <View style={[styles.bulkDropdownMenu, currentTheme.bulkDropdownMenu]}>
+                      <Text style={[styles.bulkDropdownTitle, currentTheme.bulkDropdownTitle]}>Selecione o Vendedor:</Text>
+                      {usersList.map(u => (
+                        <TouchableOpacity key={u.id} style={[styles.bulkDropdownItem, currentTheme.bulkDropdownItem]} onPress={() => { setBulkTargetUserId(u.id); setIsBulkDropdownOpen(false); }}>
+                          <Text style={[styles.bulkDropdownItemText, currentTheme.bulkDropdownItemText]}>{u.name || u.email}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </View>
               )}
             </View>
           </View>
 
           <View style={styles.headerRight}>
             <TouchableOpacity 
-              style={[styles.themeToggleButtonFancy, currentTheme.themeToggleButtonFancy]} 
-              onPress={() => toggleDarkMode(!isDarkMode)}
+              title={isDarkMode ? "Modo Claro" : "Modo Escuro"}
+              style={[styles.fancyBtn, currentTheme.fancyBtn]} 
+              onPress={() => toggleDarkMode(!isDarkMode)} 
               activeOpacity={0.8}
             >
               <View style={styles.themeToggleInner}>
@@ -1710,32 +1781,16 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
               </View>
             </TouchableOpacity>
 
-            {/* MENTOR IA TOGGLE NO HEADER DESKTOP */}
             <TouchableOpacity 
-              style={[styles.aiToggleBtnFancy, currentTheme.notificationBtnFancy, (isChatOpen || isAiThinking) && { borderColor: '#3b82f6', backgroundColor: isDarkMode ? '#1e3a8a' : '#eff6ff' }]} 
-              onPress={toggleChat}
-              activeOpacity={0.8}
-            >
-              {isAiThinking && !isChatOpen ? (
-                <NeonThinkingIcon />
-              ) : (
-                <View style={styles.aiToggleVector}>
-                  <View style={[styles.aiToggleDiamond, { borderColor: isChatOpen ? '#3b82f6' : iconColor }]} />
-                  <View style={[styles.aiToggleCore, { backgroundColor: isChatOpen ? '#2563eb' : iconColor }]} />
-                </View>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.notificationBtnFancy, currentTheme.notificationBtnFancy]} 
-              onPress={() => setIsNotifModalVisible(true)}
+              title="Notificações"
+              style={[styles.fancyBtn, currentTheme.fancyBtn]} 
+              onPress={() => { setIsNotifModalVisible(true); pushRoute('/##notificacoes', () => setIsNotifModalVisible(false)); }} 
               activeOpacity={0.8}
             >
               <View style={styles.bellContainer}>
-                <View style={[styles.bellTop, { backgroundColor: isDarkMode ? '#cbd5e1' : '#475569' }]} />
-                <View style={[styles.bellBottom, { backgroundColor: isDarkMode ? '#cbd5e1' : '#475569' }]} />
+                <View style={[styles.bellTop, { backgroundColor: iconColor }]} />
+                <View style={[styles.bellBottom, { backgroundColor: iconColor }]} />
               </View>
-              
               {(activeNotifications.length + systemNotifications.length + adminNotifications.length) > 0 && (
                 <View style={styles.notificationBadge}>
                   <Text style={styles.notificationBadgeText}>
@@ -1745,65 +1800,47 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
               )}
             </TouchableOpacity>
 
-            {Platform.OS === 'web' && isElectron && currentUserId === loggedUserId && (
+            {Platform.OS === 'web' && currentUserId === loggedUserId && (
               <TouchableOpacity 
-                style={[styles.actionBtnSecondary, { backgroundColor: '#16a34a', borderColor: '#16a34a' }]} 
-                onPress={() => setIsWhatsAppModalVisible(true)}
+                title="DisparaZap"
+                style={[styles.fancyBtn, currentTheme.fancyBtn, { backgroundColor: '#22c55e', borderColor: '#16a34a' }]} 
+                onPress={() => { setIsWhatsAppModalVisible(true); pushRoute('/##disparazap', () => setIsWhatsAppModalVisible(false)); }}
               >
-                <Text style={[styles.actionBtnSecondaryText, { color: '#fff' }]}>DisparaZap</Text>
+                <Image source={{ uri: 'https://omgkvkooitmdqulasdmx.supabase.co/storage/v1/object/public/images/whatsapp_transparent_white.png' }} style={{ width: 22, height: 22, resizeMode: 'contain' }} />
               </TouchableOpacity>
             )}
 
-            {userProfile?.role === 'admin' && (
-              <View style={{ position: 'relative' }} onStartShouldSetResponder={(e) => { e.stopPropagation(); return false; }}>
-                <TouchableOpacity 
-                  style={[styles.actionBtnSecondary, currentTheme.actionBtnSecondary, isBulkTransferActive && { backgroundColor: isDarkMode ? '#1e3a8a' : '#eff6ff', borderColor: '#3b82f6' }]} 
-                  onPress={() => {
-                    if (!isBulkTransferActive) {
-                      setIsBulkTransferActive(true);
-                      setIsBulkDeleteActive(false);
-                      setIsBulkDropdownOpen(true);
-                    } else {
-                      setIsBulkTransferActive(false);
-                      setBulkTargetUserId(null);
-                      setSelectedLeadIds([]);
-                      setIsBulkDropdownOpen(false);
-                    }
-                  }}
-                >
-                  <Text style={[styles.actionBtnSecondaryText, currentTheme.actionBtnSecondaryText, isBulkTransferActive && { color: '#2563eb' }]}>
-                    {bulkButtonLabel}
-                  </Text>
-                </TouchableOpacity>
-
-                {isBulkTransferActive && isBulkDropdownOpen && (
-                  <View style={[styles.bulkDropdownMenu, currentTheme.bulkDropdownMenu]}>
-                    <Text style={[styles.bulkDropdownTitle, currentTheme.bulkDropdownTitle]}>Selecione o Vendedor:</Text>
-                    {usersList.map(u => (
-                      <TouchableOpacity 
-                        key={u.id} 
-                        style={[styles.bulkDropdownItem, currentTheme.bulkDropdownItem]}
-                        onPress={() => {
-                          setBulkTargetUserId(u.id);
-                          setIsBulkDropdownOpen(false);
-                        }}
-                      >
-                        <Text style={[styles.bulkDropdownItemText, currentTheme.bulkDropdownItemText]}>{u.name || u.email}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </View>
-            )}
-
-            <TouchableOpacity style={[styles.actionBtnSecondary, currentTheme.actionBtnSecondary]} onPress={() => setIsTrashModalVisible(true)}>
-              <Text style={[styles.actionBtnSecondaryText, currentTheme.actionBtnSecondaryText]}>Lixeira</Text>
+            <TouchableOpacity 
+              title="MentorIA"
+              style={[styles.fancyBtn, currentTheme.fancyBtn, (isChatOpen || isAiThinking) && styles.fancyBtnActive]} 
+              onPress={toggleChat} 
+              activeOpacity={0.8}
+            >
+              {isAiThinking && !isChatOpen ? <NeonThinkingIcon /> : <RobotFaceVector isThinking={isAiThinking} isOpen={isChatOpen} color={iconColor} mousePos={mousePos} />}
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtnSecondary, currentTheme.actionBtnSecondary]} onPress={() => setIsImportModalVisible(true)}>
-              <Text style={[styles.actionBtnSecondaryText, currentTheme.actionBtnSecondaryText]}>Importar</Text>
+
+            <TouchableOpacity 
+              title="Lixeira"
+              style={[styles.fancyBtn, currentTheme.fancyBtn]} 
+              onPress={() => { setIsTrashModalVisible(true); pushRoute('/##lixeira', () => setIsTrashModalVisible(false)); }}
+            >
+              <TrashVector color={iconColor} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionBtnPrimary} onPress={() => setIsClientModalVisible(true)}>
-              <Text style={styles.actionBtnPrimaryText}>Novo</Text>
+
+            <TouchableOpacity 
+              title="Importar Leads"
+              style={[styles.fancyBtn, currentTheme.fancyBtn]} 
+              onPress={() => { setIsImportModalVisible(true); pushRoute('/##importar', () => setIsImportModalVisible(false)); }}
+            >
+              <ImportVector color={iconColor} />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              title="Novo Lead"
+              style={[styles.fancyBtn, { backgroundColor: '#2563eb', borderColor: '#1d4ed8' }]} 
+              onPress={() => { setIsClientModalVisible(true); pushRoute('/##novo-lead', () => setIsClientModalVisible(false)); }}
+            >
+              <PlusVector color="#ffffff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -1824,7 +1861,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
                   onDropClient={handleDropClient} 
                   onDeleteClient={handleMoveToTrash}
                   onOpenClient={handleOpenClientDetails}
-                  onEditPhase={(p) => setEditingPhase(p)}
+                  onEditPhase={(p) => { setEditingPhase(p); pushRoute('/##editar-fase', () => setEditingPhase(null)); }}
                   onReorderPhase={handleReorderPhase}
                   onAddComment={handleAddCommentToClient}
                   isBulkSelecting={isBulkTransferActive || isBulkDeleteActive}
@@ -1845,7 +1882,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
                 />
               ))}
               {userProfile?.role === 'admin' && (
-                <TouchableOpacity style={[styles.addPhaseButton, currentTheme.addPhaseButton]} onPress={() => setIsPhaseModalVisible(true)}>
+                <TouchableOpacity style={[styles.addPhaseButton, currentTheme.addPhaseButton]} onPress={() => { setIsPhaseModalVisible(true); pushRoute('/##nova-fase', () => setIsPhaseModalVisible(false)); }}>
                   <Text style={[styles.addPhaseText, currentTheme.addPhaseText]}>+ Adicionar Fase</Text>
                 </TouchableOpacity>
               )}
@@ -1879,7 +1916,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
               { 
                 opacity: chatOpacity, 
                 transform: [{ scale: chatScale }],
-                display: chatDisplay // Mantém na memória, mas solta o espaço na tela
+                display: chatDisplay 
               }
             ]}
           >
@@ -1911,10 +1948,11 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
         </TouchableOpacity>
       )}
 
+      {/* MENU LATERAL */}
       {isMenuRendered && (
         <View style={styles.sidebarOverlay}>
           <Animated.View style={[styles.sidebarBackdrop, { opacity: backdropOpacity }]}>
-            <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={closeSidebar} />
+            <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={popRoute} />
           </Animated.View>
           
           <Animated.View style={[
@@ -1937,28 +1975,28 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
               
               <TouchableOpacity 
                 style={[styles.menuItem, currentTheme.menuItem, isMobile && styles.menuItemMobile, activeView === 'kanban' && (isDarkMode ? styles.menuItemActiveDark : styles.menuItemActive)]} 
-                onPress={() => { setActiveView('kanban'); closeSidebar(); }}
+                onPress={() => { popRoute(); setTimeout(() => changeView('kanban', '/principal'), 100); }}
               >
                 <Text style={[styles.menuItemText, currentTheme.menuItemText, isMobile && styles.menuItemTextMobile, activeView === 'kanban' && styles.menuItemTextActive]}>Painel dos Leads</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={[styles.menuItem, currentTheme.menuItem, isMobile && styles.menuItemMobile, activeView === 'minha_central' && (isDarkMode ? styles.menuItemActiveDark : styles.menuItemActive)]} 
-                onPress={() => { setActiveView('minha_central'); closeSidebar(); }}
+                onPress={() => { popRoute(); setTimeout(() => changeView('minha_central', '/central'), 100); }}
               >
                 <Text style={[styles.menuItemText, currentTheme.menuItemText, isMobile && styles.menuItemTextMobile, activeView === 'minha_central' && styles.menuItemTextActive]}>Minha Central</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
                 style={[styles.menuItem, currentTheme.menuItem, isMobile && styles.menuItemMobile, activeView === 'info_gerais' && (isDarkMode ? styles.menuItemActiveDark : styles.menuItemActive)]} 
-                onPress={() => { setActiveView('info_gerais'); closeSidebar(); }}
+                onPress={() => { popRoute(); setTimeout(() => changeView('info_gerais', '/informacoes'), 100); }}
               >
                 <Text style={[styles.menuItemText, currentTheme.menuItemText, isMobile && styles.menuItemTextMobile, activeView === 'info_gerais' && styles.menuItemTextActive]}>Visão Geral</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
                 style={[styles.menuItem, currentTheme.menuItem, isMobile && styles.menuItemMobile, activeView === 'configuracao' && (isDarkMode ? styles.menuItemActiveDark : styles.menuItemActive)]} 
-                onPress={() => { setActiveView('configuracao'); closeSidebar(); }}
+                onPress={() => { popRoute(); setTimeout(() => changeView('configuracao', '/configuracao'), 100); }}
               >
                 <Text style={[styles.menuItemText, currentTheme.menuItemText, isMobile && styles.menuItemTextMobile, activeView === 'configuracao' && styles.menuItemTextActive]}>Configuração</Text>
               </TouchableOpacity>
@@ -1968,7 +2006,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
                   <Text style={[styles.menuSectionTitle, currentTheme.menuSectionTitle, { color: '#3b82f6', marginBottom: 8 }]}>ADMINISTRAÇÃO</Text>
                   <TouchableOpacity 
                     style={[styles.menuItem, currentTheme.adminMenuItem, isMobile && styles.menuItemMobile, activeView === 'admin_panel' && styles.adminMenuItemActive]} 
-                    onPress={() => { setActiveView('admin_panel'); closeSidebar(); }}
+                    onPress={() => { popRoute(); setTimeout(() => changeView('admin_panel', '/administracao'), 100); }}
                   >
                     <Text style={[styles.adminMenuItemText, currentTheme.adminMenuItemText, isMobile && styles.adminMenuItemTextMobile]}>Painel Administrativo</Text>
                   </TouchableOpacity>
@@ -2001,8 +2039,8 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
                               ]} 
                               onPress={() => { 
                                 setCurrentUserId(u.id); 
-                                setActiveView('kanban'); 
-                                closeSidebar(); 
+                                popRoute(); 
+                                setTimeout(() => changeView('kanban', '/principal'), 100); 
                               }}
                             >
                               <View style={[styles.sellerIndicatorDot, isSelectedUser && styles.sellerIndicatorDotActive]} />
@@ -2025,7 +2063,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
             <View style={[styles.sidebarFooterContainer, currentTheme.sidebarFooterContainer]}>
               <TouchableOpacity 
                 style={[styles.sidebarFooterButtonChangePass, currentTheme.sidebarFooterButtonChangePass, isMobile && styles.sidebarFooterButtonMobile]} 
-                onPress={() => { openChangePassModal(); closeSidebar(); }}
+                onPress={() => { popRoute(); setTimeout(() => openChangePassModal(), 100); }}
                 activeOpacity={0.8}
               >
                 <Text style={[styles.sidebarFooterButtonChangePassText, currentTheme.sidebarFooterButtonChangePassText, isMobile && styles.sidebarFooterButtonTextMobile]}>Trocar Minha Senha</Text>
@@ -2033,7 +2071,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
               <TouchableOpacity 
                 style={[styles.sidebarFooterButtonLogout, currentTheme.sidebarFooterButtonLogout, isMobile && styles.sidebarFooterButtonMobile]} 
-                onPress={() => { setIsLogoutModalVisible(true); closeSidebar(); }}
+                onPress={() => { popRoute(); setTimeout(() => { setIsLogoutModalVisible(true); pushRoute('/##sair', () => setIsLogoutModalVisible(false)); }, 100); }}
                 activeOpacity={0.8}
               >
                 <Text style={[styles.sidebarFooterButtonLogoutText, currentTheme.sidebarFooterButtonLogoutText, isMobile && styles.sidebarFooterButtonTextMobile]}>Encerrar Sessão</Text>
@@ -2044,28 +2082,26 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
         </View>
       )}
 
-      {/* MODAIS GERAIS (NORMAL Z-INDEX) */}
-      <AddClientModal visible={isClientModalVisible} onClose={() => setIsClientModalVisible(false)} onSave={handleSaveNewClient} isDarkMode={isDarkMode} />
-      <AddPhaseModal visible={isPhaseModalVisible} onClose={() => setIsPhaseModalVisible(false)} onSave={handleSaveNewPhase} isDarkMode={isDarkMode} />
-      <TrashModal visible={isTrashModalVisible} onClose={() => setIsTrashModalVisible(false)} trashClients={boardData?.trash || []} onPermanentDelete={handlePermanentDelete} onRestore={handleRestoreFromTrash} isDarkMode={isDarkMode} />
-      <FilterModal visible={isFilterModalVisible} onClose={() => setIsFilterModalVisible(false)} activeFilter={activeFilter} onSelectFilter={setActiveFilter} isDarkMode={isDarkMode} />
-      <ImportLeadsModal visible={isImportModalVisible} onClose={() => setIsImportModalVisible(false)} onImport={handleImportLeads} isDarkMode={isDarkMode} />
-      <EditPhaseModal visible={!!editingPhase} onClose={() => setEditingPhase(null)} phase={editingPhase} allPhases={boardData.phases} onSave={handleUpdatePhase} onDelete={handleDeletePhase} isDarkMode={isDarkMode} />
-      <ClientDetailsModal visible={isDetailsModalVisible} onClose={() => { setIsDetailsModalVisible(false); setSelectedClient(null); }} clientData={selectedClient} onSave={handleUpdateClientDetails} isAdmin={userProfile?.role === 'admin'} usersList={usersList} currentUserId={currentUserId} onTransferLead={handleTransferLead} isDarkMode={isDarkMode} />
+      {/* MODAIS GERAIS COM POPROUTE */}
+      <AddClientModal visible={isClientModalVisible} onClose={popRoute} onSave={handleSaveNewClient} isDarkMode={isDarkMode} />
+      <AddPhaseModal visible={isPhaseModalVisible} onClose={popRoute} onSave={handleSaveNewPhase} isDarkMode={isDarkMode} />
+      <TrashModal visible={isTrashModalVisible} onClose={popRoute} trashClients={boardData?.trash || []} onPermanentDelete={handlePermanentDelete} onRestore={handleRestoreFromTrash} isDarkMode={isDarkMode} />
+      <FilterModal visible={isFilterModalVisible} onClose={popRoute} activeFilter={activeFilter} onSelectFilter={setActiveFilter} isDarkMode={isDarkMode} />
+      <EditPhaseModal visible={!!editingPhase} onClose={popRoute} phase={editingPhase} allPhases={boardData.phases} onSave={handleUpdatePhase} onDelete={handleDeletePhase} isDarkMode={isDarkMode} />
+      <ClientDetailsModal visible={isDetailsModalVisible} onClose={popRoute} clientData={selectedClient} onSave={handleUpdateClientDetails} isAdmin={userProfile?.role === 'admin'} usersList={usersList} currentUserId={currentUserId} onTransferLead={handleTransferLead} isDarkMode={isDarkMode} />
       
       <ImportLeadsModal 
         visible={isImportModalVisible} 
-        onClose={() => setIsImportModalVisible(false)} 
+        onClose={popRoute} 
         onImport={handleImportLeads} 
         isDarkMode={isDarkMode}
-        isElectron={isElectron}
         isAutoImportActive={isAutoImportActive}
         onToggleAutoImport={setIsAutoImportActive}
       />
 
       <NotificationModal 
         visible={isNotifModalVisible} 
-        onClose={() => setIsNotifModalVisible(false)} 
+        onClose={popRoute} 
         notifications={[...(activeNotifications || []), ...(systemNotifications || []), ...(adminNotifications || [])]} 
         historyNotifications={boardData?.notificationHistory || []}
         onDismiss={handleDismissNotification}
@@ -2081,11 +2117,12 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
       <WhatsAppBulkModal 
         visible={isWhatsAppModalVisible} 
-        onClose={() => setIsWhatsAppModalVisible(false)} 
+        onClose={popRoute} 
         boardData={boardData}
         onComplete={(stats) => {
           addSystemNotification('Disparo Concluído', `Os disparos para ${stats.total} leads foram finalizados. Sucesso: ${stats.success}, Erros: ${stats.error}.`);
           setIsNotifModalVisible(true);
+          pushRoute('/##notificacoes', () => setIsNotifModalVisible(false));
           
           // GATILHO PARA O BACKEND
           dispararPushBackend(loggedUserId, "✅ Disparos Concluídos", `Os disparos para ${stats.total} leads foram finalizados.`);
@@ -2176,7 +2213,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
             </View>
 
             <View style={styles.modalButtons}>
-              <TouchableOpacity style={[styles.cancelBtn, currentTheme.cancelBtnStyle]} onPress={closeChangePassModal}>
+              <TouchableOpacity style={[styles.cancelBtn, currentTheme.cancelBtnStyle]} onPress={popRoute}>
                 <Text style={[styles.cancelBtnText, currentTheme.cancelBtnTextStyle]}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.confirmBtn, { backgroundColor: '#4f46e5' }]} onPress={handleUpdateOwnPassword} disabled={isChangingPass}>
@@ -2193,18 +2230,18 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
             <Text style={[styles.modalTitle, currentTheme.modalTitle]}>Confirmar Saída</Text>
             <Text style={[styles.modalText, currentTheme.modalText]}>Tem certeza que deseja sair? Certifique-se de que todas as alterações foram salvas.</Text>
             <View style={styles.modalButtons}>
-              <TouchableOpacity style={[styles.cancelBtn, currentTheme.cancelBtnStyle]} onPress={() => setIsLogoutModalVisible(false)}>
+              <TouchableOpacity style={[styles.cancelBtn, currentTheme.cancelBtnStyle]} onPress={popRoute}>
                 <Text style={[styles.cancelBtnText, currentTheme.cancelBtnTextStyle]}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.confirmBtn} onPress={async () => {
                 try {
-                  await fetch('http://localhost:3001/desconectar', { method: 'POST' });
+                  await fetch('http://127.0.0.1:3001/desconectar', { method: 'POST' });
                 } catch (e) {
                   console.log('API do WhatsApp offline ou inacessível no momento do logout:', e.message);
                 }
 
-                await supabase.auth.signOut();
                 setIsLogoutModalVisible(false);
+                logout(); // Agora essa função existe e vai rebobinar o navegador e deslogar!
               }}>
                 <Text style={styles.confirmBtnText}>Sair</Text>
               </TouchableOpacity>
@@ -2213,21 +2250,21 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
         </View>
       )}
 
-      <Modal animationType="fade" transparent={true} visible={alertConfig.visible} onRequestClose={closeCustomAlert}>
+      <Modal animationType="fade" transparent={true} visible={alertConfig.visible} onRequestClose={popRoute}>
         <View style={[styles.modalOverlay, { zIndex: 999999, elevation: 100 }]}>
           <Animated.View style={[styles.alertModalBox, currentTheme.alertModalBox, { opacity: alertOpacity, transform: [{ scale: alertScale }], padding: 24, maxWidth: 400 }]}>
             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16, position: 'relative', width: '100%'}}>
               <Text style={[styles.alertModalTitle, currentTheme.alertModalTitle, {marginBottom: 0, fontSize: 18, textAlign: 'center'}]}>
                 {alertConfig.type === 'error' ? '❌ ' : alertConfig.type === 'warning' ? '⏳ ' : '✅ '}{alertConfig.title}
               </Text>
-              <TouchableOpacity onPress={closeCustomAlert} style={{position: 'absolute', right: 0}}>
+              <TouchableOpacity onPress={popRoute} style={{position: 'absolute', right: 0}}>
                 <Text style={[{fontSize: 20, fontWeight: 'bold'}, isDarkMode ? {color: '#94a3b8'} : {color: '#64748b'}]}>✕</Text>
               </TouchableOpacity>
             </View>
             <View style={{ marginBottom: 24, width: '100%' }}>
               <Text style={[styles.alertModalMessage, currentTheme.alertModalMessage, {textAlign: 'center', fontSize: 14, marginBottom: 0}]}>{alertConfig.message}</Text>
             </View>
-            <TouchableOpacity style={[styles.alertModalBtn, alertConfig.type === 'error' && { backgroundColor: '#ef4444' }, { alignSelf: 'center', paddingHorizontal: 32, width: 'auto' }]} onPress={closeCustomAlert}>
+            <TouchableOpacity style={[styles.alertModalBtn, alertConfig.type === 'error' && { backgroundColor: '#ef4444' }, { alignSelf: 'center', paddingHorizontal: 32, width: 'auto' }]} onPress={popRoute}>
               <Text style={styles.alertModalBtnText}>{alertConfig.type === 'success' ? 'Continuar' : 'Compreendido'}</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -2251,37 +2288,24 @@ const styles = StyleSheet.create({
     })
   },
 
-  notificationBtnFancy: {
+  fancyBtn: {
     width: 36,
     height: 36,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    position: 'relative',
     ...Platform.select({
       web: { transition: 'all 0.2s ease', cursor: 'pointer' }
     })
   },
+  fancyBtnActive: { backgroundColor: '#eff6ff', borderColor: '#3b82f6' },
+  fancyBtnDanger: { backgroundColor: '#fee2e2', borderColor: '#ef4444' },
+  fancyBtnTextActive: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '800', color: '#2563eb' },
+
   bellContainer: { width: 16, height: 18, justifyContent: 'center', alignItems: 'center' },
   bellTop: { width: 14, height: 10, borderTopLeftRadius: 7, borderTopRightRadius: 7, borderBottomLeftRadius: 2, borderBottomRightRadius: 2 },
   bellBottom: { width: 4, height: 3, marginTop: 1, borderRadius: 2 },
-
-  aiToggleBtnFancy: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    marginRight: 6,
-    ...Platform.select({
-      web: { transition: 'all 0.2s ease', cursor: 'pointer' }
-    })
-  },
-  aiToggleVector: { width: 16, height: 16, justifyContent: 'center', alignItems: 'center', position: 'relative' },
-  aiToggleDiamond: { position: 'absolute', width: 12, height: 12, borderWidth: 2, transform: [{ rotate: '45deg' }] },
-  aiToggleCore: { position: 'absolute', width: 4, height: 4, borderRadius: 2 },
 
   toastContainer: {
     position: 'absolute',
@@ -2300,18 +2324,6 @@ const styles = StyleSheet.create({
   toastIcon: { fontSize: 18, marginRight: 8 },
   toastText: { fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '700' },
 
-  themeToggleButtonFancy: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    marginRight: 6,
-    ...Platform.select({
-      web: { transition: 'all 0.2s ease', cursor: 'pointer', boxShadow: '0px 2px 5px rgba(0,0,0,0.05)' }
-    })
-  },
   themeToggleInner: { width: 20, height: 20, justifyContent: 'center', alignItems: 'center' },
   sunContainer: { width: 14, height: 14, justifyContent: 'center', alignItems: 'center' },
   sunCore: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#fbbf24' },
@@ -2320,32 +2332,21 @@ const styles = StyleSheet.create({
   moonCrescent: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: '#64748b', borderRightColor: 'transparent', borderBottomColor: 'transparent', transform: [{ rotate: '-45deg' }] },
   
   topHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, zIndex: 50 },
-  headerLeftGroup: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
+  headerLeftGroup: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
   menuButton: { padding: 2 },
   menuIcon: { fontSize: 20, fontWeight: 'bold' },
-  logoText3D: { fontFamily: MODERN_FONT, fontSize: 18, fontWeight: '900', color: '#1e3a8a', fontStyle: 'italic', letterSpacing: -1, ...Platform.select({ web: { textShadow: '1px 1px 0px #3b82f6, 2px 2px 0px #2563eb' } }) },
-  headerCenter: { flexDirection: 'row', alignItems: 'center', marginLeft: 8 },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 6, flex: 1, height: 32, paddingHorizontal: 8 },
-  searchInput: { flex: 1, fontFamily: MODERN_FONT, fontSize: 12, ...Platform.select({ web: { outlineStyle: 'none' } }) },
-  filterBtn: { borderWidth: 1, borderRadius: 6, height: 32, paddingHorizontal: 10, justifyContent: 'center', marginLeft: 6 },
-  filterBtnActive: { backgroundColor: '#EFF6FF', borderColor: '#3B82F6' },
-  filterBtnText: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '700' },
-  filterBtnTextActive: { color: '#2563EB' },
+  
+  headerCenter: { flexDirection: 'row', alignItems: 'center', marginLeft: 8, gap: 6 },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 6, height: 36, paddingHorizontal: 10, width: 200 },
+  searchInput: { flex: 1, fontFamily: MODERN_FONT, fontSize: 13, ...Platform.select({ web: { outlineStyle: 'none' } }) },
+  
   headerRight: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 6 },
-  iconBtn: { padding: 4, position: 'relative' },
-  iconBtnText: { fontSize: 16 },
-  notificationBadge: { position: 'absolute', top: 0, right: 0, backgroundColor: '#ef4444', borderRadius: 8, width: 14, height: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#ffffff' },
-  notificationBadgeText: { color: '#ffffff', fontSize: 8, fontWeight: 'bold', fontFamily: MODERN_FONT },
-  actionBtnSecondary: { borderWidth: 1, paddingVertical: 6, paddingHorizontal: 8, borderRadius: 6 },
-  actionBtnSecondaryText: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '700' },
-  actionBtnPrimary: { backgroundColor: '#2563eb', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 6 },
-  actionBtnPrimaryText: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '700', color: '#ffffff' },
+  notificationBadge: { position: 'absolute', top: -4, right: -4, backgroundColor: '#ef4444', borderRadius: 8, width: 16, height: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#ffffff' },
+  notificationBadgeText: { color: '#ffffff', fontSize: 9, fontWeight: 'bold', fontFamily: MODERN_FONT },
 
-  topHeaderMobileContainer: { paddingHorizontal: 10, paddingTop: 6, paddingBottom: 8, borderBottomWidth: 1, zIndex: 50 },
-  mobileRowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  mobileRowMiddle: { flexDirection: 'row', alignItems: 'center', width: '100%', marginBottom: 6, gap: 6 },
-  mobileRowBottom: { flexDirection: 'row', justifyContent: 'space-between', gap: 6, width: '100%' },
-  mobileActionBtn: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 6 },
+  topHeaderMobileContainer: { paddingHorizontal: 10, paddingTop: 8, paddingBottom: 10, borderBottomWidth: 1, zIndex: 50 },
+  mobileRowTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  mobileRowBottom: { flexDirection: 'row', justifyContent: 'flex-end', gap: 6, width: '100%' },
 
   boardContainer: { flex: 1, paddingTop: 12, paddingHorizontal: 12 },
   addPhaseButton: { width: 220, borderRadius: 12, padding: 12, alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', borderWidth: 2, maxHeight: 46, marginRight: 16 },
@@ -2424,14 +2425,13 @@ const styles = StyleSheet.create({
   alertModalBtn: { backgroundColor: '#2563eb', paddingVertical: 11, borderRadius: 8, alignItems: 'center' },
   alertModalBtnText: { color: '#ffffff', fontWeight: '700', fontSize: 13, fontFamily: MODERN_FONT },
 
-  bulkDropdownMenu: { position: 'absolute', top: 40, left: 0, right: 0, borderWidth: 1, borderRadius: 8, minWidth: 140, padding: 6, zIndex: 1000 },
+  bulkDropdownMenu: { position: 'absolute', top: 44, left: 0, borderWidth: 1, borderRadius: 8, minWidth: 140, padding: 6, zIndex: 1000 },
   bulkDropdownTitle: { fontSize: 11, fontWeight: 'bold', marginBottom: 4, paddingHorizontal: 4 },
   bulkDropdownItem: { paddingVertical: 8, paddingHorizontal: 6, borderRadius: 4 },
   bulkDropdownItemText: { fontSize: 12, fontWeight: '600' },
+  
   floatingBulkBtn: { position: 'absolute', bottom: 24, right: 24, backgroundColor: '#2563eb', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 30, zIndex: 999, ...Platform.select({ web: { boxShadow: '0px 6px 16px rgba(37, 99, 235, 0.4)' } }) },
   floatingBulkBtnText: { color: '#ffffff', fontWeight: '800', fontSize: 14, fontFamily: MODERN_FONT },
-  themeToggleButton: { width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center' },
-  themeToggleIcon: { fontSize: 15 },
   blockTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' },
   blockText: { fontSize: 16, textAlign: 'center', maxWidth: 400 },
   cancelBtnStyle: { borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
@@ -2442,17 +2442,11 @@ const lightStyles = StyleSheet.create({
   container: { backgroundColor: '#F9FAFB' },
   topHeader: { backgroundColor: '#ffffff', borderBottomColor: '#e2e8f0', ...Platform.select({ web: { boxShadow: '0px 1px 3px rgba(0,0,0,0.05)' } }) },
   menuIcon: { color: '#334155' },
-  themeToggleButton: { backgroundColor: '#f1f5f9' },
   toastContainer: { backgroundColor: '#10b981', borderColor: '#059669' },
   toastText: { color: '#ffffff' },
-  themeToggleButtonFancy: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
-  searchContainer: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
+  fancyBtn: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
+  searchContainer: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
   searchInput: { color: '#0f172a' },
-  notificationBtnFancy: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
-  filterBtn: { backgroundColor: '#f1f5f9', borderColor: '#cbd5e1' },
-  filterBtnText: { color: '#475569' },
-  actionBtnSecondary: { backgroundColor: '#ffffff', borderColor: '#cbd5e1' },
-  actionBtnSecondaryText: { color: '#475569' },
   addPhaseButton: { backgroundColor: 'rgba(226, 232, 240, 0.5)', borderColor: '#CBD5E1' },
   addPhaseText: { color: '#64748B' },
   chatSidePanel: { backgroundColor: '#f1f5f9', borderLeftColor: '#e2e8f0' },
@@ -2500,17 +2494,11 @@ const darkStyles = StyleSheet.create({
   container: { backgroundColor: '#0f172a' },
   topHeader: { backgroundColor: '#1e293b', borderBottomColor: '#334155', ...Platform.select({ web: { boxShadow: '0px 1px 3px rgba(0,0,0,0.2)' } }) },
   menuIcon: { color: '#f8fafc' },
-  themeToggleButton: { backgroundColor: '#334155' },
+  fancyBtn: { backgroundColor: '#1e293b', borderColor: '#334155' },
   searchContainer: { backgroundColor: '#0f172a', borderColor: '#334155' },
   searchInput: { color: '#f8fafc' },
   toastContainer: { backgroundColor: '#064e3b', borderColor: '#047857' },
   toastText: { color: '#a7f3d0' },
-  filterBtn: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  filterBtnText: { color: '#94a3b8' },
-  themeToggleButtonFancy: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  actionBtnSecondary: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  actionBtnSecondaryText: { color: '#cbd5e1' },
-  notificationBtnFancy: { backgroundColor: '#1e293b', borderColor: '#334155' },
   addPhaseButton: { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: '#334155' },
   addPhaseText: { color: '#94a3b8' },
   chatSidePanel: { backgroundColor: '#0f172a', borderLeftColor: '#334155' },
@@ -2551,5 +2539,7 @@ const darkStyles = StyleSheet.create({
   blockTitle: { color: '#f8fafc' },
   blockText: { color: '#94a3b8' },
   cancelBtnStyle: { backgroundColor: '#334155', borderColor: '#475569' },
-  cancelBtnTextStyle: { color: '#cbd5e1' }
+  cancelBtnTextStyle: { color: '#cbd5e1' },
+  fancyBtnActive: { backgroundColor: '#1e3a8a', borderColor: '#3b82f6' },
+  fancyBtnDanger: { backgroundColor: '#450a0a', borderColor: '#ef4444' }
 });

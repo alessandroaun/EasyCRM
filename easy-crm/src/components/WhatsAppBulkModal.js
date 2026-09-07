@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../services/supabaseClient';
 import ReportModal from './ReportModal';
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, ActivityIndicator, Image, Animated } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ScrollView, ActivityIndicator, Image, Animated, Linking, useWindowDimensions } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 
 let globalIsSending = false;
@@ -11,6 +11,8 @@ let globalLogs = [];
 let globalProgressText = '';
 let globalStats = { success: 0, error: 0, total: 0, startTime: null, messageSummary: '' };
 let onLeadUpdateCallback = null;
+
+const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
 
 export const setLeadUpdateCallback = (callback) => {
   onLeadUpdateCallback = callback;
@@ -26,6 +28,7 @@ const CheckBox = ({ label, value, onValueChange, isDarkMode }) => (
 );
 
 export default function WhatsAppBulkModal({ visible, onClose, boardData, onComplete, isDarkMode }) {
+  const { height: windowHeight } = useWindowDimensions();
   const hasTransitioned = useRef(false);
   const [connectionStage, setConnectionStage] = useState('connecting');
   const [botNumber, setBotNumber] = useState('');  
@@ -52,12 +55,20 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
   const [alertMessage, setAlertMessage] = useState('');
   const [alertActionType, setAlertActionType] = useState(null);
 
-  // Estados de Timeout / Auto-Recovery UI
   const [showReconnectBtn, setShowReconnectBtn] = useState(false);
 
-  // Animação do Modal
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  // Refs para controle infalível de Timeouts e "Stale Closures"
+  const fastCheckInterval = useRef(null);
+  const connectionTimeout = useRef(null);
+  const disconnectionTimeout = useRef(null);
+  const connectionStageRef = useRef(connectionStage);
+
+  useEffect(() => {
+    connectionStageRef.current = connectionStage;
+  }, [connectionStage]);
 
   const showAlert = (title, message, actionType = 'info') => {
     setAlertTitle(title);
@@ -83,7 +94,6 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
   useEffect(() => {
     let interval;
     if (visible) {
-      // Ativa animação Zoom In
       Animated.parallel([
         Animated.spring(scaleAnim, { toValue: 1, friction: 6, useNativeDriver: Platform.OS !== 'web' }),
         Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: Platform.OS !== 'web' })
@@ -93,30 +103,37 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
       hasTransitioned.current = false; 
       checkBotStatus();
       fetchHistorico();
-      interval = setInterval(checkBotStatus, 1500);
+      interval = setInterval(checkBotStatus, 2000);
       
       setIsSending(globalIsSending);
       setIsPaused(globalIsPaused);
       setLogs(globalLogs);
       setProgressText(globalProgressText);
     } else {
-      // Reseta estado da animação
       scaleAnim.setValue(0.8);
       fadeAnim.setValue(0);
       setQrCodeImage(null);
+      // Limpa rastros de timeout ao fechar o modal
+      if (fastCheckInterval.current) clearInterval(fastCheckInterval.current);
+      if (connectionTimeout.current) clearTimeout(connectionTimeout.current);
+      if (disconnectionTimeout.current) clearTimeout(disconnectionTimeout.current);
     }
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (fastCheckInterval.current) clearInterval(fastCheckInterval.current);
+      if (connectionTimeout.current) clearTimeout(connectionTimeout.current);
+      if (disconnectionTimeout.current) clearTimeout(disconnectionTimeout.current);
+    };
   }, [visible]);
 
-  // Lógica do Temporizador de 60s para mostrar botão "Reconectar"
   useEffect(() => {
     let timeoutId;
     setShowReconnectBtn(false);
 
-    if (visible && ['connecting', 'authenticating', 'loading'].includes(connectionStage)) {
+    if (visible && ['connecting', 'authenticating', 'loading', 'starting_app'].includes(connectionStage)) {
       timeoutId = setTimeout(() => {
         setShowReconnectBtn(true);
-      }, 60000); // 60 segundos
+      }, 60000);
     }
 
     return () => clearTimeout(timeoutId);
@@ -140,6 +157,20 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
     prevBoardId.current = boardData?.id;
   }, [boardData?.id]);
 
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const killLocalServer = () => {
+        fetch('http://127.0.0.1:3001/encerrar-sistema', { 
+          method: 'POST', 
+          keepalive: true 
+        }).catch(() => {});
+      };
+      
+      window.addEventListener('beforeunload', killLocalServer);
+      return () => window.removeEventListener('beforeunload', killLocalServer);
+    }
+  }, []);
+
   const handleAnimatedClose = () => {
     if (!globalIsSending && globalLogs.length > 0) {
       globalLogs = [];
@@ -148,7 +179,6 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
       setProgressText('');
     }
     
-    // Ativa animação Zoom Out antes de fechar
     Animated.parallel([
       Animated.timing(scaleAnim, { toValue: 0.8, duration: 200, useNativeDriver: Platform.OS !== 'web' }),
       Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: Platform.OS !== 'web' })
@@ -158,9 +188,28 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
   };
 
   const checkBotStatus = async () => {
+    // Evita loop de erro enquanto a UI estiver em transição explícita
+    if (
+      connectionStageRef.current === 'starting_app' || 
+      connectionStageRef.current === 'disconnecting' || 
+      connectionStageRef.current === 'error_timeout' ||
+      connectionStageRef.current === 'disconnect_error'
+    ) return;
+
     try {
-      const response = await fetch('http://localhost:3001/status');
+      const response = await fetch('http://127.0.0.1:3001/status');
       const data = await response.json();
+
+      // VERIFICAÇÃO PÓS-FETCH: Garante que a tela não mudou enquanto aguardava a resposta
+      if (
+        connectionStageRef.current === 'starting_app' || 
+        connectionStageRef.current === 'disconnecting' || 
+        connectionStageRef.current === 'error_timeout' ||
+        connectionStageRef.current === 'disconnect_error'
+      ) return;
+
+      if (connectionTimeout.current) clearTimeout(connectionTimeout.current);
+      if (fastCheckInterval.current) clearInterval(fastCheckInterval.current);
 
       if (data.connected && data.status === 'READY') {
         setIsBotConnected(true);
@@ -169,6 +218,7 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
         if (!hasTransitioned.current || connectionStage !== 'ready') {
           hasTransitioned.current = true;
           setConnectionStage('ready');
+          connectionStageRef.current = 'ready';
         }
       } else {
         setIsBotConnected(false);
@@ -176,26 +226,52 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
         if (data.status === 'AUTHENTICATING') {
           hasTransitioned.current = false;
           setConnectionStage('authenticating');
+          connectionStageRef.current = 'authenticating';
         } else if (data.status === 'LOADING') {
           hasTransitioned.current = false;
           setConnectionStage('loading');
+          connectionStageRef.current = 'loading';
         } else if (data.status === 'QR_CODE' && data.qrCode) {
           hasTransitioned.current = false;
           setConnectionStage('qr_code');
+          connectionStageRef.current = 'qr_code';
           setQrCodeImage(data.qrCode);
         } else if (data.status === 'INITIALIZING') {
           setConnectionStage('connecting');
+          connectionStageRef.current = 'connecting';
         } else {
           setQrCodeImage(null);
-          setConnectionStage(prev => prev === 'disconnecting' ? 'disconnecting' : 'connecting');
+          setConnectionStage('connecting');
+          connectionStageRef.current = 'connecting';
         }
       }
     } catch (error) {
+      // VERIFICAÇÃO PÓS-ERRO: Impede que o erro atropele a tela de 'Desconectando'
+      if (
+        connectionStageRef.current === 'starting_app' || 
+        connectionStageRef.current === 'disconnecting' || 
+        connectionStageRef.current === 'error_timeout' ||
+        connectionStageRef.current === 'disconnect_error'
+      ) return;
+
       setIsBotConnected(false);
-      setConnectionStage(prev => prev === 'disconnecting' ? 'disconnecting' : 'connecting');
+      
+      if (Platform.OS === 'web') {
+        setConnectionStage('waiting_local_server');
+        connectionStageRef.current = 'waiting_local_server';
+      } else {
+        setConnectionStage('connecting');
+        connectionStageRef.current = 'connecting';
+      }
     } finally {
-      setLoadingStatus(false);
+      if(connectionStageRef.current !== 'starting_app' && connectionStageRef.current !== 'disconnecting') {
+        setLoadingStatus(false);
+      }
     }
+  };
+
+  const handleDownloadConnector = () => {
+    Linking.openURL('https://omgkvkooitmdqulasdmx.supabase.co/storage/v1/object/public/downloads/Instalador-ConectorZap.exe');
   };
 
   const fetchHistorico = async () => {
@@ -334,9 +410,6 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
       return;
     }
 
-    // ==========================================
-    // LÓGICA DE GERAÇÃO DO RESUMO DE INFORMAÇÕES
-    // ==========================================
     const allItemsToSend = [...fixedItems, ...varItems];
     const uniqueTypes = [...new Set(allItemsToSend.map(i => i.type))];
     
@@ -451,7 +524,7 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
         }
 
         try {
-          const response = await fetch('http://localhost:3001/disparar-unico', {
+          const response = await fetch('http://127.0.0.1:3001/disparar-unico', {
             method: 'POST',
             body: formData
           });
@@ -614,7 +687,7 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
       tag: selectedTag === 'all' ? 'Todas as Tags / Origens' : selectedTag,
       leads: leadsComStatus,
       hasVariations: varItems.length > 0,
-      items: allItemsToSend // Itens detalhados bloco a bloco para o relatório
+      items: allItemsToSend 
     };
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -628,8 +701,8 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
       enviados: parseInt(globalStats.success + globalStats.error) || 0,
       sucesso: parseInt(globalStats.success) || 0,
       falha: parseInt(globalStats.error) || 0,
-      mensagem: globalStats.messageSummary, // Agora fica limpo apenas com o resumo de 2 linhas!
-      detalhes_json: historicoDetalhado, // Dados completos salvos na nova coluna dedicada
+      mensagem: globalStats.messageSummary, 
+      detalhes_json: historicoDetalhado, 
       whatsapp_numero: botNumber || 'Desconhecido'
     };
 
@@ -660,41 +733,195 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
 
   const executeDisconnect = async () => {
     try {
+      // Exibe a tela de "Desconectando" e BLINDA A REF imediatamente
       setConnectionStage('disconnecting');
-      await fetch('http://localhost:3001/desconectar', { method: 'POST' });
+      connectionStageRef.current = 'disconnecting';
+      
+      // Envia o comando para desligar o motor nativo
+      fetch('http://127.0.0.1:3001/encerrar-sistema', { method: 'POST' }).catch(() => {});
+      
+      if (fastCheckInterval.current) clearInterval(fastCheckInterval.current);
+      if (connectionTimeout.current) clearTimeout(connectionTimeout.current);
+
+      // Timeout de 40s caso o processo zumbi não morra
+      disconnectionTimeout.current = setTimeout(() => {
+        setConnectionStage('disconnect_error');
+        connectionStageRef.current = 'disconnect_error';
+        setIsBotConnected(false);
+        setQrCodeImage(null);
+      }, 40000);
+
+      // Aguarda 2.5 segundos de "Desconectando" visível antes de mostrar a tela verde
+      setTimeout(() => {
+        if(disconnectionTimeout.current) clearTimeout(disconnectionTimeout.current);
+        setConnectionStage('waiting_local_server');
+        connectionStageRef.current = 'waiting_local_server';
+        setIsBotConnected(false);
+        setQrCodeImage(null);
+        
+        globalIsSending = false;
+        globalIsPaused = false;
+        globalCancelRequested = false;
+        globalLogs = [];
+        globalProgressText = '';
+        
+        setIsSending(false);
+        setIsPaused(false);
+        setLogs([]);
+        setProgressText('');
+      }, 2500);
+
+    } catch (e) {
+      setConnectionStage('waiting_local_server');
+      connectionStageRef.current = 'waiting_local_server';
       setIsBotConnected(false);
       setQrCodeImage(null);
-      
-      globalIsSending = false;
-      globalIsPaused = false;
-      globalCancelRequested = false;
-      globalLogs = [];
-      globalProgressText = '';
-      
-      setIsSending(false);
-      setIsPaused(false);
-      setLogs([]);
-      setProgressText('');
-    } catch (e) {
-      showAlert('Erro', 'Erro ao tentar desconectar.');
     }
   };
 
   const handleDisconnect = () => {
-    showAlert('Desconectar WhatsApp', 'Deseja realmente desconectar o WhatsApp?', 'disconnect');
+    showAlert('Desconectar WhatsApp', 'Deseja realmente desconectar da sua conta e desligar o sistema?', 'disconnect');
   };
 
   if (!visible) return null;
 
   const optionStyle = isDarkMode ? { backgroundColor: '#1e293b', color: '#f8fafc' } : {};
 
-  // Renderização Dinâmica e Fluída
   const renderContentBox = () => {
     if (loadingStatus) {
       return (
         <View style={styles.centerBox}>
           <ActivityIndicator size="large" color="#2563eb" />
-          <Text style={[styles.infoText, isDarkMode && darkStyles.infoText]}>Conectando Conta do WhatsApp...</Text>
+          <Text style={[styles.infoText, isDarkMode && darkStyles.infoText]}>Verificando status...</Text>
+        </View>
+      );
+    }
+
+    if (connectionStage === 'waiting_local_server') {
+      return (
+        <View style={[styles.centerBox, { padding: 10, justifyContent: 'flex-start', paddingTop: 20 }]}>
+          <Image 
+            source={{ uri: 'https://omgkvkooitmdqulasdmx.supabase.co/storage/v1/object/public/images/disparazap_logo.png' }} 
+            style={[styles.floatingWaIcon, { position: 'relative', top: 0, width: 60, height: 60, marginBottom: 12 }]} 
+          />
+          <Text style={[styles.statusError, { color: isDarkMode ? '#f8fafc' : '#1e293b', fontSize: 24, marginBottom: 16 }]}>
+            Orientações Iniciais
+          </Text>
+          
+          <View style={[styles.instructionsBox, isDarkMode && darkStyles.instructionsBox]}>
+            <Text style={[styles.instructionsTitle, isDarkMode && darkStyles.instructionsText]}>
+              ⚠️ Atenção e Boas Práticas:
+            </Text>
+            
+            <Text style={[styles.instructionsText, isDarkMode && darkStyles.instructionsText]}>
+              <Text style={{fontWeight: 'bold'}}>• Instalação Única:</Text> O sistema requer a instalação do ConectorZap. Instale apenas uma vez.
+            </Text>
+            <Text style={[styles.instructionsText, isDarkMode && darkStyles.instructionsText]}>
+              <Text style={{fontWeight: 'bold'}}>• Inicialização:</Text> Se já estiver instalado, basta iniciar o aplicativo no botão verde abaixo.
+            </Text>
+            <Text style={[styles.instructionsText, { color: isDarkMode ? '#fca5a5' : '#ef4444', marginTop: 8, fontWeight: '500' }]}>
+              <Text style={{fontWeight: 'bold'}}>• Risco de Bloqueio:</Text> O uso excessivo ou envio de spam pode causar restrições na sua conta do WhatsApp. Priorize disparos para clientes que já possuem contato com você.
+            </Text>
+          </View>
+
+          <TouchableOpacity 
+            style={[styles.btn3D, styles.btn3DPrimary, { width: '100%', marginTop: 24 }]} 
+            activeOpacity={0.8}
+            onPress={() => {
+              // Muda a tela IMEDIATAMENTE e BLINDA A REF
+              setConnectionStage('starting_app');
+              connectionStageRef.current = 'starting_app';
+              
+              window.location.href = "conectorzap://iniciar";
+              
+              if (fastCheckInterval.current) clearInterval(fastCheckInterval.current);
+              if (connectionTimeout.current) clearTimeout(connectionTimeout.current);
+
+              fastCheckInterval.current = setInterval(async () => {
+                try {
+                  const res = await fetch('http://127.0.0.1:3001/status');
+                  if (res.ok) {
+                    clearInterval(fastCheckInterval.current);
+                    if(connectionTimeout.current) clearTimeout(connectionTimeout.current);
+                    setConnectionStage('connecting');
+                    connectionStageRef.current = 'connecting';
+                    checkBotStatus();
+                  }
+                } catch (e) {} 
+              }, 1500);
+
+              connectionTimeout.current = setTimeout(() => {
+                clearInterval(fastCheckInterval.current);
+                setConnectionStage('error_timeout');
+                connectionStageRef.current = 'error_timeout';
+              }, 40000);
+            }}
+          >
+            <Text style={styles.btn3DText}>INICIAR APLICATIVO</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.btn3D, styles.btn3DSecondary, isDarkMode && darkStyles.btn3DSecondary, { width: '100%', marginTop: 12 }]} 
+            activeOpacity={0.8}
+            onPress={handleDownloadConnector}
+          >
+            <Text style={[styles.btn3DTextSecondary, isDarkMode && darkStyles.btn3DTextSecondary]}>📥 Baixar Instalador (Primeiro Acesso)</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (connectionStage === 'starting_app') {
+      return (
+        <View style={styles.centerBox}>
+          <ActivityIndicator size="large" color="#8b5cf6" />
+          <Text style={[styles.infoText, isDarkMode && darkStyles.infoText]}>Iniciando Aplicativo no Windows...</Text>
+        </View>
+      );
+    }
+
+    if (connectionStage === 'error_timeout') {
+      return (
+        <View style={styles.centerBox}>
+          <Text style={styles.statusError}>Falha na Comunicação</Text>
+          <Text style={[styles.infoText, isDarkMode && darkStyles.infoText, { marginTop: 12, paddingHorizontal: 10, lineHeight: 22 }]}>
+            O ConectorZap não respondeu após 40 segundos. 
+          </Text>
+          <Text style={[styles.infoText, isDarkMode && darkStyles.infoText, { marginTop: 4, marginBottom: 20, paddingHorizontal: 10, lineHeight: 22, fontSize: 13, color: '#64748b' }]}>
+            Certifique-se de que o aplicativo está instalado e que você permitiu a execução dele no seu navegador. Se o erro persistir, reinstale o Conector.
+          </Text>
+
+          <TouchableOpacity 
+            style={[styles.primaryButton, { width: 260, backgroundColor: '#2563eb' }]} 
+            onPress={() => {
+              setConnectionStage('waiting_local_server');
+              connectionStageRef.current = 'waiting_local_server';
+            }}
+          >
+            <Text style={styles.primaryButtonText}>Tentar Novamente</Text>
+          </TouchableOpacity>
+
+          <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 30, gap: 8}}>
+            <TouchableOpacity onPress={handleDownloadConnector}>
+              <Text style={{fontSize: 12, color: '#ef4444', fontWeight: 'bold', textDecorationLine: 'underline'}}>
+                Baixar Instalador Novamente
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
+    if (connectionStage === 'disconnect_error') {
+      return (
+        <View style={styles.centerBox}>
+          <Text style={styles.statusError}>Falha ao Desconectar</Text>
+          <Text style={[styles.infoText, isDarkMode && darkStyles.infoText, { marginTop: 12, paddingHorizontal: 10, lineHeight: 22 }]}>
+            O servidor não respondeu ao comando de encerramento em 40 segundos.
+          </Text>
+          <Text style={[styles.infoText, isDarkMode && darkStyles.infoText, { marginTop: 4, marginBottom: 20, paddingHorizontal: 10, lineHeight: 22, fontSize: 13, color: '#64748b' }]}>
+            Por favor, feche esta aba do navegador para forçar a eliminação de processos inativos na sua máquina e abra o CRM novamente.
+          </Text>
         </View>
       );
     }
@@ -703,7 +930,7 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
       return (
         <View style={styles.centerBox}>
           <ActivityIndicator size="large" color="#2563eb" />
-          <Text style={[styles.infoText, isDarkMode && darkStyles.infoText]}>Inicializando servidor interno (Aguarde)...</Text>
+          <Text style={[styles.infoText, isDarkMode && darkStyles.infoText]}>Inicializando Servidor Interno...</Text>
           {showReconnectBtn && (
             <View style={styles.reconnectContainer}>
               <TouchableOpacity style={styles.reconnectBtn} onPress={executeDisconnect}>
@@ -760,7 +987,7 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
       return (
         <View style={styles.centerBox}>
           <ActivityIndicator size="large" color="#dc2626" />
-          <Text style={[styles.infoText, isDarkMode && darkStyles.infoText]}>Desconectando Conta do WhatsApp...</Text>
+          <Text style={[styles.infoText, isDarkMode && darkStyles.infoText]}>Desconectando Conta e Finalizando Sistema...</Text>
         </View>
       );
     }
@@ -768,13 +995,13 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
     if (connectionStage === 'qr_code') {
       return (
         <View style={styles.centerBox}>
-          <Text style={styles.statusError}>🔴 WhatsApp Desconectado</Text>
+          <Text style={styles.statusError}>WhatsApp Desconectado</Text>
           <Text style={[styles.infoText, isDarkMode && darkStyles.infoText, {marginBottom: 30}]}>Abra o WhatsApp no seu celular e leia o QR Code abaixo:</Text>
           
           <View style={styles.qrCodeWrapper}>
             <Image 
               source={{ uri: 'https://omgkvkooitmdqulasdmx.supabase.co/storage/v1/object/public/images/whatsapp1.png' }} 
-              style={styles.floatingWaIcon} 
+              style={[styles.floatingWaIcon, { position: 'absolute', top: -28, width: 56, height: 56, zIndex: 10 }]} 
             />
             <View style={styles.qrCodeFrame}>
               {qrCodeImage ? (
@@ -790,7 +1017,7 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
 
     if (activeTab === 'historico') {
       return (
-        <ScrollView showsVerticalScrollIndicator={true} style={{height: 450}}>
+        <ScrollView showsVerticalScrollIndicator={true} style={{ flex: 1 }}>
           <Text style={[styles.label, isDarkMode && darkStyles.label]}>Histórico de Disparos Realizados</Text>
           {historicoList.length === 0 ? (
             <Text style={[styles.emptyText, isDarkMode && darkStyles.emptyText]}>Nenhum disparo registrado ainda.</Text>
@@ -852,7 +1079,7 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
     }
 
     return (
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContentContainer} style={{height: 450}}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContentContainer} style={{ flex: 1 }}>
         {!isSending && logs.length === 0 && (
           <View style={styles.topActionRow}>
             <View style={styles.connectedBadgeInline}>
@@ -1039,6 +1266,7 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
           styles.modalContainer, 
           isDarkMode && darkStyles.modalContainer,
           {
+            maxHeight: windowHeight * 0.9,
             opacity: fadeAnim,
             transform: [{ scale: scaleAnim }]
           }
@@ -1047,7 +1275,7 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
           <View style={styles.header}>
             <Text style={[styles.title, isDarkMode && darkStyles.title]}>Disparo de Mensagens</Text>
             <View style={styles.headerRightActions}>
-              {isBotConnected && (
+              {isBotConnected && connectionStage !== 'disconnecting' && connectionStage !== 'starting_app' && connectionStage !== 'error_timeout' && connectionStage !== 'disconnect_error' && (
                 <View style={styles.connectedAccountInfo}>
                   {!isSending && logs.length === 0 && activeTab === 'disparar' && (
                     <TouchableOpacity style={styles.startTopBtn} onPress={handleStartBulkSend}>
@@ -1065,7 +1293,7 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
             </View>
           </View>
 
-          {isBotConnected && (
+          {isBotConnected && connectionStage !== 'disconnecting' && connectionStage !== 'starting_app' && connectionStage !== 'error_timeout' && connectionStage !== 'disconnect_error' && (
             <View style={[styles.tabsRow, isDarkMode && darkStyles.tabsRow]}>
               <TouchableOpacity style={[styles.tabBtn, activeTab === 'disparar' && (isDarkMode ? darkStyles.tabBtnActive : styles.tabBtnActive)]} onPress={() => setActiveTab('disparar')}>
                 <Text style={[styles.tabText, isDarkMode && darkStyles.tabText, activeTab === 'disparar' && styles.tabTextActive]}>Central de Disparos</Text>
@@ -1114,103 +1342,148 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center' },
-  modalContainer: { width: '100%', maxWidth: 620, backgroundColor: '#ffffff', borderRadius: 16, padding: 24, height: 680, ...Platform.select({ web: { boxShadow: '0px 20px 40px rgba(0,0,0,0.3)' } }) },
-  fixedContentBox: { height: 500, overflow: 'hidden' },
-  scrollContentContainer: { alignItems: 'stretch' },
+  modalContainer: { width: '100%', maxWidth: 620, backgroundColor: '#ffffff', borderRadius: 16, padding: 24, ...Platform.select({ web: { boxShadow: '0px 20px 40px rgba(0,0,0,0.3)' } }) },
+  fixedContentBox: { flex: 1, minHeight: 450, overflow: 'hidden' },
+  scrollContentContainer: { flex: 1 },
   
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  title: { fontSize: 20, fontWeight: '700', color: '#1e293b' },
+  title: { fontSize: 20, fontWeight: '700', color: '#1e293b', fontFamily: MODERN_FONT },
   headerRightActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   
   startTopBtn: { backgroundColor: '#2563eb', paddingVertical: 5, paddingHorizontal: 10, borderRadius: 6, justifyContent: 'center' },
-  startTopBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 12 },
+  startTopBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 12, fontFamily: MODERN_FONT },
 
   disconnectTopBtn: { backgroundColor: '#fee2e2', borderWidth: 1, borderColor: '#fca5a5', paddingVertical: 5, paddingHorizontal: 10, borderRadius: 6, justifyContent: 'center' },
-  disconnectTopBtnText: { color: '#dc2626', fontWeight: 'bold', fontSize: 12 },
+  disconnectTopBtnText: { color: '#dc2626', fontWeight: 'bold', fontSize: 12, fontFamily: MODERN_FONT },
   
   closeButton: { padding: 4 },
-  closeButtonText: { fontSize: 20, color: '#64748b', fontWeight: 'bold' },
+  closeButtonText: { fontSize: 20, color: '#64748b', fontWeight: 'bold', fontFamily: MODERN_FONT },
 
   tabsRow: { flexDirection: 'row', marginBottom: 16, backgroundColor: '#f1f5f9', borderRadius: 8, padding: 4 },
   tabBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 6 },
   tabBtnActive: { backgroundColor: '#ffffff', ...Platform.select({ web: { boxShadow: '0px 1px 3px rgba(0,0,0,0.1)' } }) },
-  tabText: { fontSize: 13, fontWeight: '600', color: '#64748b' },
+  tabText: { fontSize: 13, fontWeight: '600', color: '#64748b', fontFamily: MODERN_FONT },
   tabTextActive: { color: '#2563eb', fontWeight: 'bold' },
 
-  label: { fontSize: 13, fontWeight: '600', color: '#475569', marginBottom: 4, marginTop: 8 },
+  label: { fontSize: 13, fontWeight: '600', color: '#475569', marginBottom: 4, marginTop: 8, fontFamily: MODERN_FONT },
   filtersRow: { flexDirection: 'row', gap: 10, marginBottom: 4 },
 
   itemBlock: { backgroundColor: '#f8fafc', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0', marginBottom: 12 },
   blockHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  removeText: { fontSize: 12, color: '#ef4444', fontWeight: 'bold' },
+  removeText: { fontSize: 12, color: '#ef4444', fontWeight: 'bold', fontFamily: MODERN_FONT },
   addBtn: { paddingVertical: 12, alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: '#2563eb', borderRadius: 8, backgroundColor: '#eff6ff' },
-  addBtnText: { color: '#2563eb', fontWeight: '700', fontSize: 14 },
+  addBtnText: { color: '#2563eb', fontWeight: '700', fontSize: 14, fontFamily: MODERN_FONT },
   
   floatingMenu: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 8, ...Platform.select({ web: { boxShadow: '0px 4px 12px rgba(0,0,0,0.1)' } }) },
-  menuTitle: { fontSize: 12, fontWeight: 'bold', color: '#64748b', marginBottom: 6, textAlign: 'center' },
+  menuTitle: { fontSize: 12, fontWeight: 'bold', color: '#64748b', marginBottom: 6, textAlign: 'center', fontFamily: MODERN_FONT },
   menuItem: { paddingVertical: 10, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-  menuItemText: { fontSize: 14, fontWeight: '600', color: '#334155' },
+  menuItemText: { fontSize: 14, fontWeight: '600', color: '#334155', fontFamily: MODERN_FONT },
 
   mediaPickerBtn: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 10, alignItems: 'center', width: '100%' },
-  mediaPickerBtnText: { color: '#334155', fontWeight: '600', fontSize: 13 },
-  selectedFileText: { fontSize: 12, color: '#16a34a', fontWeight: '600', marginTop: 4 },
-  audioFormatHint: { fontSize: 11, color: '#64748b', fontStyle: 'italic', marginTop: 4 },
+  mediaPickerBtnText: { color: '#334155', fontWeight: '600', fontSize: 13, fontFamily: MODERN_FONT },
+  selectedFileText: { fontSize: 12, color: '#16a34a', fontWeight: '600', marginTop: 4, fontFamily: MODERN_FONT },
+  audioFormatHint: { fontSize: 11, color: '#64748b', fontStyle: 'italic', marginTop: 4, fontFamily: MODERN_FONT },
 
   checkboxContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: 6 },
   checkbox: { width: 18, height: 18, borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 4, marginRight: 8, justifyContent: 'center', alignItems: 'center' },
   checkboxChecked: { backgroundColor: '#2563eb', borderColor: '#2563eb' },
-  checkmark: { color: '#ffffff', fontSize: 12, fontWeight: 'bold' },
-  checkboxLabel: { fontSize: 13, color: '#475569', flex: 1 },
+  checkmark: { color: '#ffffff', fontSize: 12, fontWeight: 'bold', fontFamily: MODERN_FONT },
+  checkboxLabel: { fontSize: 13, color: '#475569', flex: 1, fontFamily: MODERN_FONT },
 
-  infoText: { fontSize: 15, color: '#475569', textAlign: 'center', marginTop: 12, marginBottom: 12 },
-  statusError: { fontSize: 18, fontWeight: 'bold', color: '#ef4444' },
+  infoText: { fontSize: 14, color: '#475569', textAlign: 'center', marginTop: 12, marginBottom: 12, fontFamily: MODERN_FONT },
+  statusError: { fontSize: 18, fontWeight: 'bold', color: '#ef4444', textAlign: 'center', fontFamily: MODERN_FONT },
   
-  // Estilos da Moldura e QR Code Elegante
-  qrCodeWrapper: { position: 'relative', alignItems: 'center', justifyContent: 'center', marginTop: 20 },
-  floatingWaIcon: { width: 60, height: 60, position: 'absolute', top: -30, zIndex: 10 },
+  instructionsBox: {
+    backgroundColor: '#f8fafc',
+    padding: 12, // Espaço interno reduzido
+    borderRadius: 12,
+    marginTop: 8, // Margem superior reduzida
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    ...Platform.select({ web: { boxShadow: '0px 2px 8px rgba(0,0,0,0.03)' } })
+  },
+  instructionsTitle: {
+    fontWeight: 'bold',
+    fontSize: 13,
+    color: '#334155',
+    marginBottom: 6, // Margem inferior reduzida
+    fontFamily: MODERN_FONT
+  },
+  instructionsText: {
+    fontSize: 12,
+    color: '#475569',
+    marginBottom: 4, // Margem inferior reduzida
+    lineHeight: 16, // Altura da linha reduzida
+    fontFamily: MODERN_FONT
+  },
+  
+  btn3D: {
+    paddingVertical: 10, // Altura do botão reduzida
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Platform.select({
+      web: {
+        transition: 'all 0.2s ease',
+        cursor: 'pointer',
+      }
+    })
+  },
+  btn3DPrimary: {
+    backgroundColor: '#22c55e',
+    borderBottomWidth: 4,
+    borderColor: '#166534',
+  },
+  btn3DText: {
+    color: '#ffffff',
+    fontWeight: '800',
+    fontSize: 13, // Fonte levemente menor
+    fontFamily: MODERN_FONT,
+    letterSpacing: 0.5
+  },
+  btn3DSecondary: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderBottomWidth: 4,
+    borderColor: '#cbd5e1',
+  },
+  btn3DTextSecondary: {
+    color: '#475569',
+    fontWeight: '800',
+    fontSize: 12, // Fonte levemente menor
+    fontFamily: MODERN_FONT,
+  },
+
+  stepsBox: { backgroundColor: '#f8fafc', padding: 16, borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0', width: '100%', maxWidth: 320 },
+  stepText: { fontSize: 13, color: '#334155', marginBottom: 8, fontWeight: '600', fontFamily: MODERN_FONT },
+
+  qrCodeWrapper: { position: 'relative', alignItems: 'center', justifyContent: 'center', marginTop: 12 },
+  floatingWaIcon: { 
+    marginBottom: 8 // Blur (drop-shadow) removido completamente
+  },
   qrCodeFrame: { backgroundColor: '#ffffff', padding: 16, borderRadius: 16, borderWidth: 3, borderColor: '#16a34a', ...Platform.select({ web: { boxShadow: '0px 10px 25px rgba(22, 163, 74, 0.2)' } }) },
   qrCodeImage: { width: 220, height: 220 },
   
-  // Estilos do Botão Reconectar Auto-Recovery
   reconnectContainer: { alignItems: 'center', marginTop: 20 },
   reconnectBtn: { backgroundColor: '#dc2626', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
-  reconnectBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 14 },
-  reconnectHint: { fontSize: 12, color: '#64748b', fontStyle: 'italic', marginTop: 8, textAlign: 'center', maxWidth: 280 },
+  reconnectBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 14, fontFamily: MODERN_FONT },
+  reconnectHint: { fontSize: 12, color: '#64748b', fontStyle: 'italic', marginTop: 8, textAlign: 'center', maxWidth: 280, fontFamily: MODERN_FONT },
 
-  topActionRow: { 
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12 
-  },
-  connectedBadgeInline: { 
-    backgroundColor: '#dcfce7', 
-    paddingVertical: 8, 
-    paddingHorizontal: 16, 
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    display: 'inline-flex'
-  },
-  connectedText: { 
-    color: '#16a34a', 
-    fontWeight: 'bold', 
-    fontSize: 13, 
-    whiteSpace: 'nowrap',
-    textAlign: 'center'
-  },
+  topActionRow: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  connectedBadgeInline: { backgroundColor: '#dcfce7', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', display: 'inline-flex' },
+  connectedText: { color: '#16a34a', fontWeight: 'bold', fontSize: 13, whiteSpace: 'nowrap', textAlign: 'center', fontFamily: MODERN_FONT },
   
   pickerContainer: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, overflow: 'hidden', marginBottom: 8 },
   webSelect: { width: '100%', padding: 10, borderWidth: 0, backgroundColor: 'transparent', outlineStyle: 'none', fontSize: 14, color: '#0f172a', fontFamily: 'inherit' },
   
   textAreaLarge: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 10, fontSize: 14, color: '#0f172a', minHeight: 70, textAlignVertical: 'top', marginBottom: 6, outlineStyle: 'none' },
-  primaryButton: { backgroundColor: '#2563eb', paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
-  primaryButtonText: { color: '#ffffff', fontWeight: '700', fontSize: 15 },
+  primaryButton: { backgroundColor: '#16a34a', paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
+  primaryButtonText: { color: '#ffffff', fontWeight: '700', fontSize: 15, fontFamily: MODERN_FONT },
 
   logWrapper: { marginTop: 4 },
   logHeaderBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  progressLabel: { fontSize: 13, fontWeight: 'bold', color: '#2563eb' },
+  progressLabel: { fontSize: 13, fontWeight: 'bold', color: '#2563eb', fontFamily: MODERN_FONT },
   logContainer: { backgroundColor: '#0f172a', borderRadius: 8, padding: 10, height: 180 },
   logItem: { fontSize: 12, fontFamily: 'monospace', marginBottom: 4, lineHeight: 16 },
   logSuccess: { color: '#4ade80' },
@@ -1221,30 +1494,30 @@ const styles = StyleSheet.create({
   btnPause: { backgroundColor: '#d97706' },
   btnResume: { backgroundColor: '#16a34a' },
   btnCancel: { flex: 1, backgroundColor: '#dc2626', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
-  controlBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 13 },
+  controlBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 13, fontFamily: MODERN_FONT },
 
-  emptyText: { textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', marginTop: 40 },
+  emptyText: { textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', marginTop: 40, fontFamily: MODERN_FONT },
   historyCard: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8, padding: 12, marginBottom: 10 },
   historyHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  historyStatus: { fontWeight: 'bold', fontSize: 13 },
-  historyDate: { fontSize: 12, color: '#64748b' },
-  historyMsg: { fontSize: 13, color: '#334155', marginBottom: 6 },
+  historyStatus: { fontWeight: 'bold', fontSize: 13, fontFamily: MODERN_FONT },
+  historyDate: { fontSize: 12, color: '#64748b', fontFamily: MODERN_FONT },
+  historyMsg: { fontSize: 13, color: '#334155', marginBottom: 6, fontFamily: MODERN_FONT },
   historyStatsRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 6 },
-  historyStatItem: { fontSize: 12, fontWeight: '600', color: '#475569' },
+  historyStatItem: { fontSize: 12, fontWeight: '600', color: '#475569', fontFamily: MODERN_FONT },
   connectedAccountInfo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  historyMsgClean: { fontSize: 13, color: '#475569', backgroundColor: '#ffffff', padding: 6, borderRadius: 4, borderWidth: 1, borderColor: '#e2e8f0', fontStyle: 'italic', marginTop: 2 },
-  centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
+  historyMsgClean: { fontSize: 13, color: '#475569', backgroundColor: '#ffffff', padding: 6, borderRadius: 4, borderWidth: 1, borderColor: '#e2e8f0', fontStyle: 'italic', marginTop: 2, fontFamily: MODERN_FONT },
+  centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 12 },
 
   alertOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.5)', justifyContent: 'center', alignItems: 'center', padding: 16 },
   alertContent: { backgroundColor: '#ffffff', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360, alignItems: 'center', ...Platform.select({ web: { outlineStyle: 'none', boxShadow: '0px 10px 20px rgba(0,0,0,0.15)'} }) },
-  alertTitle: { fontSize: 18, fontWeight: 'bold', color: '#1e293b', marginBottom: 8, textAlign: 'center' },
-  alertSubtitle: { fontSize: 13, color: '#64748b', marginBottom: 20, textAlign: 'center', lineHeight: 18 },
+  alertTitle: { fontSize: 18, fontWeight: 'bold', color: '#1e293b', marginBottom: 8, textAlign: 'center', fontFamily: MODERN_FONT },
+  alertSubtitle: { fontSize: 13, color: '#64748b', marginBottom: 20, textAlign: 'center', lineHeight: 18, fontFamily: MODERN_FONT },
   alertButtonsRow: { flexDirection: 'row', gap: 12, width: '100%' },
   alertBtn: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
   alertCancelBtn: { backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#cbd5e1' },
-  alertCancelBtnText: { color: '#475569', fontWeight: 'bold', fontSize: 13 },
+  alertCancelBtnText: { color: '#475569', fontWeight: 'bold', fontSize: 13, fontFamily: MODERN_FONT },
   alertConfirmBtn: { backgroundColor: '#2563eb' },
-  alertConfirmBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 13 }
+  alertConfirmBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 13, fontFamily: MODERN_FONT }
 });
 
 const darkStyles = StyleSheet.create({
@@ -1280,5 +1553,11 @@ const darkStyles = StyleSheet.create({
   alertSubtitle: { color: '#cbd5e1' },
   alertCancelBtn: { backgroundColor: '#334155', borderColor: '#475569' },
   alertCancelBtnText: { color: '#cbd5e1' },
-  reconnectHint: { color: '#94a3b8' }
+  reconnectHint: { color: '#94a3b8' },
+  stepsBox: { backgroundColor: '#0f172a', borderColor: '#334155' },
+  stepText: { color: '#cbd5e1' },
+  instructionsBox: { backgroundColor: '#0f172a', borderColor: '#1e293b' },
+  instructionsText: { color: '#cbd5e1' },
+  btn3DSecondary: { backgroundColor: '#1e293b', borderColor: '#0f172a' },
+  btn3DTextSecondary: { color: '#94a3b8' }
 });

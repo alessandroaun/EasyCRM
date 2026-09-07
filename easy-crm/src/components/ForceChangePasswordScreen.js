@@ -1,4 +1,3 @@
-// ForceChangePasswordScreen
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, ActivityIndicator, KeyboardAvoidingView, ScrollView, Modal, Image, useWindowDimensions } from 'react-native';
 import { supabase } from '../services/supabaseClient';
@@ -21,20 +20,16 @@ export default function ForceChangePasswordScreen({ onPasswordChanged, isDarkMod
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Estados do Modal de Alerta Customizado
   const [isAlertModalVisible, setIsAlertModalVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
 
-  // Ref para controlar se a senha já foi alterada com sucesso antes de atualizar a página
   const passwordChangedRef = useRef(false);
 
-  // Efeito para interceptar o F5/Refresh e deslogar o usuário caso ele tente pular essa tela
   useEffect(() => {
     if (Platform.OS === 'web') {
       const handleBeforeUnload = () => {
         if (!passwordChangedRef.current) {
-          // Desloga o usuário limpando a sessão antes da página recarregar
           supabase.auth.signOut();
         }
       };
@@ -57,7 +52,7 @@ export default function ForceChangePasswordScreen({ onPasswordChanged, isDarkMod
   };
 
   const handleSubmit = async () => {
-    if (loading) return; // Trava contra duplo-clique / dupla submissão
+    if (loading) return; 
 
     if (!validatePassword(newPassword)) {
       setErrorMessage('A senha deve conter no mínimo 6 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.');
@@ -76,13 +71,12 @@ export default function ForceChangePasswordScreen({ onPasswordChanged, isDarkMod
 
     if (error) {
       let msg = error.message;
-      // Tradução amigável do erro nativo do Supabase de reutilização de senha
       if (msg.includes('should be different from the old password') || msg.includes('different from the old password')) {
         msg = 'A nova senha não pode ser igual à senha atual. Por favor, escolha uma senha diferente.';
       }
       setErrorMessage(msg);
     } else {
-      passwordChangedRef.current = true; // Marca como sucesso para não ser deslogado ao recarregar a página no futuro
+      passwordChangedRef.current = true; 
       showAlert('✅ Sucesso', 'Senha atualizada com sucesso! Bem-vindo ao CRM.');
     }
   };

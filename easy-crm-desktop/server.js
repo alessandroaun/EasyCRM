@@ -32,12 +32,15 @@ let client = null;
 let isReconnecting = false;
 let connectionStatus = 'INITIALIZING';
 let loadingPercent = 0;
-let initWatchdog = null; // Cão de Guarda contra travamentos na inicialização
+let initWatchdog = null; 
 
-// Fila global de leads lidos automaticamente
+let availableBrowsers = [];
+let currentBrowserIndex = 0;
+
+const AUTH_DIR = path.join(os.homedir(), '.conectorzap_auth');
+
 global.autoLeadsQueue = [];
 
-// Função auxiliar blindada para identificar e enfileirar leads
 const processAndQueueLead = (msgId, text) => {
     if (!text) return;
     const textLower = text.toLowerCase();
@@ -59,22 +62,37 @@ const processAndQueueLead = (msgId, text) => {
     }
 };
 
-// Limpeza profunda garantida para forçar a desconexão e exibir QR Code
 const forceCleanSession = () => {
     try {
-        // Correção crítica: process.cwd() encontra a pasta raiz real do Electron instalado, __dirname falharia
-        const authPath = path.join(process.cwd(), '.wwebjs_auth');
-        const cachePath = path.join(process.cwd(), '.wwebjs_cache');
-        
-        if (fs.existsSync(authPath)) {
-            fs.rmSync(authPath, { recursive: true, force: true });
+        if (fs.existsSync(AUTH_DIR)) {
+            fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+            console.log('🗑️ Sessão local apagada com sucesso (Desconectado).');
         }
-        if (fs.existsSync(cachePath)) {
-            fs.rmSync(cachePath, { recursive: true, force: true });
-        }
-        console.log('🗑️ Pastas de sessão removidas com sucesso para forçar reconexão.');
     } catch (e) {
-        console.warn('⚠️ Aviso ao tentar remover pastas de sessão:', e.message);
+        console.warn('⚠️ Falha ao remover pastas nativamente. Tentando força bruta...', e.message);
+        try {
+            if (os.platform() === 'win32') {
+                exec(`rmdir /s /q "${AUTH_DIR}"`);
+            }
+        } catch(err) {}
+    }
+};
+
+const matarZumbisDoConector = (callback) => {
+    if (os.platform() === 'win32') {
+        const cmdEdge = `wmic process where "name='msedge.exe' and commandline like '%conectorzap_auth%'" call terminate`;
+        const cmdChrome = `wmic process where "name='chrome.exe' and commandline like '%conectorzap_auth%'" call terminate`;
+        const cmdBrave = `wmic process where "name='brave.exe' and commandline like '%conectorzap_auth%'" call terminate`;
+        
+        exec(cmdEdge, () => {
+            exec(cmdChrome, () => {
+                exec(cmdBrave, () => {
+                    setTimeout(() => { if (callback) callback(); }, 1500);
+                });
+            });
+        });
+    } else {
+        if (callback) callback();
     }
 };
 
@@ -92,11 +110,8 @@ const limparSessaoEReiniciar = () => {
         client = null;
     }
 
-    forceCleanSession();
-
-    // Taskkill focado exclusivamente nos processos do Puppeteer identificados
-    exec('taskkill /F /IM msedgewebview2.exe /T', (err, stdout, stderr) => {
-        console.log('🔫 Processos zumbis do WebView2 encerrados. Reiniciando cliente em 3 segundos...');
+    matarZumbisDoConector(() => {
+        console.log('🔫 Processos fantasmas eliminados. Reiniciando cliente em 3 segundos...');
         setTimeout(() => {
             isReconnecting = false;
             handleReconnection();
@@ -106,75 +121,73 @@ const limparSessaoEReiniciar = () => {
 
 process.on('uncaughtException', (err) => {
     console.error('🔥 Erro Crítico Não Tratado no Sistema:', err.message);
-    if (err.message.includes('Execution context was destroyed') || err.message.includes('detached Frame') || err.message.includes('Target closed') || err.message.includes('timeout') || err.message.includes('protocolTimeout')) {
+    if (err.message.includes('Execution context') || err.message.includes('detached Frame') || err.message.includes('Target closed') || err.message.includes('timeout') || err.message.includes('protocolTimeout')) {
         limparSessaoEReiniciar();
     }
 });
 
 process.on('unhandledRejection', (reason) => {
     console.error('🔥 Rejeição de Promessa Não Tratada:', reason?.message || reason);
-    if (reason?.message?.includes('Execution context was destroyed') || reason?.message?.includes('detached Frame') || reason?.message?.includes('Target closed') || reason?.message?.includes('timeout') || reason?.message?.includes('protocolTimeout')) {
+    if (reason?.message?.includes('Execution context') || reason?.message?.includes('detached Frame') || reason?.message?.includes('Target closed') || reason?.message?.includes('timeout') || reason?.message?.includes('protocolTimeout')) {
         limparSessaoEReiniciar();
     }
 });
 
-// Procura o Edge ou Chrome nativo da máquina do usuário
-const getLocalBrowserPath = () => {
+const getAvailableBrowsers = () => {
     const platform = os.platform();
-    let foundPath = null;
+    const foundPaths = [];
 
     if (platform === 'win32') {
         const paths = [
-            // PRIORIDADE 1: Microsoft Edge (Nativo do Windows 10/11)
             'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
             'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
-            // PRIORIDADE 2: Google Chrome
             'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
             'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-            // PRIORIDADE 3: Brave Browser
             'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
         ];
 
-        for (const browserPath of paths) {
-            if (fs.existsSync(browserPath)) {
-                console.log(`✅ [Navegador Detectado] Usando: ${browserPath}`);
-                foundPath = browserPath;
-                break;
-            }
+        for (const p of paths) {
+            if (fs.existsSync(p)) foundPaths.push(p);
         }
-    } else if (platform === 'darwin') { // Mac
+    } else if (platform === 'darwin') { 
         const macPath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-        if (fs.existsSync(macPath)) {
-            foundPath = macPath;
-        }
+        if (fs.existsSync(macPath)) foundPaths.push(macPath);
     }
 
-    if (!foundPath) {
-        console.error("❌ [ERRO CRÍTICO] Nenhum navegador compatível (Edge, Chrome, Brave) foi encontrado nesta máquina!");
+    if (foundPaths.length === 0) {
+        console.error("❌ [ERRO CRÍTICO] Nenhum navegador compatível foi encontrado nesta máquina!");
     }
 
-    return foundPath;
+    return foundPaths;
 };
 
 const createWhatsAppClient = () => {
     console.log('\n🔄 Inicializando cliente do WhatsApp...');
-    forceCleanSession();
     connectionStatus = 'INITIALIZING';
 
-    // 🐕 WATCHDOG TIMER: Se ficar travado em INITIALIZING por mais de 45 seg, força a limpeza
+    if (availableBrowsers.length === 0) {
+        availableBrowsers = getAvailableBrowsers();
+    }
+
     if (initWatchdog) clearTimeout(initWatchdog);
     initWatchdog = setTimeout(() => {
         if (connectionStatus === 'INITIALIZING') {
-            console.error('⏳ [WATCHDOG] Demora excessiva na inicialização (Travamento do Chrome). Forçando Auto-Recovery Seguro...');
+            console.error('⏳ [WATCHDOG] Demora excessiva na inicialização. Forçando Auto-Recovery...');
             limparSessaoEReiniciar();
         }
-    }, 45000); // 45 Segundos de tolerância
+    }, 45000); 
+
+    const executablePath = availableBrowsers[currentBrowserIndex];
+    console.log(`✅ [Tentativa ${currentBrowserIndex + 1}/${availableBrowsers.length}] Usando Navegador: ${executablePath}`);
 
     const newClient = new Client({
-        authStrategy: new LocalAuth(),
+        authStrategy: new LocalAuth({ 
+            dataPath: AUTH_DIR,
+            clientId: 'vendedor' 
+        }),
         puppeteer: {
             headless: true,
-            executablePath: getLocalBrowserPath(),
+            executablePath: executablePath,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -184,8 +197,8 @@ const createWhatsAppClient = () => {
                 '--no-zygote',
                 '--disable-gpu',
                 '--disable-extensions',
-                '--disable-infobars',
-                '--disable-session-crashed-bubble'
+                '--disable-features=RendererCodeIntegrity',
+                '--disable-background-networking'
             ]
         },
         webVersionCache: {
@@ -195,7 +208,7 @@ const createWhatsAppClient = () => {
     });
 
     newClient.on('qr', (qr) => {
-        if (isConnected) return; // BLINDAGEM: Ignora se já conectou
+        if (isConnected) return;
         if (initWatchdog) clearTimeout(initWatchdog);
         isConnected = false;
         connectedNumber = null;
@@ -205,7 +218,7 @@ const createWhatsAppClient = () => {
     });
 
     newClient.on('authenticated', () => {
-        if (isConnected) return; // BLINDAGEM: Não retrocede se já conectou
+        if (isConnected) return;
         if (initWatchdog) clearTimeout(initWatchdog);
         if (connectionStatus !== 'AUTHENTICATING') {
             console.log('✅ QR Code lido! Autenticando no WhatsApp...');
@@ -215,7 +228,7 @@ const createWhatsAppClient = () => {
     });
 
     newClient.on('loading_screen', (percent, message) => {
-        if (isConnected) return; // BLINDAGEM: Ignora sincronizações em segundo plano após já estar pronto
+        if (isConnected) return;
         console.log(`⏳ Baixando mensagens e sincronizando... ${percent}%`);
         connectionStatus = 'LOADING';
         loadingPercent = percent;
@@ -232,14 +245,9 @@ const createWhatsAppClient = () => {
         console.log(`🤖 Robô conectado com sucesso! Número vinculado: +${connectedNumber}`);
     });
 
-    // ==========================================
-    // ESCUTA DE MENSAGENS PARA AUTO-IMPORTAÇÃO
-    // ==========================================
     newClient.on('message', async (msg) => {
         try {
             if (!msg || msg.isStatus || msg.broadcast || msg.isForwarded) return;
-            
-            // Processa o corpo da mensagem diretamente em tempo real
             if (msg.body) {
                 processAndQueueLead(msg.id.id, msg.body);
             }
@@ -251,6 +259,7 @@ const createWhatsAppClient = () => {
     newClient.on('disconnected', async (reason) => {
         console.log(`\n⚠️ WhatsApp desconectado. Motivo: ${reason}`);
         if (reason === 'LOGOUT') {
+            forceCleanSession(); 
             limparSessaoEReiniciar();
         } else {
             handleReconnection();
@@ -282,34 +291,54 @@ const handleReconnection = async () => {
             isReconnecting = false;
         }).catch((err) => {
             console.error('❌ Erro crítico ao inicializar o cliente:', err.message);
-            if (err.message.includes('Execution context') || err.message.includes('Target closed') || err.message.includes('detached Frame') || err.message.includes('timeout') || err.message.includes('protocolTimeout')) {
-                limparSessaoEReiniciar();
+            
+            if (currentBrowserIndex < availableBrowsers.length - 1) {
+                currentBrowserIndex++;
+                console.log('🔄 Trocando para o próximo navegador da lista...');
+                if (client) {
+                    try { client.destroy().catch(() => {}); } catch(e) {}
+                    client = null;
+                }
+                setTimeout(handleReconnection, 2000);
             } else {
-                isReconnecting = false;
+                console.error('❌ Todos os navegadores falharam na reconexão.');
+                currentBrowserIndex = 0;
+                if (err.message.includes('Execution context') || err.message.includes('Target closed') || err.message.includes('timeout')) {
+                    limparSessaoEReiniciar();
+                } else {
+                    isReconnecting = false;
+                }
             }
         });
     }, 3000);
 };
 
-// ==========================================
-// FUNÇÃO DE LIMPEZA PREVENTIVA NA INICIALIZAÇÃO
-// ==========================================
 const iniciarServidorLimpo = () => {
-    console.log('🧹 Executando limpeza preventiva de inicialização do sistema...');
+    console.log('🧹 Executando verificação inicial de processos...');
     
-    // Força a exclusão das pastas para simular a desconexão logo ao abrir o app
-    forceCleanSession();
+    matarZumbisDoConector(() => {
+        forceCleanSession(); 
 
-    // Usando os processos identificados que o Puppeteer pode levantar
-    exec('taskkill /F /IM msedgewebview2.exe /T', (err, stdout, stderr) => {
-        console.log('🔫 Processos residuais (WebView2) encerrados. Inicializando WhatsApp...');
+        console.log('🔫 Ambiente seguro. Inicializando WhatsApp...');
         
-        // Inicialização Primária após a limpeza
         client = createWhatsAppClient();
         client.initialize().catch((err) => {
             console.error('❌ Falha na inicialização primária:', err.message);
-            if (err.message.includes('Execution context') || err.message.includes('Target closed') || err.message.includes('timeout') || err.message.includes('protocolTimeout')) {
-                limparSessaoEReiniciar();
+            
+            if (currentBrowserIndex < availableBrowsers.length - 1) {
+                currentBrowserIndex++;
+                console.log('🔄 Trocando para o próximo navegador da lista...');
+                if (client) {
+                    try { client.destroy().catch(() => {}); } catch(e) {}
+                    client = null;
+                }
+                setTimeout(iniciarServidorLimpo, 2000);
+            } else {
+                console.error('❌ Todos os navegadores disponíveis falharam.');
+                currentBrowserIndex = 0;
+                if (err.message.includes('Execution context') || err.message.includes('Target closed') || err.message.includes('timeout')) {
+                    limparSessaoEReiniciar();
+                }
             }
         });
     });
@@ -325,7 +354,6 @@ app.get('/status', (req, res) => {
     });
 });
 
-// Rotas de Auto-Leads
 app.get('/auto-leads', (req, res) => res.json({ leads: global.autoLeadsQueue }));
 app.post('/auto-leads/clear', (req, res) => {
     const { ids } = req.body;
@@ -377,38 +405,34 @@ app.post('/disparar-unico', upload.single('file'), async (req, res) => {
     }
 });
 
-// Desconexão normal de troca de conta (Mantida exatamente como você aprova)
 app.post('/desconectar', async (req, res) => {
     console.log('\n🛑 Solicitação de desconexão recebida via API.');
     if (!client || isReconnecting) return res.json({ success: true });
     try { await client.logout().catch(() => {}); } catch(e) {}
+    forceCleanSession();
     limparSessaoEReiniciar();
     res.json({ success: true });
 });
 
-// ==========================================
-// NOVA ROTA PARA ENCERRAMENTO TOTAL (FECHAR O APP)
-// ==========================================
 app.post('/encerrar-sistema', async (req, res) => {
-    console.log('\n🛑 Solicitação de encerramento total recebida (App fechando).');
+    console.log('\n🛑 Solicitação de encerramento total recebida (App fechando/Desconectar).');
     
-    // Responde rapidamente para não travar a UI de fechar o app
     res.json({ success: true });
 
     if (client) {
-        try { await client.destroy().catch(() => {}); } catch(e) {}
+        try { await client.logout(); } catch(e) {}
+        try { await client.destroy(); } catch(e) {}
         client = null;
     }
 
-    forceCleanSession();
-
-    exec('taskkill /F /IM msedgewebview2.exe /T', (err, stdout, stderr) => {
-        console.log('🔫 Processos zumbis do WebView2 encerrados. Finalizando processo Node...');
-        process.exit(0); // Força a saída e mata o server.js
+    matarZumbisDoConector(() => {
+        forceCleanSession(); 
+        console.log('🔫 Processos zumbis encerrados e sessão limpa. Finalizando processo Node...');
+        process.exit(0); 
     });
 });
 
 app.listen(3001, () => {
     console.log('🤖 Servidor rodando na porta 3001');
-    iniciarServidorLimpo(); // Inicia o processo de limpeza antes de ligar o WWebJS
+    iniciarServidorLimpo();
 });

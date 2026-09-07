@@ -42,3 +42,7 @@ firebase-adminsdk.json
 
 # Arquivo temporário de teste
 test_push.py
+
+*.exe
+
+easy-crm-desktop/ConectorZap.exe

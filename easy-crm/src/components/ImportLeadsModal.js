@@ -12,7 +12,8 @@ import {
   ActivityIndicator, 
   Animated, 
   Image,
-  useWindowDimensions 
+  useWindowDimensions,
+  Linking
 } from 'react-native';
 
 const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
@@ -22,7 +23,6 @@ const formatToFinancial = (value) => {
   if (!value) return '';
   let strVal = String(value).trim();
   
-  // Se o valor já contém vírgula ou ponto separando centavos (ex: 750.00 ou 750,00)
   if (/[.,]\d{1,2}$/.test(strVal)) {
     let normalized = strVal.replace('.', ',');
     let parts = normalized.split(',');
@@ -32,7 +32,6 @@ const formatToFinancial = (value) => {
     return `${formattedInteger},${decimalPart}`;
   }
 
-  // Se for um número inteiro puro (ex: 800 ou 180000)
   let cleaned = strVal.replace(/\D/g, '');
   if (cleaned === '') return '';
   let num = parseInt(cleaned, 10);
@@ -267,9 +266,10 @@ export const processLeadsIntelligence = (text, removeFormatting = true) => {
   return extractedClients;
 };
 
-export default function ImportLeadsModal({ visible, onClose, onImport, isDarkMode, isElectron, isAutoImportActive, onToggleAutoImport }) {
+export default function ImportLeadsModal({ visible, onClose, onImport, isDarkMode, isAutoImportActive, onToggleAutoImport }) {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
+  const isDesktopWeb = Platform.OS === 'web' && !isMobile;
 
   const [rawText, setRawText] = useState('');
   const [processing, setProcessing] = useState(false);
@@ -277,37 +277,48 @@ export default function ImportLeadsModal({ visible, onClose, onImport, isDarkMod
 
   const [isServerConnected, setIsServerConnected] = useState(true);
 
+  // Estados e Refs da Conexão do QR Code Modal Adaptado
   const [showQrModal, setShowQrModal] = useState(false);
   const [qrCodeData, setQrCodeData] = useState(null);
-  const [connectionStatus, setConnectionStatus] = useState('');
+  const [connStage, setConnStage] = useState('waiting_local_server');
+
+  const fastCheckInterval = useRef(null);
+  const connTimeout = useRef(null);
+  const connStageRef = useRef(connStage);
 
   const [alertConfig, setAlertConfig] = useState({ visible: false, type: 'success', title: '', message: '' });
   const alertScale = useRef(new Animated.Value(0.8)).current;
   const alertOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (isElectron && Platform.OS === 'web') {
+    connStageRef.current = connStage;
+  }, [connStage]);
+
+  // Checa a preferência salva no carregamento
+  useEffect(() => {
+    if (isDesktopWeb) {
       const savedSetting = localStorage.getItem('autoImportSetting');
       if (savedSetting !== null) {
         const shouldBeActive = savedSetting === 'true';
         onToggleAutoImport(shouldBeActive);
         
         if (shouldBeActive) {
-          fetch('http://localhost:3001/status')
+          fetch('http://127.0.0.1:3001/status')
             .then(res => res.json())
             .then(data => setIsServerConnected(data.connected))
             .catch(() => setIsServerConnected(false));
         }
       }
     }
-  }, [isElectron]);
+  }, [isDesktopWeb]);
 
+  // Intervalo padrão que monitora o servidor se o botão estiver ON
   useEffect(() => {
     let statusInterval;
-    if (isAutoImportActive && isElectron) {
+    if (isAutoImportActive && isDesktopWeb) {
       statusInterval = setInterval(async () => {
         try {
-          const response = await fetch('http://localhost:3001/status');
+          const response = await fetch('http://127.0.0.1:3001/status');
           const data = await response.json();
           setIsServerConnected(data.connected);
         } catch (e) {
@@ -316,30 +327,78 @@ export default function ImportLeadsModal({ visible, onClose, onImport, isDarkMod
       }, 5000);
     }
     return () => clearInterval(statusInterval);
-  }, [isAutoImportActive, isElectron]);
+  }, [isAutoImportActive, isDesktopWeb]);
 
+  // Controle e verificação de tela do QR Code Modal
   useEffect(() => {
     let interval;
     if (showQrModal) {
-      interval = setInterval(async () => {
-        try {
-          const response = await fetch('http://localhost:3001/status');
-          const data = await response.json();
-          setConnectionStatus(data.status);
-          setQrCodeData(data.qrCode);
-
-          if (data.connected) {
-            setShowQrModal(false);
-            onToggleAutoImport(true);
-            if (Platform.OS === 'web') localStorage.setItem('autoImportSetting', 'true');
-          }
-        } catch (e) {
-          setConnectionStatus('ERROR');
-        }
-      }, 2000);
+      checkLocalServerStatus();
+      interval = setInterval(checkLocalServerStatus, 2000);
+    } else {
+      setConnStage('waiting_local_server');
+      if (fastCheckInterval.current) clearInterval(fastCheckInterval.current);
+      if (connTimeout.current) clearTimeout(connTimeout.current);
     }
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (fastCheckInterval.current) clearInterval(fastCheckInterval.current);
+      if (connTimeout.current) clearTimeout(connTimeout.current);
+    };
   }, [showQrModal]);
+
+  const checkLocalServerStatus = async () => {
+    // Evita conflitos de UI durante transições
+    if (connStageRef.current === 'starting_app' || connStageRef.current === 'error_timeout') return;
+
+    try {
+      const response = await fetch('http://127.0.0.1:3001/status');
+      const data = await response.json();
+
+      // VERIFICAÇÃO PÓS-FETCH DA CORRIDA DE ESTADOS
+      if (connStageRef.current === 'starting_app' || connStageRef.current === 'error_timeout') return;
+
+      if (fastCheckInterval.current) clearInterval(fastCheckInterval.current);
+      if (connTimeout.current) clearTimeout(connTimeout.current);
+
+      setIsServerConnected(data.connected);
+
+      // Se o motor avisar que conectou com sucesso, fecha o modal sozinho e ativa!
+      if (data.connected && data.status === 'READY') {
+        setShowQrModal(false);
+        onToggleAutoImport(true);
+        if (Platform.OS === 'web') localStorage.setItem('autoImportSetting', 'true');
+      } else {
+        if (data.status === 'QR_CODE' && data.qrCode) {
+          setConnStage('qr_code');
+          connStageRef.current = 'qr_code';
+          setQrCodeData(data.qrCode);
+        } else if (data.status === 'AUTHENTICATING') {
+          setConnStage('authenticating');
+          connStageRef.current = 'authenticating';
+        } else if (data.status === 'LOADING') {
+          setConnStage('loading');
+          connStageRef.current = 'loading';
+        } else {
+          setConnStage('connecting');
+          connStageRef.current = 'connecting';
+          setQrCodeData(null);
+        }
+      }
+    } catch (e) {
+      // VERIFICAÇÃO PÓS-ERRO DA CORRIDA DE ESTADOS
+      if (connStageRef.current === 'starting_app' || connStageRef.current === 'error_timeout') return;
+
+      setIsServerConnected(false);
+      if (Platform.OS === 'web' && connStageRef.current !== 'error_timeout' && connStageRef.current !== 'starting_app') {
+        setConnStage('waiting_local_server');
+        connStageRef.current = 'waiting_local_server';
+      } else if (connStageRef.current !== 'error_timeout' && connStageRef.current !== 'starting_app') {
+        setConnStage('connecting');
+        connStageRef.current = 'connecting';
+      }
+    }
+  };
 
   const handleToggleAutoImportClick = async () => {
     const newState = !isAutoImportActive;
@@ -350,17 +409,25 @@ export default function ImportLeadsModal({ visible, onClose, onImport, isDarkMod
 
     if (newState) {
       try {
-        const response = await fetch('http://localhost:3001/status');
+        const response = await fetch('http://127.0.0.1:3001/status');
         const data = await response.json();
         setIsServerConnected(data.connected);
         if (!data.connected) {
+          setConnStage('waiting_local_server');
+          connStageRef.current = 'waiting_local_server';
           setShowQrModal(true);
         }
       } catch (e) {
         setIsServerConnected(false);
+        setConnStage('waiting_local_server');
+        connStageRef.current = 'waiting_local_server';
         setShowQrModal(true);
       }
     }
+  };
+
+  const handleDownloadConnector = () => {
+    Linking.openURL('https://omgkvkooitmdqulasdmx.supabase.co/storage/v1/object/public/downloads/Instalador-ConectorZap.exe');
   };
 
   const showCustomAlert = (type, title, message) => {
@@ -416,22 +483,129 @@ export default function ImportLeadsModal({ visible, onClose, onImport, isDarkMod
     <Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
       <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         
+        {/* QR CODE MODAL - ADAPTADO PARA O CONECTORZAP */}
         {showQrModal && (
           <View style={styles.qrOverlay}>
             <View style={[styles.qrContainer, themeStyles.modalContainer, isMobile && { width: '90%' }]}>
-                <Text style={[styles.title, themeStyles.title, { textAlign: 'center', marginBottom: 16 }]}>Conectar WhatsApp</Text>
                 
-                {qrCodeData ? (
-                    <Image source={{ uri: qrCodeData }} style={{ width: 250, height: 250 }} />
-                ) : (
-                    <ActivityIndicator size="large" color="#2563eb" style={{ marginVertical: 40 }} />
-                )}
-                
-                <Text style={[styles.subtitle, themeStyles.subtitle, { textAlign: 'center', marginTop: 16, marginBottom: 24 }]}>
-                    {connectionStatus === 'LOADING' ? 'Baixando mensagens...' : 'Leia o QR Code com o aplicativo do WhatsApp para ativar a importação automática.'}
-                </Text>
+                {connStage === 'waiting_local_server' && (
+                  <>
+                    <Text style={[styles.title, themeStyles.title, { textAlign: 'center', marginBottom: 16 }]}>Conexão Segura Necessária</Text>
+                    <Text style={[styles.subtitle, themeStyles.subtitle, { textAlign: 'center', marginBottom: 24, lineHeight: 20 }]}>
+                      Para ativar a captação automática pelo navegador, você precisa autorizar a inicialização do ConectorZap em segundo plano.
+                    </Text>
+                    <TouchableOpacity 
+                      style={[styles.primaryButton, { width: '100%' }]} 
+                      onPress={() => {
+                        // SETA E BLINDA O ESTADO INSTANTANEAMENTE
+                        setConnStage('starting_app');
+                        connStageRef.current = 'starting_app';
+                        
+                        window.location.href = "conectorzap://iniciar";
+                        
+                        if (fastCheckInterval.current) clearInterval(fastCheckInterval.current);
+                        if (connTimeout.current) clearTimeout(connTimeout.current);
 
-                <TouchableOpacity style={[styles.cancelButton, themeStyles.cancelButton, {width: '100%'}]} onPress={() => setShowQrModal(false)}>
+                        fastCheckInterval.current = setInterval(async () => {
+                          try {
+                            const res = await fetch('http://127.0.0.1:3001/status');
+                            if (res.ok) {
+                              clearInterval(fastCheckInterval.current);
+                              if(connTimeout.current) clearTimeout(connTimeout.current);
+                              setConnStage('connecting');
+                              connStageRef.current = 'connecting';
+                              checkLocalServerStatus();
+                            }
+                          } catch (e) {} 
+                        }, 1500);
+
+                        connTimeout.current = setTimeout(() => {
+                          clearInterval(fastCheckInterval.current);
+                          setConnStage('error_timeout');
+                          connStageRef.current = 'error_timeout';
+                        }, 40000);
+                      }}
+                    >
+                      <Text style={styles.primaryButtonText}>🚀 Iniciar ConectorZap</Text>
+                    </TouchableOpacity>
+                    
+                    <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 24, gap: 8}}>
+                      <Text style={{fontSize: 11, color: '#64748b', fontStyle: 'italic', fontFamily: MODERN_FONT}}>Ainda não instalou?</Text>
+                      <TouchableOpacity onPress={handleDownloadConnector}>
+                        <Text style={{fontSize: 11, color: '#2563eb', fontWeight: 'bold', textDecorationLine: 'underline', fontFamily: MODERN_FONT}}>
+                          Baixar Instalador
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                )}
+
+                {connStage === 'starting_app' && (
+                  <>
+                    <ActivityIndicator size="large" color="#8b5cf6" style={{ marginVertical: 30 }} />
+                    <Text style={[styles.infoText, themeStyles.infoText]}>Iniciando Aplicativo no Windows...</Text>
+                  </>
+                )}
+
+                {connStage === 'error_timeout' && (
+                  <>
+                    <Text style={styles.statusError}>Falha na Comunicação ⚠️</Text>
+                    <Text style={[styles.infoText, themeStyles.infoText, { marginTop: 12, marginBottom: 24, lineHeight: 20 }]}>
+                      O ConectorZap não respondeu após 40 segundos. Certifique-se de que o aplicativo está instalado corretamente.
+                    </Text>
+                    <TouchableOpacity 
+                      style={[styles.primaryButton, { width: '100%', backgroundColor: '#2563eb' }]} 
+                      onPress={() => {
+                        setConnStage('waiting_local_server');
+                        connStageRef.current = 'waiting_local_server';
+                      }}
+                    >
+                      <Text style={styles.primaryButtonText}>Tentar Novamente</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleDownloadConnector} style={{ marginTop: 24 }}>
+                        <Text style={{fontSize: 11, color: '#ef4444', fontWeight: 'bold', textDecorationLine: 'underline', fontFamily: MODERN_FONT}}>
+                          Baixar Instalador Novamente
+                        </Text>
+                      </TouchableOpacity>
+                  </>
+                )}
+
+                {connStage === 'connecting' && (
+                  <>
+                    <ActivityIndicator size="large" color="#2563eb" style={{ marginVertical: 30 }} />
+                    <Text style={[styles.infoText, themeStyles.infoText]}>Inicializando servidor interno (Aguarde)...</Text>
+                  </>
+                )}
+
+                {connStage === 'authenticating' && (
+                  <>
+                    <ActivityIndicator size="large" color="#10b981" style={{ marginVertical: 30 }} />
+                    <Text style={[styles.infoText, themeStyles.infoText, {color: '#10b981', fontWeight: 'bold'}]}>Leitura concluída! Autenticando...</Text>
+                  </>
+                )}
+
+                {connStage === 'loading' && (
+                  <>
+                    <ActivityIndicator size="large" color="#f59e0b" style={{ marginVertical: 30 }} />
+                    <Text style={[styles.infoText, themeStyles.infoText, {color: '#f59e0b', fontWeight: 'bold'}]}>Baixando mensagens (Pode demorar)...</Text>
+                  </>
+                )}
+
+                {connStage === 'qr_code' && (
+                  <>
+                    <Text style={[styles.title, themeStyles.title, { textAlign: 'center', marginBottom: 16 }]}>Conectar WhatsApp</Text>
+                    {qrCodeData ? (
+                        <Image source={{ uri: qrCodeData }} style={{ width: 220, height: 220 }} />
+                    ) : (
+                        <ActivityIndicator size="large" color="#2563eb" style={{ marginVertical: 40 }} />
+                    )}
+                    <Text style={[styles.subtitle, themeStyles.subtitle, { textAlign: 'center', marginTop: 16, marginBottom: 24 }]}>
+                      Leia o QR Code com o aplicativo do WhatsApp para ativar a importação automática.
+                    </Text>
+                  </>
+                )}
+
+                <TouchableOpacity style={[styles.cancelButton, themeStyles.cancelButton, {width: '100%', marginTop: 16}]} onPress={() => setShowQrModal(false)}>
                   <Text style={[styles.cancelButtonText, themeStyles.cancelButtonText]}>Cancelar</Text>
                 </TouchableOpacity>
             </View>
@@ -464,7 +638,8 @@ export default function ImportLeadsModal({ visible, onClose, onImport, isDarkMod
 
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, isMobile && { padding: 16 }]}>
             
-            {isElectron && (
+            {/* O IS_DESKTOP_WEB SUBSTITUI O IS_ELECTRON AQUI! */}
+            {isDesktopWeb && (
               <View style={[styles.autoImportCard, themeStyles.autoImportCard, isMobile && { flexDirection: 'column', alignItems: 'flex-start' }]}>
                   <View style={{flex: 1}}>
                       <Text style={[styles.autoImportTitle, themeStyles.title]}>Importar Leads Automaticamente do WhatsApp</Text>
@@ -602,7 +777,11 @@ connectButtonText: {
   fontSize: 10, 
   fontWeight: 'bold', 
   fontFamily: MODERN_FONT 
-}
+},
+  primaryButton: { backgroundColor: '#16a34a', paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
+  primaryButtonText: { color: '#ffffff', fontWeight: '700', fontSize: 15, fontFamily: MODERN_FONT },
+  statusError: { fontSize: 18, fontWeight: 'bold', color: '#ef4444', textAlign: 'center', fontFamily: MODERN_FONT },
+  infoText: { fontSize: 13, color: '#475569', textAlign: 'center', fontFamily: MODERN_FONT }
 });
 
 const lightStyles = StyleSheet.create({
@@ -623,7 +802,8 @@ const lightStyles = StyleSheet.create({
   cancelButtonText: { color: '#475569' },
   successAlertBox: { backgroundColor: '#ffffff' },
   successAlertTitle: { color: '#1e293b' },
-  successAlertMessage: { color: '#475569' }
+  successAlertMessage: { color: '#475569' },
+  infoText: { color: '#475569' }
 });
 
 const darkStyles = StyleSheet.create({
@@ -644,5 +824,6 @@ const darkStyles = StyleSheet.create({
   cancelButtonText: { color: '#cbd5e1' },
   successAlertBox: { backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1 },
   successAlertTitle: { color: '#f8fafc' },
-  successAlertMessage: { color: '#94a3b8' }
+  successAlertMessage: { color: '#94a3b8' },
+  infoText: { color: '#cbd5e1' }
 });

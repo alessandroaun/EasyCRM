@@ -1,14 +1,16 @@
-// AuthScreen
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { 
   View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, 
   ActivityIndicator, KeyboardAvoidingView, ScrollView, Image 
 } from 'react-native';
 import { supabase } from '../services/supabaseClient';
+import { HistoryContext } from '../../App';
 
 const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
 
 export default function AuthScreen({ onRequirePasswordChange, isDarkMode, toggleDarkMode }) {
+  const { pushRoute, popRoute } = useContext(HistoryContext);
+
   const [isForgotPass, setIsForgotPass] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,7 +60,6 @@ export default function AuthScreen({ onRequirePasswordChange, isDarkMode, toggle
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <View style={[styles.card, currentTheme.card]}>
           
-          {/* Botão de Alternância do Modo Escuro / Claro (Vetorial) */}
           <TouchableOpacity 
             style={[styles.themeToggleButtonFancy, currentTheme.themeToggleButtonFancy]} 
             onPress={() => toggleDarkMode(!isDarkMode)}
@@ -145,7 +146,6 @@ export default function AuthScreen({ onRequirePasswordChange, isDarkMode, toggle
                     onPress={() => setShowPassword(!showPassword)}
                     activeOpacity={0.7}
                   >
-                    {/* Ícone Vetorial Estilo Bancário */}
                     <View style={styles.vectorEyeWrapper}>
                       <View style={[styles.eyeOuterFrame, { borderColor: iconColor }]}>
                         <View style={[styles.eyeInnerPupil, { backgroundColor: iconColor }]} />
@@ -156,7 +156,18 @@ export default function AuthScreen({ onRequirePasswordChange, isDarkMode, toggle
                     </View>
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.forgotPassContainer} onPress={() => { setIsForgotPass(true); setErrorMessage(''); setSuccessMessage(''); }}>
+                <TouchableOpacity 
+                  style={styles.forgotPassContainer} 
+                  onPress={() => { 
+                    setIsForgotPass(true); 
+                    setErrorMessage(''); 
+                    setSuccessMessage(''); 
+                    pushRoute('/recuperar-senha', () => {
+                      setIsForgotPass(false);
+                      setErrorMessage('');
+                      setSuccessMessage('');
+                    });
+                  }}>
                   <Text style={[styles.forgotPassText, currentTheme.forgotPassText]}>Esqueceu a senha?</Text>
                 </TouchableOpacity>
               </View>
@@ -175,7 +186,7 @@ export default function AuthScreen({ onRequirePasswordChange, isDarkMode, toggle
 
           <View style={styles.bottomToggleContainer}>
             {isForgotPass && (
-              <TouchableOpacity onPress={() => { setIsForgotPass(false); setErrorMessage(''); setSuccessMessage(''); }}>
+              <TouchableOpacity onPress={() => popRoute()}>
                 <Text style={[styles.toggleLink, currentTheme.toggleLink]}>Voltar para o Login</Text>
               </TouchableOpacity>
             )}
@@ -204,7 +215,6 @@ const styles = StyleSheet.create({
   passwordInputContainer: { position: 'relative', justifyContent: 'center' },
   passwordInputWithIcon: { paddingRight: 45 },
   
-  // Estilização do Ícone Vetorial Bancário do Olho
   eyeIconContainer: { position: 'absolute', right: 12, height: '100%', justifyContent: 'center', alignItems: 'center', width: 30 },
   vectorEyeWrapper: { width: 18, height: 14, justifyContent: 'center', alignItems: 'center', position: 'relative' },
   eyeOuterFrame: { width: 18, height: 12, borderWidth: 1.5, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
@@ -222,7 +232,6 @@ const styles = StyleSheet.create({
   bottomToggleContainer: { height: 28, justifyContent: 'center', alignItems: 'center', marginTop: 12 },
   toggleLink: { fontSize: 14, fontWeight: '700', fontFamily: MODERN_FONT },
 
-  // BOTÃO MODO ESCURO VETORIAL
   themeToggleButtonFancy: {
     position: 'absolute',
     top: 16,
