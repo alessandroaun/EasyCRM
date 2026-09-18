@@ -7,7 +7,9 @@ import DashboardScreen from './src/screens/DashboardScreen';
 import AuthScreen from './src/components/AuthScreen';
 import ForceChangePasswordScreen from './src/components/ForceChangePasswordScreen';
 
-const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
+const MODERN_FONT = Platform.OS === 'web' 
+  ? '"Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' 
+  : 'System';
 
 // Cria o contexto de histórico com a nova função logout()
 export const HistoryContext = createContext({
@@ -39,22 +41,40 @@ export default function App() {
   }, [session, mustChangePassword]);
 
   useEffect(() => {
-    // Injeta dinamicamente a fonte personalizada via CSS na versão Web
+    // Injeta dinamicamente a tipografia executiva via CSS na versão Web
     if (Platform.OS === 'web') {
-      const styleId = 'supabase-global-font';
+      const styleId = 'crm-corporate-font';
       if (!document.getElementById(styleId)) {
         const style = document.createElement('style');
         style.id = styleId;
         style.innerHTML = `
-          @font-face {
-            font-family: 'FriendsCustom';
-            src: url('https://omgkvkooitmdqulasdmx.supabase.co/storage/v1/object/public/fonts/Friends-SemiBold.ttf') format('truetype');
-            font-weight: 600;
-            font-style: normal;
-            font-display: swap;
-          }
+          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+          
           *, body, input, select, textarea, button {
-            font-family: 'FriendsCustom', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+            font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+          }
+          
+          /* Suporte a números tabulares alinhados para finanças/consórcio */
+          .tabular-nums {
+            font-variant-numeric: tabular-nums;
+          }
+          
+          /* Custom scrollbar executiva e elegante */
+          ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+          }
+          ::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          ::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.25);
+            border-radius: 9999px;
+          }
+          ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.45);
           }
         `;
         document.head.appendChild(style);
@@ -174,11 +194,10 @@ export default function App() {
           return;
         }
 
-        // Caso ele volte para um ponto do navegador onde não havia nosso histórico (estado null)
+        // Caso volte para um ponto sem estado registrado, restabelece a raiz silenciosamente sem abrir modal
         if (!state || state.idx === undefined) {
-          window.history.pushState({ step: 'root', idx: 1 }, '', '/principal');
+          window.history.replaceState({ step: 'root', idx: 1 }, '', window.location.pathname || '/principal');
           historyIndex.current = 1;
-          setShowExitConfirm(true);
           return;
         }
 

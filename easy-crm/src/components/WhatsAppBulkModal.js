@@ -12,7 +12,7 @@ let globalProgressText = '';
 let globalStats = { success: 0, error: 0, total: 0, startTime: null, messageSummary: '' };
 let onLeadUpdateCallback = null;
 
-const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
+import { MODERN_FONT, TOKENS } from '../theme/tokens';
 
 export const setLeadUpdateCallback = (callback) => {
   onLeadUpdateCallback = callback;
@@ -1341,223 +1341,284 @@ export default function WhatsAppBulkModal({ visible, onClose, boardData, onCompl
 }
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center' },
-  modalContainer: { width: '100%', maxWidth: 620, backgroundColor: '#ffffff', borderRadius: 16, padding: 24, ...Platform.select({ web: { boxShadow: '0px 20px 40px rgba(0,0,0,0.3)' } }) },
-  fixedContentBox: { flex: 1, minHeight: 450, overflow: 'hidden' },
+  overlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.7)', justifyContent: 'center', alignItems: 'center', padding: Platform.OS === 'web' ? 20 : 0 },
+  modalContainer: { 
+    width: '100%', 
+    maxWidth: 640, 
+    backgroundColor: '#ffffff',
+    borderRadius: 20, 
+    padding: 24, 
+    ...Platform.select({ 
+      web: { 
+        boxShadow: '0 24px 48px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+        outlineStyle: 'none'
+      } 
+    }) 
+  },
+  fixedContentBox: { flex: 1, minHeight: 460, overflow: 'hidden' },
   scrollContentContainer: { flex: 1 },
   
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  title: { fontSize: 20, fontWeight: '700', color: '#1e293b', fontFamily: MODERN_FONT },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  title: { fontSize: 20, fontWeight: '800', color: '#0f172a', fontFamily: MODERN_FONT, letterSpacing: -0.4 },
   headerRightActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   
-  startTopBtn: { backgroundColor: '#2563eb', paddingVertical: 5, paddingHorizontal: 10, borderRadius: 6, justifyContent: 'center' },
-  startTopBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 12, fontFamily: MODERN_FONT },
+  startTopBtn: { 
+    backgroundColor: '#2563eb', 
+    paddingVertical: 6, 
+    paddingHorizontal: 12, 
+    borderRadius: 8, 
+    justifyContent: 'center',
+    ...Platform.select({ web: { cursor: 'pointer', transition: 'all 0.15s ease' } })
+  },
+  startTopBtnText: { color: '#ffffff', fontWeight: '700', fontSize: 12, fontFamily: MODERN_FONT },
 
-  disconnectTopBtn: { backgroundColor: '#fee2e2', borderWidth: 1, borderColor: '#fca5a5', paddingVertical: 5, paddingHorizontal: 10, borderRadius: 6, justifyContent: 'center' },
-  disconnectTopBtnText: { color: '#dc2626', fontWeight: 'bold', fontSize: 12, fontFamily: MODERN_FONT },
+  disconnectTopBtn: { 
+    backgroundColor: '#fee2e2', 
+    borderWidth: 1, 
+    borderColor: '#fca5a5', 
+    paddingVertical: 6, 
+    paddingHorizontal: 12, 
+    borderRadius: 8, 
+    justifyContent: 'center',
+    ...Platform.select({ web: { cursor: 'pointer', transition: 'all 0.15s ease' } })
+  },
+  disconnectTopBtnText: { color: '#dc2626', fontWeight: '700', fontSize: 12, fontFamily: MODERN_FONT },
   
-  closeButton: { padding: 4 },
-  closeButtonText: { fontSize: 20, color: '#64748b', fontWeight: 'bold', fontFamily: MODERN_FONT },
+  closeButton: { padding: 6, borderRadius: 8 },
+  closeButtonText: { fontSize: 18, color: '#64748b', fontWeight: 'bold', fontFamily: MODERN_FONT },
 
-  tabsRow: { flexDirection: 'row', marginBottom: 16, backgroundColor: '#f1f5f9', borderRadius: 8, padding: 4 },
-  tabBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 6 },
-  tabBtnActive: { backgroundColor: '#ffffff', ...Platform.select({ web: { boxShadow: '0px 1px 3px rgba(0,0,0,0.1)' } }) },
+  tabsRow: { 
+    flexDirection: 'row', 
+    marginBottom: 16, 
+    backgroundColor: '#f1f5f9', 
+    borderRadius: 12, 
+    padding: 4,
+    borderWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+  tabBtn: { 
+    flex: 1, 
+    paddingVertical: 8, 
+    alignItems: 'center', 
+    borderRadius: 8,
+    ...Platform.select({ web: { cursor: 'pointer', transition: 'all 0.15s ease' } })
+  },
+  tabBtnActive: { 
+    backgroundColor: '#ffffff', 
+    ...Platform.select({ web: { boxShadow: '0 2px 6px rgba(0,0,0,0.08)' } }) 
+  },
   tabText: { fontSize: 13, fontWeight: '600', color: '#64748b', fontFamily: MODERN_FONT },
-  tabTextActive: { color: '#2563eb', fontWeight: 'bold' },
+  tabTextActive: { color: '#2563eb', fontWeight: '800' },
 
-  label: { fontSize: 13, fontWeight: '600', color: '#475569', marginBottom: 4, marginTop: 8, fontFamily: MODERN_FONT },
+  label: { fontSize: 11, fontWeight: '700', color: '#475569', textTransform: 'uppercase', letterSpacing: 0.3, marginBottom: 6, marginTop: 8, fontFamily: MODERN_FONT },
   filtersRow: { flexDirection: 'row', gap: 10, marginBottom: 4 },
 
-  itemBlock: { backgroundColor: '#f8fafc', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0', marginBottom: 12 },
-  blockHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  removeText: { fontSize: 12, color: '#ef4444', fontWeight: 'bold', fontFamily: MODERN_FONT },
-  addBtn: { paddingVertical: 12, alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: '#2563eb', borderRadius: 8, backgroundColor: '#eff6ff' },
-  addBtnText: { color: '#2563eb', fontWeight: '700', fontSize: 14, fontFamily: MODERN_FONT },
+  itemBlock: { backgroundColor: '#f8fafc', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', marginBottom: 12 },
+  blockHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  removeText: { fontSize: 12, color: '#ef4444', fontWeight: '700', fontFamily: MODERN_FONT },
+  addBtn: { 
+    paddingVertical: 12, 
+    alignItems: 'center', 
+    borderStyle: 'dashed', 
+    borderWidth: 1.5, 
+    borderColor: '#2563eb', 
+    borderRadius: 10, 
+    backgroundColor: '#eff6ff',
+    ...Platform.select({ web: { cursor: 'pointer', transition: 'all 0.15s ease' } })
+  },
+  addBtnText: { color: '#2563eb', fontWeight: '700', fontSize: 13, fontFamily: MODERN_FONT },
   
-  floatingMenu: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 8, ...Platform.select({ web: { boxShadow: '0px 4px 12px rgba(0,0,0,0.1)' } }) },
-  menuTitle: { fontSize: 12, fontWeight: 'bold', color: '#64748b', marginBottom: 6, textAlign: 'center', fontFamily: MODERN_FONT },
-  menuItem: { paddingVertical: 10, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-  menuItemText: { fontSize: 14, fontWeight: '600', color: '#334155', fontFamily: MODERN_FONT },
+  floatingMenu: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 12, padding: 8, ...Platform.select({ web: { boxShadow: '0 10px 25px rgba(0,0,0,0.15)' } }) },
+  menuTitle: { fontSize: 11, fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: 6, textAlign: 'center', fontFamily: MODERN_FONT },
+  menuItem: { paddingVertical: 10, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: '#f1f5f9', ...Platform.select({ web: { cursor: 'pointer' } }) },
+  menuItemText: { fontSize: 13, fontWeight: '600', color: '#334155', fontFamily: MODERN_FONT },
 
-  mediaPickerBtn: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 10, alignItems: 'center', width: '100%' },
+  mediaPickerBtn: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 10, padding: 11, alignItems: 'center', width: '100%', ...Platform.select({ web: { cursor: 'pointer' } }) },
   mediaPickerBtnText: { color: '#334155', fontWeight: '600', fontSize: 13, fontFamily: MODERN_FONT },
-  selectedFileText: { fontSize: 12, color: '#16a34a', fontWeight: '600', marginTop: 4, fontFamily: MODERN_FONT },
+  selectedFileText: { fontSize: 12, color: '#059669', fontWeight: '600', marginTop: 4, fontFamily: MODERN_FONT },
   audioFormatHint: { fontSize: 11, color: '#64748b', fontStyle: 'italic', marginTop: 4, fontFamily: MODERN_FONT },
 
   checkboxContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: 6 },
-  checkbox: { width: 18, height: 18, borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 4, marginRight: 8, justifyContent: 'center', alignItems: 'center' },
+  checkbox: { width: 18, height: 18, borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: 5, marginRight: 8, justifyContent: 'center', alignItems: 'center' },
   checkboxChecked: { backgroundColor: '#2563eb', borderColor: '#2563eb' },
-  checkmark: { color: '#ffffff', fontSize: 12, fontWeight: 'bold', fontFamily: MODERN_FONT },
-  checkboxLabel: { fontSize: 13, color: '#475569', flex: 1, fontFamily: MODERN_FONT },
+  checkmark: { color: '#ffffff', fontSize: 11, fontWeight: 'bold', fontFamily: MODERN_FONT },
+  checkboxLabel: { fontSize: 12, color: '#475569', flex: 1, fontFamily: MODERN_FONT, fontWeight: '500' },
 
-  infoText: { fontSize: 14, color: '#475569', textAlign: 'center', marginTop: 12, marginBottom: 12, fontFamily: MODERN_FONT },
-  statusError: { fontSize: 18, fontWeight: 'bold', color: '#ef4444', textAlign: 'center', fontFamily: MODERN_FONT },
+  infoText: { fontSize: 13, color: '#475569', textAlign: 'center', marginTop: 12, marginBottom: 12, fontFamily: MODERN_FONT, lineHeight: 18 },
+  statusError: { fontSize: 16, fontWeight: '800', color: '#ef4444', textAlign: 'center', fontFamily: MODERN_FONT },
   
   instructionsBox: {
     backgroundColor: '#f8fafc',
-    padding: 12, // Espaço interno reduzido
+    padding: 14,
     borderRadius: 12,
-    marginTop: 8, // Margem superior reduzida
+    marginTop: 8,
     width: '100%',
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    ...Platform.select({ web: { boxShadow: '0px 2px 8px rgba(0,0,0,0.03)' } })
+    ...Platform.select({ web: { boxShadow: '0 2px 6px rgba(0,0,0,0.02)' } })
   },
   instructionsTitle: {
-    fontWeight: 'bold',
-    fontSize: 13,
+    fontWeight: '800',
+    fontSize: 12,
     color: '#334155',
-    marginBottom: 6, // Margem inferior reduzida
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
     fontFamily: MODERN_FONT
   },
   instructionsText: {
     fontSize: 12,
     color: '#475569',
-    marginBottom: 4, // Margem inferior reduzida
-    lineHeight: 16, // Altura da linha reduzida
+    marginBottom: 4,
+    lineHeight: 18,
     fontFamily: MODERN_FONT
   },
   
   btn3D: {
-    paddingVertical: 10, // Altura do botão reduzida
+    paddingVertical: 11,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     ...Platform.select({
       web: {
-        transition: 'all 0.2s ease',
+        transition: 'all 0.15s ease',
         cursor: 'pointer',
       }
     })
   },
   btn3DPrimary: {
-    backgroundColor: '#22c55e',
-    borderBottomWidth: 4,
-    borderColor: '#166534',
+    backgroundColor: '#059669',
+    borderBottomWidth: 3,
+    borderColor: '#047857',
   },
   btn3DText: {
     color: '#ffffff',
     fontWeight: '800',
-    fontSize: 13, // Fonte levemente menor
+    fontSize: 13,
     fontFamily: MODERN_FONT,
-    letterSpacing: 0.5
+    letterSpacing: 0.3
   },
   btn3DSecondary: {
     backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderBottomWidth: 4,
+    borderBottomWidth: 3,
     borderColor: '#cbd5e1',
   },
   btn3DTextSecondary: {
     color: '#475569',
-    fontWeight: '800',
-    fontSize: 12, // Fonte levemente menor
+    fontWeight: '700',
+    fontSize: 12,
     fontFamily: MODERN_FONT,
   },
 
-  stepsBox: { backgroundColor: '#f8fafc', padding: 16, borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0', width: '100%', maxWidth: 320 },
-  stepText: { fontSize: 13, color: '#334155', marginBottom: 8, fontWeight: '600', fontFamily: MODERN_FONT },
+  stepsBox: { backgroundColor: '#f8fafc', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', width: '100%', maxWidth: 340 },
+  stepText: { fontSize: 12, color: '#334155', marginBottom: 8, fontWeight: '600', fontFamily: MODERN_FONT },
 
   qrCodeWrapper: { position: 'relative', alignItems: 'center', justifyContent: 'center', marginTop: 12 },
-  floatingWaIcon: { 
-    marginBottom: 8 // Blur (drop-shadow) removido completamente
-  },
-  qrCodeFrame: { backgroundColor: '#ffffff', padding: 16, borderRadius: 16, borderWidth: 3, borderColor: '#16a34a', ...Platform.select({ web: { boxShadow: '0px 10px 25px rgba(22, 163, 74, 0.2)' } }) },
+  floatingWaIcon: { marginBottom: 8 },
+  qrCodeFrame: { backgroundColor: '#ffffff', padding: 16, borderRadius: 16, borderWidth: 2, borderColor: '#059669', ...Platform.select({ web: { boxShadow: '0 10px 25px rgba(5, 150, 105, 0.15)' } }) },
   qrCodeImage: { width: 220, height: 220 },
   
   reconnectContainer: { alignItems: 'center', marginTop: 20 },
-  reconnectBtn: { backgroundColor: '#dc2626', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
-  reconnectBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 14, fontFamily: MODERN_FONT },
-  reconnectHint: { fontSize: 12, color: '#64748b', fontStyle: 'italic', marginTop: 8, textAlign: 'center', maxWidth: 280, fontFamily: MODERN_FONT },
+  reconnectBtn: { backgroundColor: '#dc2626', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, ...Platform.select({ web: { cursor: 'pointer' } }) },
+  reconnectBtnText: { color: '#ffffff', fontWeight: '700', fontSize: 13, fontFamily: MODERN_FONT },
+  reconnectHint: { fontSize: 11, color: '#64748b', fontStyle: 'italic', marginTop: 8, textAlign: 'center', maxWidth: 280, fontFamily: MODERN_FONT },
 
-  topActionRow: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
-  connectedBadgeInline: { backgroundColor: '#dcfce7', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', display: 'inline-flex' },
-  connectedText: { color: '#16a34a', fontWeight: 'bold', fontSize: 13, whiteSpace: 'nowrap', textAlign: 'center', fontFamily: MODERN_FONT },
+  topActionRow: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
+  connectedBadgeInline: { backgroundColor: '#ecfdf5', paddingVertical: 7, paddingHorizontal: 16, borderRadius: 20, alignItems: 'center', justifyContent: 'center', display: 'inline-flex', borderWidth: 1, borderColor: '#a7f3d0' },
+  connectedText: { color: '#059669', fontWeight: '700', fontSize: 12, whiteSpace: 'nowrap', textAlign: 'center', fontFamily: MODERN_FONT },
   
-  pickerContainer: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, overflow: 'hidden', marginBottom: 8 },
-  webSelect: { width: '100%', padding: 10, borderWidth: 0, backgroundColor: 'transparent', outlineStyle: 'none', fontSize: 14, color: '#0f172a', fontFamily: 'inherit' },
+  pickerContainer: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 10, overflow: 'hidden', marginBottom: 8 },
+  webSelect: { width: '100%', padding: 10, borderWidth: 0, backgroundColor: 'transparent', outlineStyle: 'none', fontSize: 13, color: '#0f172a', fontFamily: MODERN_FONT },
   
-  textAreaLarge: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 10, fontSize: 14, color: '#0f172a', minHeight: 70, textAlignVertical: 'top', marginBottom: 6, outlineStyle: 'none' },
-  primaryButton: { backgroundColor: '#16a34a', paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
-  primaryButtonText: { color: '#ffffff', fontWeight: '700', fontSize: 15, fontFamily: MODERN_FONT },
+  textAreaLarge: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 10, padding: 12, fontSize: 13, color: '#0f172a', minHeight: 75, textAlignVertical: 'top', marginBottom: 8, outlineStyle: 'none', fontFamily: MODERN_FONT },
+  primaryButton: { backgroundColor: '#059669', paddingVertical: 12, borderRadius: 10, alignItems: 'center', ...Platform.select({ web: { cursor: 'pointer', boxShadow: '0 2px 8px rgba(5, 150, 105, 0.25)' } }) },
+  primaryButtonText: { color: '#ffffff', fontWeight: '800', fontSize: 14, fontFamily: MODERN_FONT },
 
-  logWrapper: { marginTop: 4 },
+  logWrapper: { marginTop: 6 },
   logHeaderBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  progressLabel: { fontSize: 13, fontWeight: 'bold', color: '#2563eb', fontFamily: MODERN_FONT },
-  logContainer: { backgroundColor: '#0f172a', borderRadius: 8, padding: 10, height: 180 },
-  logItem: { fontSize: 12, fontFamily: 'monospace', marginBottom: 4, lineHeight: 16 },
-  logSuccess: { color: '#4ade80' },
+  progressLabel: { fontSize: 12, fontWeight: '800', color: '#2563eb', fontFamily: MODERN_FONT },
+  logContainer: { backgroundColor: '#0f172a', borderRadius: 12, padding: 12, height: 180, borderWidth: 1, borderColor: '#1e293b' },
+  logItem: { fontSize: 11, fontFamily: 'monospace', marginBottom: 4, lineHeight: 16 },
+  logSuccess: { color: '#34d399' },
   logError: { color: '#f87171' },
 
   controlButtonsRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  controlBtn: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
+  controlBtn: { flex: 1, paddingVertical: 11, borderRadius: 10, alignItems: 'center', ...Platform.select({ web: { cursor: 'pointer' } }) },
   btnPause: { backgroundColor: '#d97706' },
-  btnResume: { backgroundColor: '#16a34a' },
-  btnCancel: { flex: 1, backgroundColor: '#dc2626', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
-  controlBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 13, fontFamily: MODERN_FONT },
+  btnResume: { backgroundColor: '#059669' },
+  btnCancel: { flex: 1, backgroundColor: '#dc2626', paddingVertical: 11, borderRadius: 10, alignItems: 'center', ...Platform.select({ web: { cursor: 'pointer' } }) },
+  controlBtnText: { color: '#ffffff', fontWeight: '800', fontSize: 12, fontFamily: MODERN_FONT },
 
-  emptyText: { textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', marginTop: 40, fontFamily: MODERN_FONT },
-  historyCard: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8, padding: 12, marginBottom: 10 },
-  historyHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  historyStatus: { fontWeight: 'bold', fontSize: 13, fontFamily: MODERN_FONT },
-  historyDate: { fontSize: 12, color: '#64748b', fontFamily: MODERN_FONT },
-  historyMsg: { fontSize: 13, color: '#334155', marginBottom: 6, fontFamily: MODERN_FONT },
-  historyStatsRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 6 },
-  historyStatItem: { fontSize: 12, fontWeight: '600', color: '#475569', fontFamily: MODERN_FONT },
+  emptyText: { textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', marginTop: 40, fontFamily: MODERN_FONT, fontSize: 13 },
+  historyCard: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, padding: 14, marginBottom: 10 },
+  historyHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  historyStatus: { fontWeight: '800', fontSize: 12, fontFamily: MODERN_FONT },
+  historyDate: { fontSize: 11, color: '#64748b', fontFamily: MODERN_FONT },
+  historyMsg: { fontSize: 13, color: '#0f172a', marginBottom: 6, fontFamily: MODERN_FONT, lineHeight: 18 },
+  historyStatsRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 8, marginTop: 6 },
+  historyStatItem: { fontSize: 11, fontWeight: '700', color: '#475569', fontFamily: MODERN_FONT },
   connectedAccountInfo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  historyMsgClean: { fontSize: 13, color: '#475569', backgroundColor: '#ffffff', padding: 6, borderRadius: 4, borderWidth: 1, borderColor: '#e2e8f0', fontStyle: 'italic', marginTop: 2, fontFamily: MODERN_FONT },
+  historyMsgClean: { fontSize: 12, color: '#475569', backgroundColor: '#ffffff', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0', fontStyle: 'italic', marginTop: 4, fontFamily: MODERN_FONT },
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 12 },
 
-  alertOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.5)', justifyContent: 'center', alignItems: 'center', padding: 16 },
-  alertContent: { backgroundColor: '#ffffff', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360, alignItems: 'center', ...Platform.select({ web: { outlineStyle: 'none', boxShadow: '0px 10px 20px rgba(0,0,0,0.15)'} }) },
-  alertTitle: { fontSize: 18, fontWeight: 'bold', color: '#1e293b', marginBottom: 8, textAlign: 'center', fontFamily: MODERN_FONT },
-  alertSubtitle: { fontSize: 13, color: '#64748b', marginBottom: 20, textAlign: 'center', lineHeight: 18, fontFamily: MODERN_FONT },
+  alertOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+  alertContent: { backgroundColor: '#ffffff', borderRadius: 18, padding: 24, width: '100%', maxWidth: 360, alignItems: 'center', ...Platform.select({ web: { outlineStyle: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.2)'} }) },
+  alertTitle: { fontSize: 18, fontWeight: '800', color: '#0f172a', marginBottom: 8, textAlign: 'center', fontFamily: MODERN_FONT, letterSpacing: -0.3 },
+  alertSubtitle: { fontSize: 13, color: '#64748b', marginBottom: 20, textAlign: 'center', lineHeight: 19, fontFamily: MODERN_FONT, fontWeight: '500' },
   alertButtonsRow: { flexDirection: 'row', gap: 12, width: '100%' },
-  alertBtn: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
+  alertBtn: { flex: 1, paddingVertical: 11, borderRadius: 10, alignItems: 'center', ...Platform.select({ web: { cursor: 'pointer' } }) },
   alertCancelBtn: { backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#cbd5e1' },
-  alertCancelBtnText: { color: '#475569', fontWeight: 'bold', fontSize: 13, fontFamily: MODERN_FONT },
+  alertCancelBtnText: { color: '#475569', fontWeight: '700', fontSize: 12, fontFamily: MODERN_FONT },
   alertConfirmBtn: { backgroundColor: '#2563eb' },
-  alertConfirmBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 13, fontFamily: MODERN_FONT }
+  alertConfirmBtnText: { color: '#ffffff', fontWeight: '800', fontSize: 12, fontFamily: MODERN_FONT }
 });
 
 const darkStyles = StyleSheet.create({
-  modalContainer: { backgroundColor: '#1e293b' },
-  title: { color: '#f8fafc' },
-  closeButtonText: { color: '#94a3b8' },
-  tabsRow: { backgroundColor: '#0f172a' },
-  tabBtnActive: { backgroundColor: '#334155' },
-  tabText: { color: '#64748b' },
-  label: { color: '#cbd5e1' },
-  pickerContainer: { backgroundColor: '#0f172a', borderColor: '#334155' },
-  webSelect: { color: '#f8fafc' },
-  itemBlock: { backgroundColor: '#0f172a', borderColor: '#334155' },
-  textAreaLarge: { backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' },
-  mediaPickerBtn: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  mediaPickerBtnText: { color: '#cbd5e1' },
-  checkbox: { borderColor: '#475569', backgroundColor: '#1e293b' },
-  checkboxLabel: { color: '#cbd5e1' },
-  addBtn: { backgroundColor: '#1e293b', borderColor: '#3b82f6' },
-  floatingMenu: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  menuTitle: { color: '#cbd5e1' },
-  menuItem: { borderBottomColor: '#334155' },
-  menuItemText: { color: '#f8fafc' },
-  infoText: { color: '#cbd5e1' },
-  emptyText: { color: '#64748b' },
-  historyCard: { backgroundColor: '#0f172a', borderColor: '#334155' },
-  historyMsg: { color: '#cbd5e1' },
-  historyMsgClean: { backgroundColor: '#1e293b', borderColor: '#334155', color: '#cbd5e1' },
-  historyStatsRow: { borderTopColor: '#334155' },
-  historyStatItem: { color: '#cbd5e1' },
-  alertContent: { backgroundColor: '#1e293b' },
-  alertTitle: { color: '#f8fafc' },
-  alertSubtitle: { color: '#cbd5e1' },
-  alertCancelBtn: { backgroundColor: '#334155', borderColor: '#475569' },
-  alertCancelBtnText: { color: '#cbd5e1' },
-  reconnectHint: { color: '#94a3b8' },
-  stepsBox: { backgroundColor: '#0f172a', borderColor: '#334155' },
-  stepText: { color: '#cbd5e1' },
-  instructionsBox: { backgroundColor: '#0f172a', borderColor: '#1e293b' },
-  instructionsText: { color: '#cbd5e1' },
-  btn3DSecondary: { backgroundColor: '#1e293b', borderColor: '#0f172a' },
-  btn3DTextSecondary: { color: '#94a3b8' }
+  modalContainer: { backgroundColor: TOKENS.dark.surface },
+  title: { color: TOKENS.dark.textPrimary },
+  closeButtonText: { color: TOKENS.dark.textMuted },
+  tabsRow: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  tabBtnActive: { backgroundColor: TOKENS.dark.surface },
+  tabText: { color: TOKENS.dark.textMuted },
+  tabTextActive: { color: '#60a5fa' },
+  label: { color: TOKENS.dark.textSecondary },
+  pickerContainer: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  webSelect: { color: TOKENS.dark.textPrimary },
+  itemBlock: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  textAreaLarge: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border, color: TOKENS.dark.textPrimary },
+  mediaPickerBtn: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border },
+  mediaPickerBtnText: { color: TOKENS.dark.textPrimary },
+  checkbox: { borderColor: TOKENS.dark.border, backgroundColor: TOKENS.dark.surface },
+  checkboxLabel: { color: TOKENS.dark.textPrimary },
+  addBtn: { backgroundColor: TOKENS.dark.primarySubtle, borderColor: '#3b82f6' },
+  floatingMenu: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border },
+  menuTitle: { color: TOKENS.dark.textMuted },
+  menuItem: { borderBottomColor: TOKENS.dark.borderSubtle },
+  menuItemText: { color: TOKENS.dark.textPrimary },
+  infoText: { color: TOKENS.dark.textSecondary },
+  emptyText: { color: TOKENS.dark.textMuted },
+  historyCard: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  historyDate: { color: TOKENS.dark.textMuted },
+  historyMsg: { color: TOKENS.dark.textPrimary },
+  historyMsgClean: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border, color: TOKENS.dark.textSecondary },
+  historyStatsRow: { borderTopColor: TOKENS.dark.borderSubtle },
+  historyStatItem: { color: TOKENS.dark.textSecondary },
+  alertContent: { backgroundColor: TOKENS.dark.surface },
+  alertTitle: { color: TOKENS.dark.textPrimary },
+  alertSubtitle: { color: TOKENS.dark.textSecondary },
+  alertCancelBtn: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  alertCancelBtnText: { color: TOKENS.dark.textSecondary },
+  reconnectHint: { color: TOKENS.dark.textMuted },
+  stepsBox: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  stepText: { color: TOKENS.dark.textPrimary },
+  instructionsBox: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  instructionsTitle: { color: TOKENS.dark.textPrimary },
+  instructionsText: { color: TOKENS.dark.textSecondary },
+  btn3DSecondary: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  btn3DTextSecondary: { color: TOKENS.dark.textSecondary },
+  connectedBadgeInline: { backgroundColor: TOKENS.dark.successSubtle, borderColor: TOKENS.dark.successBorder },
+  connectedText: { color: TOKENS.dark.success },
+  logContainer: { backgroundColor: '#090d16', borderColor: '#1e293b' },
+  qrCodeFrame: { backgroundColor: '#ffffff' }
 });

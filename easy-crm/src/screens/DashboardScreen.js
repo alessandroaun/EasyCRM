@@ -144,10 +144,15 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
   // GESTÃO DE VIEWS COM HISTÓRICO
   // =========================================================================
   const changeView = (newView, path) => {
-    if (newView === activeView) return;
-    const previousView = activeView;
+    if (newView === activeView) {
+      closeSidebarDirectly();
+      return;
+    }
     setActiveView(newView);
-    pushRoute(path, () => setActiveView(previousView));
+    closeSidebarDirectly();
+    if (Platform.OS === 'web') {
+      window.history.replaceState({ step: 'root', view: newView, idx: 1 }, '', path);
+    }
   };
 
   const dispararPushBackend = async (userId, title, message) => {
@@ -216,25 +221,27 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
     }, 4000);
   };
 
+  const closeSidebarDirectly = (callback) => {
+    Animated.parallel([
+      Animated.timing(slideAnim, { toValue: -280, duration: 220, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(backdropOpacity, { toValue: 0, duration: 220, useNativeDriver: Platform.OS !== 'web' }),
+    ]).start(() => {
+      setIsMenuRendered(false);
+      setIsMenuOpen(false);
+      if (typeof callback === 'function') callback();
+    });
+  };
+
   const openSidebar = () => {
     setIsMenuRendered(true);
     setIsMenuOpen(true);
-    pushRoute('/##menu', () => {
-      Animated.parallel([
-        Animated.timing(slideAnim, { toValue: -280, duration: 250, useNativeDriver: Platform.OS !== 'web' }),
-        Animated.timing(backdropOpacity, { toValue: 0, duration: 250, useNativeDriver: Platform.OS !== 'web' }),
-      ]).start(() => {
-        setIsMenuRendered(false);
-        setIsMenuOpen(false);
-      });
-    });
     Animated.parallel([
-      Animated.timing(slideAnim, { toValue: 0, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.timing(backdropOpacity, { toValue: 1, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 280, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(backdropOpacity, { toValue: 1, duration: 280, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
   };
 
-  const closeSidebar = () => popRoute();
+  const closeSidebar = () => closeSidebarDirectly();
 
   const toggleChat = () => {
     if (isChatOpen) {
@@ -1952,7 +1959,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
       {isMenuRendered && (
         <View style={styles.sidebarOverlay}>
           <Animated.View style={[styles.sidebarBackdrop, { opacity: backdropOpacity }]}>
-            <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={popRoute} />
+            <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={closeSidebar} />
           </Animated.View>
           
           <Animated.View style={[
@@ -1975,28 +1982,28 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
               
               <TouchableOpacity 
                 style={[styles.menuItem, currentTheme.menuItem, isMobile && styles.menuItemMobile, activeView === 'kanban' && (isDarkMode ? styles.menuItemActiveDark : styles.menuItemActive)]} 
-                onPress={() => { popRoute(); setTimeout(() => changeView('kanban', '/principal'), 100); }}
+                onPress={() => changeView('kanban', '/principal')}
               >
                 <Text style={[styles.menuItemText, currentTheme.menuItemText, isMobile && styles.menuItemTextMobile, activeView === 'kanban' && styles.menuItemTextActive]}>Painel dos Leads</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={[styles.menuItem, currentTheme.menuItem, isMobile && styles.menuItemMobile, activeView === 'minha_central' && (isDarkMode ? styles.menuItemActiveDark : styles.menuItemActive)]} 
-                onPress={() => { popRoute(); setTimeout(() => changeView('minha_central', '/central'), 100); }}
+                onPress={() => changeView('minha_central', '/central')}
               >
                 <Text style={[styles.menuItemText, currentTheme.menuItemText, isMobile && styles.menuItemTextMobile, activeView === 'minha_central' && styles.menuItemTextActive]}>Minha Central</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
                 style={[styles.menuItem, currentTheme.menuItem, isMobile && styles.menuItemMobile, activeView === 'info_gerais' && (isDarkMode ? styles.menuItemActiveDark : styles.menuItemActive)]} 
-                onPress={() => { popRoute(); setTimeout(() => changeView('info_gerais', '/informacoes'), 100); }}
+                onPress={() => changeView('info_gerais', '/informacoes')}
               >
                 <Text style={[styles.menuItemText, currentTheme.menuItemText, isMobile && styles.menuItemTextMobile, activeView === 'info_gerais' && styles.menuItemTextActive]}>Visão Geral</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
                 style={[styles.menuItem, currentTheme.menuItem, isMobile && styles.menuItemMobile, activeView === 'configuracao' && (isDarkMode ? styles.menuItemActiveDark : styles.menuItemActive)]} 
-                onPress={() => { popRoute(); setTimeout(() => changeView('configuracao', '/configuracao'), 100); }}
+                onPress={() => changeView('configuracao', '/configuracao')}
               >
                 <Text style={[styles.menuItemText, currentTheme.menuItemText, isMobile && styles.menuItemTextMobile, activeView === 'configuracao' && styles.menuItemTextActive]}>Configuração</Text>
               </TouchableOpacity>
@@ -2006,7 +2013,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
                   <Text style={[styles.menuSectionTitle, currentTheme.menuSectionTitle, { color: '#3b82f6', marginBottom: 8 }]}>ADMINISTRAÇÃO</Text>
                   <TouchableOpacity 
                     style={[styles.menuItem, currentTheme.adminMenuItem, isMobile && styles.menuItemMobile, activeView === 'admin_panel' && styles.adminMenuItemActive]} 
-                    onPress={() => { popRoute(); setTimeout(() => changeView('admin_panel', '/administracao'), 100); }}
+                    onPress={() => changeView('admin_panel', '/administracao')}
                   >
                     <Text style={[styles.adminMenuItemText, currentTheme.adminMenuItemText, isMobile && styles.adminMenuItemTextMobile]}>Painel Administrativo</Text>
                   </TouchableOpacity>
@@ -2039,8 +2046,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
                               ]} 
                               onPress={() => { 
                                 setCurrentUserId(u.id); 
-                                popRoute(); 
-                                setTimeout(() => changeView('kanban', '/principal'), 100); 
+                                changeView('kanban', '/principal');
                               }}
                             >
                               <View style={[styles.sellerIndicatorDot, isSelectedUser && styles.sellerIndicatorDotActive]} />
@@ -2063,7 +2069,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
             <View style={[styles.sidebarFooterContainer, currentTheme.sidebarFooterContainer]}>
               <TouchableOpacity 
                 style={[styles.sidebarFooterButtonChangePass, currentTheme.sidebarFooterButtonChangePass, isMobile && styles.sidebarFooterButtonMobile]} 
-                onPress={() => { popRoute(); setTimeout(() => openChangePassModal(), 100); }}
+                onPress={() => closeSidebarDirectly(() => openChangePassModal())}
                 activeOpacity={0.8}
               >
                 <Text style={[styles.sidebarFooterButtonChangePassText, currentTheme.sidebarFooterButtonChangePassText, isMobile && styles.sidebarFooterButtonTextMobile]}>Trocar Minha Senha</Text>
@@ -2071,7 +2077,7 @@ export default function DashboardScreen({ isDarkMode, toggleDarkMode }) {
 
               <TouchableOpacity 
                 style={[styles.sidebarFooterButtonLogout, currentTheme.sidebarFooterButtonLogout, isMobile && styles.sidebarFooterButtonMobile]} 
-                onPress={() => { popRoute(); setTimeout(() => { setIsLogoutModalVisible(true); pushRoute('/##sair', () => setIsLogoutModalVisible(false)); }, 100); }}
+                onPress={() => closeSidebarDirectly(() => { setIsLogoutModalVisible(true); pushRoute('/##sair', () => setIsLogoutModalVisible(false)); })}
                 activeOpacity={0.8}
               >
                 <Text style={[styles.sidebarFooterButtonLogoutText, currentTheme.sidebarFooterButtonLogoutText, isMobile && styles.sidebarFooterButtonTextMobile]}>Encerrar Sessão</Text>

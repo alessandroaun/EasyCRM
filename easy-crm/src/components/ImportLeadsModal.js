@@ -16,7 +16,7 @@ import {
   Linking
 } from 'react-native';
 
-const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
+import { MODERN_FONT, TOKENS } from '../theme/tokens';
 
 // FUNÇÃO AUXILIAR DE FORMATAÇÃO FINANCEIRA
 const formatToFinancial = (value) => {
@@ -711,119 +711,145 @@ export default function ImportLeadsModal({ visible, onClose, onImport, isDarkMod
 }
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.65)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+  overlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.7)', justifyContent: 'center', alignItems: 'center', padding: Platform.OS === 'web' ? 24 : 0 },
   qrOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.8)', justifyContent: 'center', alignItems: 'center', zIndex: 9999 },
-  qrContainer: { width: 350, padding: 24, borderRadius: 16, alignItems: 'center', ...Platform.select({ web: { outlineStyle: 'none', boxShadow: '0px 20px 40px rgba(0,0,0,0.3)' } }) },
-  modalContainer: { width: '100%', maxWidth: 750, borderRadius: 16, maxHeight: '90%', overflow: 'hidden', ...Platform.select({ web: { outlineStyle: 'none', boxShadow: '0px 20px 40px rgba(0,0,0,0.15)' } }) },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, borderBottomWidth: 1 },
-  title: { fontFamily: MODERN_FONT, fontSize: 20, fontWeight: '800', letterSpacing: -0.5 },
-  subtitle: { fontFamily: MODERN_FONT, fontSize: 13, marginTop: 4 },
-  closeButton: { width: 32, height: 32, borderRadius: 8, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
-  closeButtonText: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: 'bold' },
-  scrollContent: { padding: 24 },
+  qrContainer: { width: 350, padding: 24, borderRadius: 20, alignItems: 'center', ...Platform.select({ web: { outlineStyle: 'none', boxShadow: '0 24px 48px rgba(0,0,0,0.3)' } }) },
+  modalContainer: { 
+    width: '100%', 
+    maxWidth: 780, 
+    borderRadius: 20, 
+    maxHeight: '92%', 
+    overflow: 'hidden', 
+    ...Platform.select({ 
+      web: { 
+        outlineStyle: 'none', 
+        boxShadow: '0 24px 48px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)' 
+      } 
+    }) 
+  },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 28, paddingVertical: 20, borderBottomWidth: 1 },
+  title: { fontFamily: MODERN_FONT, fontSize: 22, fontWeight: '800', letterSpacing: -0.4 },
+  subtitle: { fontFamily: MODERN_FONT, fontSize: 13, marginTop: 4, fontWeight: '500' },
+  closeButton: { width: 34, height: 34, borderRadius: 10, justifyContent: 'center', alignItems: 'center', borderWidth: 1, ...Platform.select({ web: { cursor: 'pointer', transition: 'all 0.15s ease' } }) },
+  closeButtonText: { fontFamily: MODERN_FONT, fontSize: 15, fontWeight: 'bold' },
+  scrollContent: { padding: 28 },
   
-  autoImportCard: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 12, borderWidth: 1, marginBottom: 24, gap: 16 },
-  autoImportTitle: { fontSize: 15, fontWeight: 'bold', marginBottom: 4, fontFamily: MODERN_FONT },
-  autoImportSubtitle: { fontSize: 12, lineHeight: 16, fontFamily: MODERN_FONT },
-  toggleSwitch: { width: 44, height: 24, borderRadius: 12, backgroundColor: '#cbd5e1', padding: 2, justifyContent: 'center' },
-  toggleSwitchActive: { backgroundColor: '#10b981' },
-  toggleCircle: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#ffffff', ...Platform.select({ web: { transition: 'transform 0.2s' } }) },
+  autoImportCard: { flexDirection: 'row', alignItems: 'center', padding: 18, borderRadius: 14, borderWidth: 1, marginBottom: 24, gap: 16 },
+  autoImportTitle: { fontSize: 14, fontWeight: '800', marginBottom: 4, fontFamily: MODERN_FONT },
+  autoImportSubtitle: { fontSize: 12, lineHeight: 18, fontFamily: MODERN_FONT, fontWeight: '500' },
+  toggleSwitch: { width: 44, height: 24, borderRadius: 12, backgroundColor: '#cbd5e1', padding: 2, justifyContent: 'center', ...Platform.select({ web: { cursor: 'pointer', transition: 'all 0.2s ease' } }) },
+  toggleSwitchActive: { backgroundColor: '#059669' },
+  toggleCircle: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#ffffff', ...Platform.select({ web: { transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)' } }) },
   toggleCircleActive: { transform: [{ translateX: 20 }] },
 
   toolsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10 },
-  inputLabel: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '700' },
-  compactToggle: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1 },
+  inputLabel: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.3 },
+  compactToggle: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, ...Platform.select({ web: { cursor: 'pointer' } }) },
   compactCheckbox: { width: 16, height: 16, borderRadius: 4, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', marginRight: 8 },
   compactCheckboxChecked: { backgroundColor: '#2563eb', borderColor: '#2563eb' },
   compactCheckmark: { color: '#ffffff', fontSize: 10, fontWeight: '900' },
   compactToggleText: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '600' },
   textArea: { height: 300, borderWidth: 1, borderRadius: 12, padding: 16, fontSize: 13, fontFamily: MODERN_FONT, textAlignVertical: 'top', lineHeight: 22, ...Platform.select({ web: { outlineStyle: 'none' } }) },
-  footer: { flexDirection: 'row', padding: 20, borderTopWidth: 1, justifyContent: 'flex-end', gap: 12 },
-  cancelButton: { paddingVertical: 12, paddingHorizontal: 24, alignItems: 'center', borderRadius: 8 },
-  cancelButtonText: { fontFamily: MODERN_FONT, fontWeight: '700', fontSize: 14 },
-  saveButton: { paddingVertical: 12, paddingHorizontal: 28, alignItems: 'center', borderRadius: 8, backgroundColor: '#2563eb', ...Platform.select({ web: { boxShadow: '0px 4px 10px rgba(37, 99, 235, 0.2)' } }) },
+  footer: { flexDirection: 'row', paddingHorizontal: 28, paddingVertical: 18, borderTopWidth: 1, justifyContent: 'flex-end', gap: 12 },
+  cancelButton: { paddingVertical: 10, paddingHorizontal: 22, alignItems: 'center', borderRadius: 10, ...Platform.select({ web: { cursor: 'pointer', transition: 'all 0.15s ease' } }) },
+  cancelButtonText: { fontFamily: MODERN_FONT, fontWeight: '700', fontSize: 13 },
+  saveButton: { 
+    paddingVertical: 10, 
+    paddingHorizontal: 24, 
+    alignItems: 'center', 
+    borderRadius: 10, 
+    backgroundColor: '#2563eb', 
+    ...Platform.select({ 
+      web: { 
+        cursor: 'pointer', 
+        transition: 'all 0.15s ease',
+        boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)' 
+      } 
+    }) 
+  },
   processingBtnRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  saveButtonText: { fontFamily: MODERN_FONT, color: '#ffffff', fontWeight: '700', fontSize: 14 },
-  successAlertOverlay: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', justifyContent: 'center', alignItems: 'center', zIndex: 99999 },
-  successAlertBox: { padding: 24, borderRadius: 16, alignItems: 'center', width: 320, ...Platform.select({ web: { boxShadow: '0px 10px 25px rgba(0,0,0,0.2)' } }) },
-  successAlertIcon: { fontSize: 48, marginBottom: 12 },
-  successAlertTitle: { fontFamily: MODERN_FONT, fontSize: 20, fontWeight: '800', marginBottom: 8, textAlign: 'center' },
-  successAlertMessage: { fontFamily: MODERN_FONT, fontSize: 14, textAlign: 'center', marginBottom: 24, lineHeight: 20 },
-  successAlertBtn: { backgroundColor: '#10b981', paddingVertical: 12, borderRadius: 8, width: '100%', alignItems: 'center' },
-  successAlertBtnText: { fontFamily: MODERN_FONT, color: '#ffffff', fontWeight: '700', fontSize: 14 },
+  saveButtonText: { fontFamily: MODERN_FONT, color: '#ffffff', fontWeight: '800', fontSize: 13 },
+  successAlertOverlay: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 99999 },
+  successAlertBox: { padding: 28, borderRadius: 20, alignItems: 'center', width: 340, ...Platform.select({ web: { boxShadow: '0 20px 40px rgba(0,0,0,0.2)' } }) },
+  successAlertIcon: { fontSize: 44, marginBottom: 12 },
+  successAlertTitle: { fontFamily: MODERN_FONT, fontSize: 18, fontWeight: '800', marginBottom: 8, textAlign: 'center', letterSpacing: -0.3 },
+  successAlertMessage: { fontFamily: MODERN_FONT, fontSize: 13, textAlign: 'center', marginBottom: 24, lineHeight: 19, fontWeight: '500' },
+  successAlertBtn: { backgroundColor: '#059669', paddingVertical: 11, borderRadius: 10, width: '100%', alignItems: 'center', ...Platform.select({ web: { cursor: 'pointer' } }) },
+  successAlertBtnText: { fontFamily: MODERN_FONT, color: '#ffffff', fontWeight: '800', fontSize: 13 },
   disconnectWarningText: { 
     fontSize: 11, 
-    color: '#059b93', 
-    fontWeight: '500', 
+    color: '#0d9488', 
+    fontWeight: '600', 
     marginTop: 6, 
     fontFamily: MODERN_FONT,
-    lineHeight: 15
-    },
-    disconnectContainer: { 
-  flexDirection: 'row', 
-  alignItems: 'center', 
-  marginTop: 6, 
-  flexWrap: 'wrap' 
-},
-connectButton: { 
-  backgroundColor: '#f87171', 
-  paddingVertical: 2, 
-  paddingHorizontal: 8, 
-  borderRadius: 4, 
-  marginLeft: 8 
-},
-connectButtonText: { 
-  color: '#ffffff', 
-  fontSize: 10, 
-  fontWeight: 'bold', 
-  fontFamily: MODERN_FONT 
-},
-  primaryButton: { backgroundColor: '#16a34a', paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
-  primaryButtonText: { color: '#ffffff', fontWeight: '700', fontSize: 15, fontFamily: MODERN_FONT },
-  statusError: { fontSize: 18, fontWeight: 'bold', color: '#ef4444', textAlign: 'center', fontFamily: MODERN_FONT },
+    lineHeight: 16
+  },
+  disconnectContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginTop: 6, 
+    flexWrap: 'wrap' 
+  },
+  connectButton: { 
+    backgroundColor: '#ef4444', 
+    paddingVertical: 3, 
+    paddingHorizontal: 10, 
+    borderRadius: 6, 
+    marginLeft: 8,
+    ...Platform.select({ web: { cursor: 'pointer' } })
+  },
+  connectButtonText: { 
+    color: '#ffffff', 
+    fontSize: 11, 
+    fontWeight: '800', 
+    fontFamily: MODERN_FONT 
+  },
+  primaryButton: { backgroundColor: '#059669', paddingVertical: 12, borderRadius: 10, alignItems: 'center', ...Platform.select({ web: { cursor: 'pointer' } }) },
+  primaryButtonText: { color: '#ffffff', fontWeight: '800', fontSize: 14, fontFamily: MODERN_FONT },
+  statusError: { fontSize: 16, fontWeight: '800', color: '#ef4444', textAlign: 'center', fontFamily: MODERN_FONT },
   infoText: { fontSize: 13, color: '#475569', textAlign: 'center', fontFamily: MODERN_FONT }
 });
 
 const lightStyles = StyleSheet.create({
-  modalContainer: { backgroundColor: '#ffffff' },
-  header: { borderBottomColor: '#f1f5f9', backgroundColor: '#ffffff' },
-  title: { color: '#0f172a' },
-  subtitle: { color: '#64748b' },
-  closeButton: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
-  closeButtonText: { color: '#475569' },
+  modalContainer: { backgroundColor: TOKENS.light.surface },
+  header: { borderBottomColor: TOKENS.light.borderSubtle, backgroundColor: TOKENS.light.surface },
+  title: { color: TOKENS.light.textPrimary },
+  subtitle: { color: TOKENS.light.textMuted },
+  closeButton: { backgroundColor: TOKENS.light.surfaceSubtle, borderColor: TOKENS.light.border },
+  closeButtonText: { color: TOKENS.light.textSecondary },
   autoImportCard: { backgroundColor: '#f0fdfa', borderColor: '#ccfbf1' },
-  inputLabel: { color: '#1e293b' },
-  compactToggle: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
-  compactCheckbox: { borderColor: '#cbd5e1', backgroundColor: '#ffffff' },
-  compactToggleText: { color: '#475569' },
-  textArea: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0', color: '#0f172a' },
-  footer: { backgroundColor: '#ffffff', borderTopColor: '#f1f5f9' },
-  cancelButton: { backgroundColor: '#f1f5f9' },
-  cancelButtonText: { color: '#475569' },
-  successAlertBox: { backgroundColor: '#ffffff' },
-  successAlertTitle: { color: '#1e293b' },
-  successAlertMessage: { color: '#475569' },
-  infoText: { color: '#475569' }
+  inputLabel: { color: TOKENS.light.textPrimary },
+  compactToggle: { backgroundColor: TOKENS.light.surfaceSubtle, borderColor: TOKENS.light.border },
+  compactCheckbox: { borderColor: TOKENS.light.border, backgroundColor: TOKENS.light.surface },
+  compactToggleText: { color: TOKENS.light.textSecondary },
+  textArea: { backgroundColor: TOKENS.light.surfaceSubtle, borderColor: TOKENS.light.border, color: TOKENS.light.textPrimary },
+  footer: { backgroundColor: TOKENS.light.surface, borderTopColor: TOKENS.light.borderSubtle },
+  cancelButton: { backgroundColor: TOKENS.light.surfaceSubtle },
+  cancelButtonText: { color: TOKENS.light.textSecondary },
+  successAlertBox: { backgroundColor: TOKENS.light.surface },
+  successAlertTitle: { color: TOKENS.light.textPrimary },
+  successAlertMessage: { color: TOKENS.light.textSecondary },
+  infoText: { color: TOKENS.light.textSecondary }
 });
 
 const darkStyles = StyleSheet.create({
-  modalContainer: { backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1 },
-  header: { borderBottomColor: '#334155', backgroundColor: '#1e293b' },
-  title: { color: '#f8fafc' },
-  subtitle: { color: '#94a3b8' },
-  closeButton: { backgroundColor: '#0f172a', borderColor: '#334155' },
-  closeButtonText: { color: '#94a3b8' },
-  autoImportCard: { backgroundColor: '#022c22', borderColor: '#064e3b' },
-  inputLabel: { color: '#f8fafc' },
-  compactToggle: { backgroundColor: '#0f172a', borderColor: '#334155' },
-  compactCheckbox: { borderColor: '#334155', backgroundColor: '#0f172a' },
-  compactToggleText: { color: '#94a3b8' },
-  textArea: { backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc' },
-  footer: { backgroundColor: '#1e293b', borderTopColor: '#334155' },
-  cancelButton: { backgroundColor: '#0f172a', borderColor: '#334155', borderWidth: 1 },
-  cancelButtonText: { color: '#cbd5e1' },
-  successAlertBox: { backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1 },
-  successAlertTitle: { color: '#f8fafc' },
-  successAlertMessage: { color: '#94a3b8' },
-  infoText: { color: '#cbd5e1' }
+  modalContainer: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border, borderWidth: 1 },
+  header: { borderBottomColor: TOKENS.dark.borderSubtle, backgroundColor: TOKENS.dark.surface },
+  title: { color: TOKENS.dark.textPrimary },
+  subtitle: { color: TOKENS.dark.textMuted },
+  closeButton: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  closeButtonText: { color: TOKENS.dark.textSecondary },
+  autoImportCard: { backgroundColor: 'rgba(5, 150, 105, 0.1)', borderColor: 'rgba(5, 150, 105, 0.25)' },
+  inputLabel: { color: TOKENS.dark.textPrimary },
+  compactToggle: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  compactCheckbox: { borderColor: TOKENS.dark.border, backgroundColor: TOKENS.dark.surface },
+  compactToggleText: { color: TOKENS.dark.textSecondary },
+  textArea: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border, color: TOKENS.dark.textPrimary },
+  footer: { backgroundColor: TOKENS.dark.surface, borderTopColor: TOKENS.dark.borderSubtle },
+  cancelButton: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border, borderWidth: 1 },
+  cancelButtonText: { color: TOKENS.dark.textSecondary },
+  successAlertBox: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border, borderWidth: 1 },
+  successAlertTitle: { color: TOKENS.dark.textPrimary },
+  successAlertMessage: { color: TOKENS.dark.textSecondary },
+  infoText: { color: TOKENS.dark.textSecondary }
 });

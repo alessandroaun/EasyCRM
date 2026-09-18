@@ -3,7 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity, Pressable } from 'react-native';
 import ClientCard from './ClientCard';
 
-const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
+import { MODERN_FONT, TOKENS } from '../theme/tokens';
 
 // Mapeamento inteligente das cores pastéis da paleta para versões escuras sólidas e sofisticadas no modo escuro
 const getDarkPaletteColor = (hexColor, isDark) => {
@@ -283,45 +283,47 @@ export default function KanbanColumn({ phase, onDropClient, onDeleteClient, onOp
 
 const styles = StyleSheet.create({
   column: { 
-    width: 220,
-    borderRadius: 12, 
-    paddingHorizontal: 8, 
-    paddingTop: 12,
-    paddingBottom: 4,
-    marginRight: 10,
+    width: 226,
+    borderRadius: 14, 
+    paddingHorizontal: 10, 
+    paddingTop: 14,
+    paddingBottom: 6,
+    marginRight: 12,
     maxHeight: '100%',
     borderWidth: 1,
     position: 'relative',
   },
   backdropOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10, paddingHorizontal: 4, position: 'relative', zIndex: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingHorizontal: 4, position: 'relative', zIndex: 1 },
   titleContainer: { flexDirection: 'row', alignItems: 'center', flex: 1, flexWrap: 'wrap', gap: 6 },
-  title: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '700' },
-  badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 12 },
-  badgeText: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '700' },
+  title: { fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '800', letterSpacing: -0.2 },
+  badge: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 10 },
+  badgeText: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '800' },
   iconActionButton: { 
-    width: 22, 
-    height: 22, 
+    width: 24, 
+    height: 24, 
     borderRadius: 6, 
     justifyContent: 'center', 
-    alignItems: 'center'
+    alignItems: 'center',
+    ...Platform.select({ web: { cursor: 'pointer', transition: 'all 0.15s ease' } })
   },
-  actionSymbol: { fontSize: 13, fontWeight: '600', lineHeight: 16, textAlign: 'center' },
+  actionSymbol: { fontSize: 13, fontWeight: '700', lineHeight: 16, textAlign: 'center' },
   selectAllContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
-    paddingHorizontal: 8,
-    borderRadius: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
     marginBottom: 10,
     gap: 8,
     borderWidth: 1,
+    ...Platform.select({ web: { cursor: 'pointer' } })
   },
   checkbox: {
-    width: 18,
-    height: 18,
+    width: 16,
+    height: 16,
     borderRadius: 4,
-    borderWidth: 2,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -331,7 +333,7 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   selectAllText: {
@@ -340,41 +342,42 @@ const styles = StyleSheet.create({
     fontFamily: MODERN_FONT,
   },
   sortMenuDropdown: {
-    position: 'absolute', top: 30, right: 0, width: 200, 
-    borderRadius: 10, padding: 8, zIndex: 99999, borderWidth: 1,
+    position: 'absolute', top: 32, right: 0, width: 200, 
+    borderRadius: 12, padding: 8, zIndex: 99999, borderWidth: 1,
+    ...Platform.select({ web: { boxShadow: '0 12px 28px rgba(0,0,0,0.15)' } })
   },
-  sortMenuTitle: { fontSize: 11, fontWeight: '700', marginBottom: 6, paddingHorizontal: 6 },
-  sortMenuItem: { paddingVertical: 8, paddingHorizontal: 8, borderRadius: 6, marginBottom: 2 },
-  sortMenuText: { fontSize: 12, fontWeight: '600' },
+  sortMenuTitle: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.3, marginBottom: 6, paddingHorizontal: 6, fontFamily: MODERN_FONT },
+  sortMenuItem: { paddingVertical: 8, paddingHorizontal: 10, borderRadius: 6, marginBottom: 2, ...Platform.select({ web: { cursor: 'pointer' } }) },
+  sortMenuText: { fontSize: 12, fontWeight: '600', fontFamily: MODERN_FONT },
   scrollArea: { flex: 1 },
 });
 
 const lightStyles = StyleSheet.create({
-  column: { borderColor: 'rgba(0,0,0,0.03)' },
-  title: { color: '#111827' },
+  column: { borderColor: TOKENS.light.borderSubtle },
+  title: { color: TOKENS.light.textPrimary },
   badge: { backgroundColor: 'rgba(0,0,0,0.06)' },
-  badgeText: { color: '#4B5563' },
+  badgeText: { color: TOKENS.light.textSecondary },
   iconActionButton: { backgroundColor: 'rgba(0,0,0,0.04)' },
-  actionSymbol: { color: '#4b5563' },
-  selectAllContainer: { backgroundColor: 'rgba(255, 255, 255, 0.7)', borderColor: '#e2e8f0' },
-  checkbox: { borderColor: '#cbd5e1', backgroundColor: '#ffffff' },
-  selectAllText: { color: '#334155' },
-  sortMenuDropdown: { backgroundColor: '#ffffff', borderColor: '#e2e8f0', ...Platform.select({ web: { boxShadow: '0px 8px 24px rgba(0,0,0,0.15)' } }) },
-  sortMenuTitle: { color: '#64748b' },
-  sortMenuText: { color: '#1e293b' }
+  actionSymbol: { color: TOKENS.light.textSecondary },
+  selectAllContainer: { backgroundColor: 'rgba(255, 255, 255, 0.7)', borderColor: TOKENS.light.border },
+  checkbox: { borderColor: TOKENS.light.border, backgroundColor: '#ffffff' },
+  selectAllText: { color: TOKENS.light.textPrimary },
+  sortMenuDropdown: { backgroundColor: TOKENS.light.surface, borderColor: TOKENS.light.border },
+  sortMenuTitle: { color: TOKENS.light.textMuted },
+  sortMenuText: { color: TOKENS.light.textPrimary }
 });
 
 const darkStyles = StyleSheet.create({
-  column: { borderColor: 'rgba(255,255,255,0.08)' },
-  title: { color: '#f8fafc' },
-  badge: { backgroundColor: 'rgba(255,255,255,0.15)' },
-  badgeText: { color: '#f1f5f9' },
-  iconActionButton: { backgroundColor: 'rgba(255,255,255,0.08)' },
-  actionSymbol: { color: '#cbd5e1' },
-  selectAllContainer: { backgroundColor: 'rgba(30, 41, 59, 0.8)', borderColor: '#334155' },
-  checkbox: { borderColor: '#475569', backgroundColor: '#0f172a' },
-  selectAllText: { color: '#f1f5f9' },
-  sortMenuDropdown: { backgroundColor: '#1e293b', borderColor: '#334155', ...Platform.select({ web: { boxShadow: '0px 8px 24px rgba(0,0,0,0.4)' } }) },
-  sortMenuTitle: { color: '#94a3b8' },
-  sortMenuText: { color: '#f8fafc' }
+  column: { borderColor: 'rgba(255,255,255,0.06)' },
+  title: { color: TOKENS.dark.textPrimary },
+  badge: { backgroundColor: 'rgba(255,255,255,0.12)' },
+  badgeText: { color: TOKENS.dark.textSecondary },
+  iconActionButton: { backgroundColor: 'rgba(255,255,255,0.06)' },
+  actionSymbol: { color: TOKENS.dark.textSecondary },
+  selectAllContainer: { backgroundColor: 'rgba(30, 41, 59, 0.8)', borderColor: TOKENS.dark.border },
+  checkbox: { borderColor: TOKENS.dark.border, backgroundColor: '#0f172a' },
+  selectAllText: { color: TOKENS.dark.textPrimary },
+  sortMenuDropdown: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border },
+  sortMenuTitle: { color: TOKENS.dark.textMuted },
+  sortMenuText: { color: TOKENS.dark.textPrimary }
 });

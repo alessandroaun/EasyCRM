@@ -9,7 +9,7 @@ import {
   Platform
 } from 'react-native';
 
-const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
+import { MODERN_FONT, TOKENS } from '../theme/tokens';
 
 export default function AddClientModal({ visible, onClose, onSave, isDarkMode }) {
   const [name, setName] = useState('');
@@ -138,16 +138,14 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: '100%',
-    maxWidth: 500,
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    elevation: 10,
+    maxWidth: 520,
+    borderRadius: 20,
+    padding: 28,
     ...Platform.select({
-      web: { outlineStyle: 'none' }
+      web: { 
+        outlineStyle: 'none',
+        boxShadow: '0 24px 48px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+      }
     })
   },
   header: {
@@ -158,34 +156,40 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '800',
     fontFamily: MODERN_FONT,
+    letterSpacing: -0.4,
   },
   closeButton: {
-    padding: 8,
+    padding: 6,
+    borderRadius: 8,
+    ...Platform.select({ web: { cursor: 'pointer' } })
   },
   closeButtonText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   form: {
     marginBottom: 24,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    marginTop: 16,
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    marginBottom: 6,
+    marginTop: 14,
     fontFamily: MODERN_FONT,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 15,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 13,
     fontFamily: MODERN_FONT,
     ...Platform.select({
-      web: { outlineStyle: 'none', transition: 'border-color 0.2s' }
+      web: { outlineStyle: 'none' }
     })
   },
   textArea: {
@@ -198,41 +202,43 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   cancelButton: {
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: 10,
+    ...Platform.select({ web: { cursor: 'pointer', transition: 'all 0.15s ease' } })
   },
   cancelButtonText: {
-    fontWeight: '600',
-    fontSize: 15,
+    fontWeight: '700',
+    fontSize: 13,
     fontFamily: MODERN_FONT,
   },
   saveButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 10,
     backgroundColor: '#2563eb',
+    ...Platform.select({ 
+      web: { 
+        cursor: 'pointer', 
+        transition: 'all 0.15s ease',
+        boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)' 
+      } 
+    })
   },
   saveButtonText: {
     color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 15,
+    fontWeight: '800',
+    fontSize: 13,
     fontFamily: MODERN_FONT,
   },
-  // Estilos específicos para o Modal de Alerta aprimorado
   alertContainer: {
     width: '90%',
-    maxWidth: 340,
-    borderRadius: 16,
-    padding: 24,
+    maxWidth: 360,
+    borderRadius: 20,
+    padding: 26,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
     ...Platform.select({
-      web: { outlineStyle: 'none' }
+      web: { outlineStyle: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.25)' }
     })
   },
   alertIconContainer: {
@@ -249,29 +255,32 @@ const styles = StyleSheet.create({
   },
   alertTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
     fontFamily: MODERN_FONT,
     marginBottom: 8,
     textAlign: 'center',
+    letterSpacing: -0.3,
   },
   alertMessageText: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: MODERN_FONT,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 19,
     marginBottom: 24,
+    fontWeight: '500',
   },
   alertButton: {
     width: '100%',
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 11,
+    borderRadius: 10,
     backgroundColor: '#2563eb',
     alignItems: 'center',
+    ...Platform.select({ web: { cursor: 'pointer' } })
   },
   alertButtonText: {
     color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 15,
+    fontWeight: '800',
+    fontSize: 13,
     fontFamily: MODERN_FONT,
   }
 });
@@ -279,63 +288,63 @@ const styles = StyleSheet.create({
 /* Estilos de Tema Claro */
 const lightStyles = StyleSheet.create({
   modalContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: TOKENS.light.surface,
   },
   title: {
-    color: '#1e293b',
+    color: TOKENS.light.textPrimary,
   },
   closeButtonText: {
-    color: '#64748b',
+    color: TOKENS.light.textMuted,
   },
   label: {
-    color: '#475569',
+    color: TOKENS.light.textSecondary,
   },
   input: {
-    backgroundColor: '#f8fafc',
-    borderColor: '#e2e8f0',
-    color: '#0f172a',
+    backgroundColor: TOKENS.light.surfaceSubtle,
+    borderColor: TOKENS.light.border,
+    color: TOKENS.light.textPrimary,
   },
   cancelButton: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: TOKENS.light.surfaceSubtle,
   },
   cancelButtonText: {
-    color: '#475569',
+    color: TOKENS.light.textSecondary,
   },
   alertMessageText: {
-    color: '#64748b',
+    color: TOKENS.light.textSecondary,
   }
 });
 
 /* Estilos de Tema Escuro */
 const darkStyles = StyleSheet.create({
   modalContainer: {
-    backgroundColor: '#1e293b',
-    borderColor: '#334155',
+    backgroundColor: TOKENS.dark.surface,
+    borderColor: TOKENS.dark.border,
     borderWidth: 1,
   },
   title: {
-    color: '#f8fafc',
+    color: TOKENS.dark.textPrimary,
   },
   closeButtonText: {
-    color: '#94a3b8',
+    color: TOKENS.dark.textMuted,
   },
   label: {
-    color: '#94a3b8',
+    color: TOKENS.dark.textSecondary,
   },
   input: {
-    backgroundColor: '#0f172a',
-    borderColor: '#334155',
-    color: '#f8fafc',
+    backgroundColor: TOKENS.dark.surfaceSubtle,
+    borderColor: TOKENS.dark.border,
+    color: TOKENS.dark.textPrimary,
   },
   cancelButton: {
-    backgroundColor: '#0f172a',
-    borderColor: '#334155',
+    backgroundColor: TOKENS.dark.surfaceSubtle,
+    borderColor: TOKENS.dark.border,
     borderWidth: 1,
   },
   cancelButtonText: {
-    color: '#cbd5e1',
+    color: TOKENS.dark.textSecondary,
   },
   alertMessageText: {
-    color: '#94a3b8',
+    color: TOKENS.dark.textSecondary,
   }
 });

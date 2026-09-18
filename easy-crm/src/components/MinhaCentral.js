@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Platform, useWindowDimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { supabase } from '../services/supabaseClient';
 
-const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
+import { MODERN_FONT, TOKENS } from '../theme/tokens';
 
 // Extrai números puros de campos financeiros considerando o padrão brasileiro (R$)
 const parseMoney = (val) => {
@@ -524,9 +524,16 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
                 <View style={[styles.progressBarBg, themeStyles.progressBarBg]}>
                   <View style={[styles.progressBarFill, themeStyles.progressBarFill, { width: `${metaPercentage}%` }]} />
                 </View>
+                <View style={styles.goalMilestonesRow}>
+                  <Text style={styles.goalMilestoneText}>0%</Text>
+                  <Text style={styles.goalMilestoneText}>25%</Text>
+                  <Text style={styles.goalMilestoneText}>50%</Text>
+                  <Text style={styles.goalMilestoneText}>75%</Text>
+                  <Text style={[styles.goalMilestoneText, metaPercentage >= 100 && { color: '#10b981', fontWeight: '800' }]}>100% Alvo</Text>
+                </View>
                 <View style={styles.goalFooterRow}>
                   <Text style={[styles.goalSubText, themeStyles.goalSubText]}>Meta Alvo: <Text style={{fontWeight: '700', color: isDarkMode ? '#f8fafc' : '#ffffff'}}>{formatCurrency(metaMensalNumerica)}</Text></Text>
-                  <Text style={[styles.goalSubText, themeStyles.goalSubText]}>Falta: <Text style={{fontWeight: '700', color: '#38bdf8'}}>{formatCurrency(Math.max(0, metaMensalNumerica - metrics.vendasMes))}</Text></Text>
+                  <Text style={[styles.goalSubText, themeStyles.goalSubText]}>Falta p/ Bater: <Text style={{fontWeight: '700', color: '#38bdf8'}}>{formatCurrency(Math.max(0, metaMensalNumerica - metrics.vendasMes))}</Text></Text>
                 </View>
               </View>
 
@@ -534,24 +541,24 @@ export default function MinhaCentral({ boardData, onOpenClient, isDarkMode }) {
               <Text style={[styles.sectionTitle, themeStyles.sectionTitle]}>Indicadores Operacionais de Hoje</Text>
               <View style={[styles.summaryCard, themeStyles.summaryCard]}>
                 <View style={styles.summaryItem}>
-                  <View style={[styles.iconBox, isDarkMode ? {backgroundColor: '#450a0a'} : {backgroundColor: '#fee2e2'}]}><Text style={styles.summaryIcon}>🔴</Text></View>
-                  <Text style={[styles.summaryText, themeStyles.summaryText]}><Text style={{fontWeight: '700'}}>{metrics.inactive}</Text> leads sem movimentações há mais de 3 dias</Text>
+                  <View style={[styles.iconBox, isDarkMode ? {backgroundColor: 'rgba(239, 68, 68, 0.15)'} : {backgroundColor: '#fee2e2'}]}><Text style={styles.summaryIcon}>⏳</Text></View>
+                  <Text style={[styles.summaryText, themeStyles.summaryText]}><Text style={{fontWeight: '800', color: isDarkMode ? '#f87171' : '#dc2626'}}>{metrics.inactive}</Text> leads sem movimentação há mais de 3 dias</Text>
                 </View>
                 <View style={styles.summaryItem}>
-                  <View style={[styles.iconBox, isDarkMode ? {backgroundColor: '#431407'} : {backgroundColor: '#ffedd5'}]}><Text style={styles.summaryIcon}>🟠</Text></View>
-                  <Text style={[styles.summaryText, themeStyles.summaryText]}><Text style={{fontWeight: '700'}}>{metrics.noContact}</Text> leads ainda aguardando primeiro contato</Text>
+                  <View style={[styles.iconBox, isDarkMode ? {backgroundColor: 'rgba(245, 158, 11, 0.15)'} : {backgroundColor: '#ffedd5'}]}><Text style={styles.summaryIcon}>⚡</Text></View>
+                  <Text style={[styles.summaryText, themeStyles.summaryText]}><Text style={{fontWeight: '800', color: isDarkMode ? '#fbbf24' : '#d97706'}}>{metrics.noContact}</Text> leads aguardando primeiro contato</Text>
                 </View>
                 <View style={styles.summaryItem}>
-                  <View style={[styles.iconBox, isDarkMode ? {backgroundColor: '#052e16'} : {backgroundColor: '#dcfce7'}]}><Text style={styles.summaryIcon}>🟢</Text></View>
-                  <Text style={[styles.summaryText, themeStyles.summaryText]}><Text style={{fontWeight: '700'}}>{metrics.hot}</Text> clientes sinalizados como quentes no perfil</Text>
+                  <View style={[styles.iconBox, isDarkMode ? {backgroundColor: 'rgba(16, 185, 129, 0.15)'} : {backgroundColor: '#dcfce7'}]}><Text style={styles.summaryIcon}>🔥</Text></View>
+                  <Text style={[styles.summaryText, themeStyles.summaryText]}><Text style={{fontWeight: '800', color: isDarkMode ? '#34d399' : '#059669'}}>{metrics.hot}</Text> clientes sinalizados como quentes no perfil</Text>
                 </View>
                 <View style={styles.summaryItem}>
-                  <View style={[styles.iconBox, isDarkMode ? {backgroundColor: '#3b0764'} : {backgroundColor: '#f3e8ff'}]}><Text style={styles.summaryIcon}>⭐</Text></View>
-                  <Text style={[styles.summaryText, themeStyles.summaryText]}><Text style={{fontWeight: '700'}}>{metrics.highChance}</Text> clientes com alta probabilidade de fechamento (&gt;=80%)</Text>
+                  <View style={[styles.iconBox, isDarkMode ? {backgroundColor: 'rgba(139, 92, 246, 0.15)'} : {backgroundColor: '#f3e8ff'}]}><Text style={styles.summaryIcon}>💎</Text></View>
+                  <Text style={[styles.summaryText, themeStyles.summaryText]}><Text style={{fontWeight: '800', color: isDarkMode ? '#a78bfa' : '#7c3aed'}}>{metrics.highChance}</Text> clientes com alta probabilidade de fechamento (&gt;=80%)</Text>
                 </View>
                 <View style={styles.summaryItem}>
-                  <View style={[styles.iconBox, isDarkMode ? {backgroundColor: '#082f49'} : {backgroundColor: '#e0f2fe'}]}><Text style={styles.summaryIcon}>📅</Text></View>
-                  <Text style={[styles.summaryText, themeStyles.summaryText]}><Text style={{fontWeight: '700'}}>{metrics.todayAppts}</Text> agendamentos e compromissos programados para hoje</Text>
+                  <View style={[styles.iconBox, isDarkMode ? {backgroundColor: 'rgba(56, 189, 248, 0.15)'} : {backgroundColor: '#e0f2fe'}]}><Text style={styles.summaryIcon}>📅</Text></View>
+                  <Text style={[styles.summaryText, themeStyles.summaryText]}><Text style={{fontWeight: '800', color: isDarkMode ? '#38bdf8' : '#0284c7'}}>{metrics.todayAppts}</Text> agendamentos e compromissos programados para hoje</Text>
                 </View>
               </View>
 
@@ -931,19 +938,19 @@ const styles = StyleSheet.create({
   outerContainer: { flex: 1 },
   container: { flex: 1 },
   centerAll: { justifyContent: 'center', alignItems: 'center' },
-  loadingText: { marginTop: 12, fontFamily: MODERN_FONT, fontSize: 13 },
-  content: { padding: 32, maxWidth: 1150, marginHorizontal: 'auto', width: '100%', paddingBottom: 85 },
+  loadingText: { marginTop: 12, fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '500' },
+  content: { padding: 32, maxWidth: 1200, marginHorizontal: 'auto', width: '100%', paddingBottom: 85 },
   
   heroSection: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, gap: 16, flexWrap: 'wrap' },
   heroSectionMobile: { flexDirection: 'column', alignItems: 'flex-start' },
-  greeting: { fontFamily: MODERN_FONT, fontSize: 30, fontWeight: '900', letterSpacing: -0.5 },
-  dateText: { fontFamily: MODERN_FONT, fontSize: 14, marginTop: 4 }, 
+  greeting: { fontFamily: MODERN_FONT, fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
+  dateText: { fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '500', marginTop: 4 }, 
   
-  navTabsContainer: { flexDirection: 'row', padding: 4, borderRadius: 10, gap: 4, flexWrap: 'wrap' },
-  navTabsWrapperMobile: { width: '100%', borderRadius: 10, paddingVertical: 4 },
-  navTabsContainerMobileInner: { flexDirection: 'row', paddingHorizontal: 4, gap: 4, alignItems: 'center' },
+  navTabsContainer: { flexDirection: 'row', padding: 4, borderRadius: 12, gap: 4, flexWrap: 'wrap' },
+  navTabsWrapperMobile: { width: '100%', borderRadius: 12, paddingVertical: 4 },
+  navTabsContainerMobileInner: { flexDirection: 'row', paddingHorizontal: 4, gap: 6, alignItems: 'center' },
   navTabsContainerMobile: { width: '100%' },
-  navTabBtn: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 8 },
+  navTabBtn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, ...Platform.select({ web: { transition: 'all 0.15s ease', cursor: 'pointer' } }) },
   navTabText: { fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '600' },
 
   grid: { flexDirection: 'row', gap: 24 },
@@ -952,167 +959,191 @@ const styles = StyleSheet.create({
   sideColumn: { flex: 1.2 },
   columnMobile: { width: '100%', flex: undefined },
   
-  sectionTitle: { fontFamily: MODERN_FONT, fontSize: 16, fontWeight: '800', marginBottom: 12 },
+  sectionTitle: { fontFamily: MODERN_FONT, fontSize: 15, fontWeight: '700', letterSpacing: -0.2, marginBottom: 12, textTransform: 'uppercase' },
   
-  goalCardHero: { borderRadius: 16, padding: 24, marginBottom: 24, ...Platform.select({ web: { boxShadow: '0px 10px 25px rgba(0, 0, 0, 0.15)' } }) },
+  goalCardHero: { 
+    borderRadius: 20, 
+    padding: 24, 
+    marginBottom: 24, 
+    borderWidth: 1,
+    borderTopWidth: 3,
+    ...Platform.select({ web: { boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06)' } }) 
+  },
   goalHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
-  goalTitleTag: { fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '600', marginBottom: 6 },
-  goalValueLarge: { fontFamily: MODERN_FONT, fontSize: 32, fontWeight: '900', letterSpacing: -1 },
-  goalBadgeContainer: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
+  goalTitleTag: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
+  goalValueLarge: { fontFamily: MODERN_FONT, fontSize: 34, fontWeight: '800', letterSpacing: -1 },
+  goalBadgeContainer: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 9999, borderWidth: 1 },
   goalBadgeText: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '800' },
-  progressBarBg: { height: 10, borderRadius: 5, overflow: 'hidden', marginBottom: 12 },
-  progressBarFill: { height: '100%', borderRadius: 5 },
-  goalFooterRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  goalSubText: { fontFamily: MODERN_FONT, fontSize: 12 },
+  progressBarBg: { height: 12, borderRadius: 6, overflow: 'hidden', marginBottom: 12, position: 'relative' },
+  progressBarFill: { height: '100%', borderRadius: 6 },
+  goalMilestonesRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, marginBottom: 10, paddingHorizontal: 2 },
+  goalMilestoneText: { fontFamily: MODERN_FONT, fontSize: 10, fontWeight: '600', color: '#94a3b8' },
+  goalFooterRow: { flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 },
+  goalSubText: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '500' },
 
-  summaryCard: { borderRadius: 14, padding: 20, borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px 4px 12px rgba(0,0,0,0.02)' } }) },
-  summaryItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 12 },
-  iconBox: { width: 32, height: 32, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  summaryCard: { borderRadius: 16, padding: 18, borderWidth: 1, ...Platform.select({ web: { boxShadow: '0 2px 6px rgba(0,0,0,0.03)' } }) },
+  summaryItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, gap: 14 },
+  iconBox: { width: 38, height: 38, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
   summaryIcon: { fontSize: 16 },
-  summaryText: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '500', flex: 1 },
+  summaryText: { fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '500', flex: 1, lineHeight: 18 },
 
   tasksRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap', marginBottom: 20 },
-  taskBox: { flex: 1, minWidth: 110, borderRadius: 12, paddingVertical: 18, paddingHorizontal: 12, alignItems: 'center', borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px 2px 6px rgba(0,0,0,0.02)' } }) },
-  taskIcon: { fontSize: 22, marginBottom: 8 },
-  taskCount: { fontFamily: MODERN_FONT, fontSize: 22, fontWeight: '900' },
+  taskBox: { 
+    flex: 1, 
+    minWidth: 110, 
+    borderRadius: 14, 
+    paddingVertical: 18, 
+    paddingHorizontal: 12, 
+    alignItems: 'center', 
+    borderWidth: 1, 
+    ...Platform.select({ web: { boxShadow: '0 2px 6px rgba(0,0,0,0.03)', transition: 'transform 0.15s ease' } }) 
+  },
+  taskIcon: { fontSize: 20, marginBottom: 6 },
+  taskCount: { fontFamily: MODERN_FONT, fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
   taskLabel: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '600', marginTop: 4, textAlign: 'center' },
 
   executiveSummary: { 
-    padding: 18, 
-    borderRadius: 12, 
+    padding: 20, 
+    borderRadius: 14, 
     borderLeftWidth: 4, 
     borderWidth: 1,
-    ...Platform.select({ web: { boxShadow: '0px 2px 5px rgba(0,0,0,0.02)' } })
+    ...Platform.select({ web: { boxShadow: '0 2px 8px rgba(0,0,0,0.04)' } })
   },
-  executiveSummaryText: { fontFamily: MODERN_FONT, fontSize: 14, lineHeight: 22 },
+  executiveSummaryText: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 22, fontWeight: '500' },
   highlightText: { color: '#2563eb', fontWeight: '800' },
 
-  recentCard: { borderRadius: 14, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 6, ...Platform.select({ web: { boxShadow: '0px 4px 10px rgba(0,0,0,0.02)' } }) },
+  recentCard: { borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 8, ...Platform.select({ web: { boxShadow: '0 2px 8px rgba(0,0,0,0.03)' } }) },
   recentItem: { paddingVertical: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  recentName: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '700' },
-  recentCredit: { fontFamily: MODERN_FONT, fontSize: 12, color: '#16a34a', fontWeight: '600', marginTop: 2 },
-  recentPhase: { fontFamily: MODERN_FONT, fontSize: 11, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, overflow: 'hidden', maxWidth: 110, textAlign: 'center' },
+  recentName: { fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '700' },
+  recentCredit: { fontFamily: MODERN_FONT, fontSize: 12, color: '#059669', fontWeight: '700', marginTop: 2 },
+  recentPhase: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '600', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, overflow: 'hidden', maxWidth: 120, textAlign: 'center' },
   emptyRecentText: { fontFamily: MODERN_FONT, fontSize: 13, paddingVertical: 20, textAlign: 'center', fontStyle: 'italic' },
 
-  commissionCard: { borderRadius: 14, padding: 18, borderWidth: 1, marginTop: 20, ...Platform.select({ web: { boxShadow: '0px 4px 10px rgba(0,0,0,0.02)' } }) },
+  commissionCard: { 
+    borderRadius: 16, 
+    padding: 20, 
+    borderWidth: 1, 
+    marginTop: 20, 
+    ...Platform.select({ web: { boxShadow: '0 4px 12px rgba(0,0,0,0.04)' } }) 
+  },
   commissionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  commissionCardTitle: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '800' },
-  commissionCardValue: { fontFamily: MODERN_FONT, fontSize: 24, fontWeight: '900', marginBottom: 4 },
-  commissionCardDesc: { fontFamily: MODERN_FONT, fontSize: 12 },
+  commissionCardTitle: { fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  commissionCardValue: { fontFamily: MODERN_FONT, fontSize: 26, fontWeight: '800', marginBottom: 4, letterSpacing: -0.5 },
+  commissionCardDesc: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '500' },
 
-  alertCardDanger: { borderRadius: 14, padding: 18, borderWidth: 1, marginBottom: 14 },
-  alertTitleDanger: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '800', textTransform: 'uppercase', marginBottom: 6 },
-  alertTextDanger: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 20 },
+  alertCardDanger: { borderRadius: 14, padding: 16, borderWidth: 1, borderLeftWidth: 4, borderLeftColor: '#ef4444', marginBottom: 12 },
+  alertTitleDanger: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '800', textTransform: 'uppercase', marginBottom: 4 },
+  alertTextDanger: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 19 },
 
-  alertCardInfo: { borderRadius: 14, padding: 18, borderWidth: 1, marginBottom: 12, ...Platform.select({ web: { cursor: 'pointer' } }) },
-  alertTitleInfo: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '800', textTransform: 'uppercase', marginBottom: 6 },
-  alertTextInfo: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 20 },
+  alertCardInfo: { borderRadius: 14, padding: 16, borderWidth: 1, borderLeftWidth: 4, borderLeftColor: '#0284c7', marginBottom: 12, ...Platform.select({ web: { cursor: 'pointer' } }) },
+  alertTitleInfo: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '800', textTransform: 'uppercase', marginBottom: 4 },
+  alertTextInfo: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 19 },
 
-  alertCardBoleto: { borderRadius: 14, padding: 18, borderWidth: 1, marginBottom: 12, ...Platform.select({ web: { cursor: 'pointer' } }) },
-  alertTitleBoleto: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '800', textTransform: 'uppercase', marginBottom: 6 },
-  alertTextBoleto: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 20 },
+  alertCardBoleto: { borderRadius: 14, padding: 16, borderWidth: 1, borderLeftWidth: 4, borderLeftColor: '#d97706', marginBottom: 12, ...Platform.select({ web: { cursor: 'pointer' } }) },
+  alertTitleBoleto: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '800', textTransform: 'uppercase', marginBottom: 4 },
+  alertTextBoleto: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 19 },
 
-  emptyStateCard: { borderRadius: 14, padding: 20, borderWidth: 1, alignItems: 'center' },
-  emptyStateText: { fontFamily: MODERN_FONT, fontSize: 13, textAlign: 'center' },
+  emptyStateCard: { borderRadius: 14, padding: 24, borderWidth: 1, alignItems: 'center' },
+  emptyStateText: { fontFamily: MODERN_FONT, fontSize: 13, textAlign: 'center', fontWeight: '500' },
 
-  tabContentContainer: { borderRadius: 16, padding: 28, borderWidth: 1 },
-  mentoriaHeroCard: { padding: 24, borderRadius: 12, borderWidth: 1 },
-  mentoriaHeroTitle: { fontFamily: MODERN_FONT, fontSize: 18, fontWeight: '800', marginBottom: 8 },
-  mentoriaHeroSubtitle: { fontFamily: MODERN_FONT, fontSize: 14, lineHeight: 22 },
+  tabContentContainer: { borderRadius: 16, padding: 28, borderWidth: 1, ...Platform.select({ web: { boxShadow: '0 4px 14px rgba(0,0,0,0.03)' } }) },
+  mentoriaHeroCard: { padding: 24, borderRadius: 14, borderWidth: 1 },
+  mentoriaHeroTitle: { fontFamily: MODERN_FONT, fontSize: 18, fontWeight: '800', marginBottom: 8, letterSpacing: -0.3 },
+  mentoriaHeroSubtitle: { fontFamily: MODERN_FONT, fontSize: 14, lineHeight: 22, fontWeight: '500' },
 
-  commissionMainValue: { fontFamily: MODERN_FONT, fontSize: 36, fontWeight: '900', marginTop: 16 },
+  commissionMainValue: { fontFamily: MODERN_FONT, fontSize: 36, fontWeight: '800', marginTop: 16, letterSpacing: -1 },
 
   tipCard: { padding: 18, borderRadius: 12, borderWidth: 1, marginBottom: 12 },
-  tipCardTitle: { fontFamily: MODERN_FONT, fontSize: 15, fontWeight: '700', marginBottom: 6 },
-  tipCardDesc: { fontFamily: MODERN_FONT, fontSize: 14, lineHeight: 20 },
+  tipCardTitle: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '700', marginBottom: 6 },
+  tipCardDesc: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 20, fontWeight: '500' },
 
-  quoteCard: { marginTop: 16, padding: 20, borderRadius: 12, borderWidth: 1 },
-  quoteText: { fontFamily: MODERN_FONT, fontSize: 14, fontStyle: 'italic', lineHeight: 22, marginBottom: 8 },
+  quoteCard: { marginTop: 16, padding: 20, borderRadius: 14, borderWidth: 1 },
+  quoteText: { fontFamily: MODERN_FONT, fontSize: 13, fontStyle: 'italic', lineHeight: 22, marginBottom: 8 },
   quoteAuthor: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '700', textAlign: 'right' },
 
   funnelHeaderBox: { marginBottom: 20 },
-  funnelHeaderTitle: { fontFamily: MODERN_FONT, fontSize: 20, fontWeight: '800', marginBottom: 6 },
-  funnelHeaderDesc: { fontFamily: MODERN_FONT, fontSize: 14 },
+  funnelHeaderTitle: { fontFamily: MODERN_FONT, fontSize: 18, fontWeight: '800', marginBottom: 6, letterSpacing: -0.3 },
+  funnelHeaderDesc: { fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '500' },
 
   funnelMetricsGrid: { flexDirection: 'row', gap: 16, marginBottom: 24, flexWrap: 'wrap' },
-  funnelBox: { flex: 1, minWidth: 200, padding: 20, borderRadius: 12, borderWidth: 1, alignItems: 'center' },
-  funnelBoxLabel: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '600', textAlign: 'center', marginBottom: 8 },
-  funnelBoxVal: { fontFamily: MODERN_FONT, fontSize: 24, fontWeight: '900' },
+  funnelBox: { flex: 1, minWidth: 180, padding: 20, borderRadius: 14, borderWidth: 1, alignItems: 'center' },
+  funnelBoxLabel: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '600', textAlign: 'center', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.3 },
+  funnelBoxVal: { fontFamily: MODERN_FONT, fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
 
-  conversionTipsBox: { padding: 20, borderRadius: 12, borderWidth: 1 },
-  conversionTipsTitle: { fontFamily: MODERN_FONT, fontSize: 15, fontWeight: '800', marginBottom: 10 },
-  conversionTipsText: { fontFamily: MODERN_FONT, fontSize: 14, lineHeight: 22, marginBottom: 4 },
+  conversionTipsBox: { padding: 20, borderRadius: 14, borderWidth: 1 },
+  conversionTipsTitle: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '800', marginBottom: 10 },
+  conversionTipsText: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 22, marginBottom: 4, fontWeight: '500' },
 
-  motivationPayloadBox: { padding: 22, borderRadius: 12, borderWidth: 1 },
-  motivationPayloadTitle: { fontFamily: MODERN_FONT, fontSize: 16, fontWeight: '800', marginBottom: 10 },
-  motivationPayloadText: { fontFamily: MODERN_FONT, fontSize: 14, lineHeight: 22 }
+  motivationPayloadBox: { padding: 22, borderRadius: 14, borderWidth: 1 },
+  motivationPayloadTitle: { fontFamily: MODERN_FONT, fontSize: 15, fontWeight: '800', marginBottom: 10 },
+  motivationPayloadText: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 22, fontWeight: '500' }
 });
 
 // Estilos de Tema Claro
 const lightStyles = StyleSheet.create({
-  outerContainer: { backgroundColor: '#f1f5f9' },
-  loadingText: { color: '#64748b' },
-  greeting: { color: '#0f172a' },
-  dateText: { color: '#64748b' },
-  navTabsContainer: { backgroundColor: '#e2e8f0' },
-  navTabActive: { backgroundColor: '#ffffff', ...Platform.select({ web: { boxShadow: '0px 2px 4px rgba(0,0,0,0.05)' } }) },
-  navTabText: { color: '#475569' },
-  navTabTextActive: { color: '#2563eb', fontWeight: '700' },
-  sectionTitle: { color: '#1e293b' },
-  goalCardHero: { backgroundColor: '#0f172a' },
+  outerContainer: { backgroundColor: TOKENS.light.background },
+  loadingText: { color: TOKENS.light.textSecondary },
+  greeting: { color: TOKENS.light.textPrimary },
+  dateText: { color: TOKENS.light.textMuted },
+  navTabsContainer: { backgroundColor: TOKENS.light.surfaceSubtle, borderWidth: 1, borderColor: TOKENS.light.border },
+  navTabActive: { backgroundColor: '#ffffff', ...TOKENS.light.cardShadow },
+  navTabText: { color: TOKENS.light.textSecondary },
+  navTabTextActive: { color: TOKENS.light.primary, fontWeight: '700' },
+  sectionTitle: { color: TOKENS.light.textSecondary },
+  goalCardHero: { backgroundColor: '#0f172a', borderColor: '#1e293b', borderTopColor: '#38bdf8' },
   goalTitleTag: { color: '#94a3b8' },
   goalValueLarge: { color: '#ffffff' },
-  goalBadgeContainer: { backgroundColor: '#1e293b', borderColor: '#334155' },
+  goalBadgeContainer: { backgroundColor: 'rgba(56, 189, 248, 0.12)', borderColor: 'rgba(56, 189, 248, 0.3)' },
   goalBadgeText: { color: '#38bdf8' },
   progressBarBg: { backgroundColor: '#1e293b' },
-  progressBarFill: { backgroundColor: '#38bdf8' },
+  progressBarFill: { backgroundColor: '#10b981' },
   goalSubText: { color: '#94a3b8' },
-  summaryCard: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
-  summaryText: { color: '#334155' },
-  taskBox: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
-  taskCount: { color: '#0f172a' },
-  taskLabel: { color: '#64748b' },
-  executiveSummary: { backgroundColor: '#ffffff', borderLeftColor: '#2563eb', borderColor: '#e2e8f0' },
-  executiveSummaryText: { color: '#334155' },
-  recentCard: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
-  recentBorder: { borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-  recentName: { color: '#1e293b' },
-  recentPhase: { color: '#475569', backgroundColor: '#f1f5f9' },
-  emptyRecentText: { color: '#94a3b8' },
-  commissionCard: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
-  commissionCardTitle: { color: '#1e293b' },
-  commissionCardValue: { color: '#10b981' },
-  commissionCardDesc: { color: '#64748b' },
-  alertCardDanger: { backgroundColor: '#fef2f2', borderColor: '#fecaca' },
-  alertTitleDanger: { color: '#b91c1c' },
+  summaryCard: { backgroundColor: TOKENS.light.surface, borderColor: TOKENS.light.border },
+  summaryText: { color: TOKENS.light.textPrimary },
+  taskBox: { backgroundColor: TOKENS.light.surface, borderColor: TOKENS.light.border },
+  taskCount: { color: TOKENS.light.textPrimary },
+  taskLabel: { color: TOKENS.light.textSecondary },
+  executiveSummary: { backgroundColor: TOKENS.light.surface, borderLeftColor: TOKENS.light.primary, borderColor: TOKENS.light.border },
+  executiveSummaryText: { color: TOKENS.light.textPrimary },
+  recentCard: { backgroundColor: TOKENS.light.surface, borderColor: TOKENS.light.border },
+  recentBorder: { borderBottomWidth: 1, borderBottomColor: TOKENS.light.borderSubtle },
+  recentName: { color: TOKENS.light.textPrimary },
+  recentPhase: { color: TOKENS.light.textSecondary, backgroundColor: TOKENS.light.surfaceSubtle },
+  emptyRecentText: { color: TOKENS.light.textMuted },
+  commissionCard: { backgroundColor: TOKENS.light.surface, borderColor: TOKENS.light.border },
+  commissionCardTitle: { color: TOKENS.light.textPrimary },
+  commissionCardValue: { color: TOKENS.light.success },
+  commissionCardDesc: { color: TOKENS.light.textSecondary },
+  alertCardDanger: { backgroundColor: TOKENS.light.dangerSubtle, borderColor: TOKENS.light.dangerBorder },
+  alertTitleDanger: { color: TOKENS.light.danger },
   alertTextDanger: { color: '#991b1b' },
-  alertCardInfo: { backgroundColor: '#f0fdfa', borderColor: '#ccfbf1' },
-  alertTitleInfo: { color: '#0f766e' },
-  alertTextInfo: { color: '#115e59' },
-  alertCardBoleto: { backgroundColor: '#fffbeb', borderColor: '#fde68a' },
-  alertTitleBoleto: { color: '#b45309' },
+  alertCardInfo: { backgroundColor: TOKENS.light.infoSubtle, borderColor: TOKENS.light.infoBorder },
+  alertTitleInfo: { color: TOKENS.light.info },
+  alertTextInfo: { color: '#0369a1' },
+  alertCardBoleto: { backgroundColor: TOKENS.light.warningSubtle, borderColor: TOKENS.light.warningBorder },
+  alertTitleBoleto: { color: TOKENS.light.warning },
   alertTextBoleto: { color: '#92400e' },
-  emptyStateCard: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
-  emptyStateText: { color: '#64748b' },
-  tabContentContainer: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
-  mentoriaHeroCard: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
+  emptyStateCard: { backgroundColor: TOKENS.light.surface, borderColor: TOKENS.light.border },
+  emptyStateText: { color: TOKENS.light.textSecondary },
+  tabContentContainer: { backgroundColor: TOKENS.light.surface, borderColor: TOKENS.light.border },
+  mentoriaHeroCard: { backgroundColor: TOKENS.light.primarySubtle, borderColor: '#bfdbfe' },
   mentoriaHeroTitle: { color: '#1e40af' },
   mentoriaHeroSubtitle: { color: '#1e3a8a' },
-  commissionHeroCard: { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' },
+  commissionHeroCard: { backgroundColor: TOKENS.light.successSubtle, borderColor: TOKENS.light.successBorder },
   commissionHeroTitle: { color: '#065f46' },
   commissionHeroSubtitle: { color: '#047857' },
   commissionMainValue: { color: '#064e3b' },
-  tipCard: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
-  tipCardTitle: { color: '#0f172a' },
-  tipCardDesc: { color: '#475569' },
+  tipCard: { backgroundColor: TOKENS.light.surfaceSubtle, borderColor: TOKENS.light.border },
+  tipCardTitle: { color: TOKENS.light.textPrimary },
+  tipCardDesc: { color: TOKENS.light.textSecondary },
   quoteCard: { backgroundColor: '#fdf4ff', borderColor: '#f5d0fe' },
   quoteText: { color: '#86198f' },
   quoteAuthor: { color: '#701a75' },
-  funnelHeaderTitle: { color: '#0f172a' },
-  funnelHeaderDesc: { color: '#64748b' },
-  funnelBox: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
-  funnelBoxLabel: { color: '#64748b' },
-  conversionTipsBox: { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' },
+  funnelHeaderTitle: { color: TOKENS.light.textPrimary },
+  funnelHeaderDesc: { color: TOKENS.light.textSecondary },
+  funnelBox: { backgroundColor: TOKENS.light.surfaceSubtle, borderColor: TOKENS.light.border },
+  funnelBoxLabel: { color: TOKENS.light.textMuted },
+  conversionTipsBox: { backgroundColor: TOKENS.light.successSubtle, borderColor: TOKENS.light.successBorder },
   conversionTipsTitle: { color: '#166534' },
   conversionTipsText: { color: '#14532d' },
   motivationPayloadBox: { backgroundColor: '#faf5ff', borderColor: '#e9d5ff' },
@@ -1122,51 +1153,51 @@ const lightStyles = StyleSheet.create({
 
 // Estilos de Tema Escuro
 const darkStyles = StyleSheet.create({
-  outerContainer: { backgroundColor: '#0f172a' },
-  loadingText: { color: '#94a3b8' },
-  greeting: { color: '#f8fafc' },
-  dateText: { color: '#94a3b8' },
-  navTabsContainer: { backgroundColor: '#1e293b' },
-  navTabActive: { backgroundColor: '#334155' },
-  navTabText: { color: '#94a3b8' },
+  outerContainer: { backgroundColor: TOKENS.dark.background },
+  loadingText: { color: TOKENS.dark.textSecondary },
+  greeting: { color: TOKENS.dark.textPrimary },
+  dateText: { color: TOKENS.dark.textMuted },
+  navTabsContainer: { backgroundColor: TOKENS.dark.surfaceSubtle, borderWidth: 1, borderColor: TOKENS.dark.border },
+  navTabActive: { backgroundColor: TOKENS.dark.surfaceHover, ...TOKENS.dark.cardShadow },
+  navTabText: { color: TOKENS.dark.textMuted },
   navTabTextActive: { color: '#ffffff', fontWeight: '700' },
-  sectionTitle: { color: '#f8fafc' },
-  goalCardHero: { backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1 },
+  sectionTitle: { color: TOKENS.dark.textSecondary },
+  goalCardHero: { backgroundColor: '#101726', borderColor: TOKENS.dark.border, borderTopColor: '#38bdf8' },
   goalTitleTag: { color: '#94a3b8' },
   goalValueLarge: { color: '#f8fafc' },
-  goalBadgeContainer: { backgroundColor: '#0f172a', borderColor: '#334155' },
+  goalBadgeContainer: { backgroundColor: 'rgba(56, 189, 248, 0.12)', borderColor: 'rgba(56, 189, 248, 0.3)' },
   goalBadgeText: { color: '#38bdf8' },
-  progressBarBg: { backgroundColor: '#0f172a' },
-  progressBarFill: { backgroundColor: '#38bdf8' },
+  progressBarBg: { backgroundColor: '#0b0f19' },
+  progressBarFill: { backgroundColor: '#10b981' },
   goalSubText: { color: '#94a3b8' },
-  summaryCard: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  summaryText: { color: '#cbd5e1' },
-  taskBox: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  taskCount: { color: '#f8fafc' },
-  taskLabel: { color: '#94a3b8' },
-  executiveSummary: { backgroundColor: '#1e293b', borderLeftColor: '#3b82f6', borderColor: '#334155' },
-  executiveSummaryText: { color: '#cbd5e1' },
-  recentCard: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  recentBorder: { borderBottomWidth: 1, borderBottomColor: '#334155' },
-  recentName: { color: '#f8fafc' },
-  recentPhase: { color: '#cbd5e1', backgroundColor: '#334155' },
-  emptyRecentText: { color: '#64748b' },
-  commissionCard: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  commissionCardTitle: { color: '#f8fafc' },
-  commissionCardValue: { color: '#34d399' },
-  commissionCardDesc: { color: '#94a3b8' },
-  alertCardDanger: { backgroundColor: '#450a0a', borderColor: '#7f1d1d' },
-  alertTitleDanger: { color: '#fca5a5' },
+  summaryCard: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border },
+  summaryText: { color: TOKENS.dark.textPrimary },
+  taskBox: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border },
+  taskCount: { color: TOKENS.dark.textPrimary },
+  taskLabel: { color: TOKENS.dark.textSecondary },
+  executiveSummary: { backgroundColor: TOKENS.dark.surface, borderLeftColor: TOKENS.dark.primary, borderColor: TOKENS.dark.border },
+  executiveSummaryText: { color: TOKENS.dark.textPrimary },
+  recentCard: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border },
+  recentBorder: { borderBottomWidth: 1, borderBottomColor: TOKENS.dark.borderSubtle },
+  recentName: { color: TOKENS.dark.textPrimary },
+  recentPhase: { color: TOKENS.dark.textSecondary, backgroundColor: TOKENS.dark.surfaceSubtle },
+  emptyRecentText: { color: TOKENS.dark.textMuted },
+  commissionCard: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border },
+  commissionCardTitle: { color: TOKENS.dark.textPrimary },
+  commissionCardValue: { color: TOKENS.dark.success },
+  commissionCardDesc: { color: TOKENS.dark.textSecondary },
+  alertCardDanger: { backgroundColor: TOKENS.dark.dangerSubtle, borderColor: TOKENS.dark.dangerBorder },
+  alertTitleDanger: { color: TOKENS.dark.danger },
   alertTextDanger: { color: '#fecaca' },
-  alertCardInfo: { backgroundColor: '#042f2e', borderColor: '#115e59' },
-  alertTitleInfo: { color: '#5eead4' },
-  alertTextInfo: { color: '#99f6e4' },
-  alertCardBoleto: { backgroundColor: '#422006', borderColor: '#713f12' },
-  alertTitleBoleto: { color: '#fcd34d' },
+  alertCardInfo: { backgroundColor: TOKENS.dark.infoSubtle, borderColor: TOKENS.dark.infoBorder },
+  alertTitleInfo: { color: TOKENS.dark.info },
+  alertTextInfo: { color: '#7dd3fc' },
+  alertCardBoleto: { backgroundColor: TOKENS.dark.warningSubtle, borderColor: TOKENS.dark.warningBorder },
+  alertTitleBoleto: { color: TOKENS.dark.warning },
   alertTextBoleto: { color: '#fde68a' },
-  emptyStateCard: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  emptyStateText: { color: '#94a3b8' },
-  tabContentContainer: { backgroundColor: '#1e293b', borderColor: '#334155' },
+  emptyStateCard: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border },
+  emptyStateText: { color: TOKENS.dark.textSecondary },
+  tabContentContainer: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border },
   mentoriaHeroCard: { backgroundColor: '#172554', borderColor: '#1d4ed8' },
   mentoriaHeroTitle: { color: '#93c5fd' },
   mentoriaHeroSubtitle: { color: '#bfdbfe' },
@@ -1174,16 +1205,16 @@ const darkStyles = StyleSheet.create({
   commissionHeroTitle: { color: '#34d399' },
   commissionHeroSubtitle: { color: '#a7f3d0' },
   commissionMainValue: { color: '#f8fafc' },
-  tipCard: { backgroundColor: '#0f172a', borderColor: '#334155' },
-  tipCardTitle: { color: '#f8fafc' },
-  tipCardDesc: { color: '#94a3b8' },
+  tipCard: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  tipCardTitle: { color: TOKENS.dark.textPrimary },
+  tipCardDesc: { color: TOKENS.dark.textSecondary },
   quoteCard: { backgroundColor: '#4a044e', borderColor: '#701a75' },
   quoteText: { color: '#f5d0fe' },
   quoteAuthor: { color: '#e879f9' },
-  funnelHeaderTitle: { color: '#f8fafc' },
-  funnelHeaderDesc: { color: '#94a3b8' },
-  funnelBox: { backgroundColor: '#0f172a', borderColor: '#334155' },
-  funnelBoxLabel: { color: '#94a3b8' },
+  funnelHeaderTitle: { color: TOKENS.dark.textPrimary },
+  funnelHeaderDesc: { color: TOKENS.dark.textMuted },
+  funnelBox: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  funnelBoxLabel: { color: TOKENS.dark.textMuted },
   conversionTipsBox: { backgroundColor: '#052e16', borderColor: '#14532d' },
   conversionTipsTitle: { color: '#86efac' },
   conversionTipsText: { color: '#bbf7d0' },

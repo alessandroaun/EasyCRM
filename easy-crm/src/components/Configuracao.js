@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Platform, useWindowDimensions, ActivityIndicator, Modal } from 'react-native';
 import { supabase } from '../services/supabaseClient';
 
-const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
+import { MODERN_FONT, TOKENS } from '../theme/tokens';
 
 export default function Configuracao({ onConfigSaved, isDarkMode }) {
   const { width } = useWindowDimensions();
@@ -62,23 +62,6 @@ export default function Configuracao({ onConfigSaved, isDarkMode }) {
 
   useEffect(() => {
     fetchConfigAndProfile();
-  }, []);
-
-  // Força a barra de rolagem a ficar invisível na Web, mantendo a função de scroll
-  useEffect(() => {
-    if (Platform.OS === 'web') {
-      const styleId = 'hide-config-scrollbar';
-      if (!document.getElementById(styleId)) {
-        const styleEl = document.createElement('style');
-        styleEl.id = styleId;
-        styleEl.innerHTML = `
-          /* Esconde a barra de rolagem no Web */
-          ::-webkit-scrollbar { display: none !important; width: 0px !important; }
-          * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
-        `;
-        document.head.appendChild(styleEl);
-      }
-    }
   }, []);
 
   const fetchConfigAndProfile = async () => {
@@ -577,129 +560,144 @@ export default function Configuracao({ onConfigSaved, isDarkMode }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   centerAll: { justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { padding: 16, maxWidth: 1100, marginHorizontal: 'auto', width: '100%', flexGrow: 1, paddingBottom: 60 },
-  header: { marginBottom: 16, alignItems: 'center' },
-  pageTitle: { fontFamily: MODERN_FONT, fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
-  pageSubtitle: { fontFamily: MODERN_FONT, fontSize: 13, marginTop: 4 },
-  grid: { flexDirection: 'row', gap: 16, flex: 1 },
+  scrollContent: { padding: 32, maxWidth: 1100, marginHorizontal: 'auto', width: '100%', flexGrow: 1, paddingBottom: 85 },
+  header: { marginBottom: 24, alignItems: 'flex-start' },
+  pageTitle: { fontFamily: MODERN_FONT, fontSize: 26, fontWeight: '800', letterSpacing: -0.5 },
+  pageSubtitle: { fontFamily: MODERN_FONT, fontSize: 13, marginTop: 4, fontWeight: '500' },
+  grid: { flexDirection: 'row', gap: 20, flex: 1 },
   gridMobile: { flexDirection: 'column' },
   column: { flex: 1 },
-  card: { borderRadius: 10, padding: 16, marginBottom: 16, borderWidth: 1, ...Platform.select({ web: { boxShadow: '0px 1px 4px rgba(0,0,0,0.03)' } }) },
-  cardTitle: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '700', marginBottom: 12, borderBottomWidth: 1, paddingBottom: 6 },
-  inputGroup: { marginBottom: 12 },
-  label: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '700', marginBottom: 4 },
-  input: { fontFamily: MODERN_FONT, borderWidth: 1, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 8, fontSize: 12, ...Platform.select({ web: { outlineStyle: 'none' } }) },
-  rowInline: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  requestButton: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 6, justifyContent: 'center' },
-  requestButtonDisabled: { backgroundColor: '#94a3b8' },
-  requestButtonText: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '700' },
-  currencyInputContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 6, overflow: 'hidden' },
-  currencySymbol: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '700', paddingLeft: 12, paddingRight: 6 },
-  currencyInput: { flex: 1, fontFamily: MODERN_FONT, paddingVertical: 8, paddingRight: 12, fontSize: 13, fontWeight: '700', ...Platform.select({ web: { outlineStyle: 'none' } }) },
+  card: { borderRadius: 16, padding: 22, marginBottom: 20, borderWidth: 1, ...Platform.select({ web: { boxShadow: '0 2px 8px rgba(0,0,0,0.03)' } }) },
+  cardTitle: { fontFamily: MODERN_FONT, fontSize: 14, fontWeight: '800', letterSpacing: -0.2, marginBottom: 16, borderBottomWidth: 1, paddingBottom: 8 },
+  inputGroup: { marginBottom: 14 },
+  label: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.3, marginBottom: 6 },
+  input: { fontFamily: MODERN_FONT, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, fontSize: 13, ...Platform.select({ web: { outlineStyle: 'none' } }) },
+  rowInline: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+  requestButton: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, justifyContent: 'center', ...Platform.select({ web: { cursor: 'pointer', transition: 'all 0.15s ease' } }) },
+  requestButtonDisabled: { opacity: 0.5 },
+  requestButtonText: { fontFamily: MODERN_FONT, fontSize: 11, fontWeight: '800' },
+  currencyInputContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 10, overflow: 'hidden' },
+  currencySymbol: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '800', paddingLeft: 14, paddingRight: 6 },
+  currencyInput: { flex: 1, fontFamily: MODERN_FONT, paddingVertical: 10, paddingRight: 14, fontSize: 13, fontWeight: '700', ...Platform.select({ web: { outlineStyle: 'none' } }) },
   row: { flexDirection: 'row', gap: 12 },
   rowMobile: { flexDirection: 'column', gap: 10 },
   inputGroupRow: { flex: 1 },
-  inputSmall: { fontFamily: MODERN_FONT, borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 8, fontSize: 12, textAlign: 'center', ...Platform.select({ web: { outlineStyle: 'none' } }) },
- saveButton: { backgroundColor: '#2563eb', borderRadius: 24, paddingVertical: 12, paddingHorizontal: 40, alignItems: 'center', alignSelf: 'center', marginTop: 'auto', ...Platform.select({ web: { boxShadow: '0px 4px 12px rgba(37,99,235,0.3)' } }) },
-  saveButtonText: { fontFamily: MODERN_FONT, color: '#ffffff', fontSize: 13, fontWeight: '700' },
-  secondaryButton: { borderWidth: 1, borderRadius: 6, paddingVertical: 8, alignItems: 'center', marginTop: 4 },
+  inputSmall: { fontFamily: MODERN_FONT, borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 10, fontSize: 13, textAlign: 'center', ...Platform.select({ web: { outlineStyle: 'none' } }) },
+  saveButton: { 
+    backgroundColor: '#2563eb', 
+    borderRadius: 12, 
+    paddingVertical: 12, 
+    paddingHorizontal: 40, 
+    alignItems: 'center', 
+    alignSelf: 'flex-start', 
+    marginTop: 12, 
+    ...Platform.select({ 
+      web: { 
+        cursor: 'pointer', 
+        transition: 'all 0.15s ease',
+        boxShadow: '0 4px 14px rgba(37,99,235,0.3)' 
+      } 
+    }) 
+  },
+  saveButtonText: { fontFamily: MODERN_FONT, color: '#ffffff', fontSize: 13, fontWeight: '800' },
+  secondaryButton: { borderWidth: 1, borderRadius: 10, paddingVertical: 10, alignItems: 'center', marginTop: 6, ...Platform.select({ web: { cursor: 'pointer' } }) },
   secondaryButtonText: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '700' },
   historyList: { marginTop: 4 },
-  historyItem: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 10 },
+  historyItem: { borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 10 },
   historyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   historyMonth: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '700' },
-  statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  statusBadgeText: { fontFamily: MODERN_FONT, fontSize: 9, fontWeight: '700' },
+  statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
+  statusBadgeText: { fontFamily: MODERN_FONT, fontSize: 10, fontWeight: '800' },
   historyDataRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, paddingTop: 8 },
-  historyDataLabel: { fontFamily: MODERN_FONT, fontSize: 10, fontWeight: '600', marginBottom: 2 },
-  historyDataValue: { fontFamily: MODERN_FONT, fontSize: 12, fontWeight: '800' },
+  historyDataLabel: { fontFamily: MODERN_FONT, fontSize: 10, fontWeight: '700', marginBottom: 2, textTransform: 'uppercase' },
+  historyDataValue: { fontFamily: MODERN_FONT, fontSize: 13, fontWeight: '800' },
   
   modalOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.65)', justifyContent: 'center', alignItems: 'center', zIndex: 10000 },
   
-  alertModalBox: { width: '100%', maxWidth: 380, borderRadius: 16, padding: 24, alignItems: 'center', ...Platform.select({ web: { outlineStyle: 'none', boxShadow: '0px 15px 35px rgba(0,0,0,0.25)' } }) },
-  alertModalTitle: { fontSize: 17, fontWeight: '700', marginBottom: 8, fontFamily: MODERN_FONT, textAlign: 'center' },
-  alertModalMessage: { fontSize: 13, lineHeight: 18, marginBottom: 20, fontFamily: MODERN_FONT, textAlign: 'center' },
-  alertModalBtn: { width: '100%', backgroundColor: '#2563eb', paddingVertical: 11, borderRadius: 8, alignItems: 'center' },
-  alertModalBtnText: { color: '#ffffff', fontWeight: '700', fontSize: 13, fontFamily: MODERN_FONT },
+  alertModalBox: { width: '100%', maxWidth: 400, borderRadius: 20, padding: 26, alignItems: 'center', ...Platform.select({ web: { outlineStyle: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.25)' } }) },
+  alertModalTitle: { fontSize: 17, fontWeight: '800', marginBottom: 8, fontFamily: MODERN_FONT, textAlign: 'center', letterSpacing: -0.3 },
+  alertModalMessage: { fontSize: 13, lineHeight: 19, marginBottom: 20, fontFamily: MODERN_FONT, textAlign: 'center', fontWeight: '500' },
+  alertModalBtn: { width: '100%', backgroundColor: '#2563eb', paddingVertical: 11, borderRadius: 10, alignItems: 'center', ...Platform.select({ web: { cursor: 'pointer' } }) },
+  alertModalBtnText: { color: '#ffffff', fontWeight: '800', fontSize: 13, fontFamily: MODERN_FONT },
 
-  modalContainer: { borderRadius: 12, padding: 20, width: '90%', maxWidth: 320, ...Platform.select({ web: { boxShadow: '0px 10px 30px rgba(0,0,0,0.15)' } }) },
+  modalContainer: { borderRadius: 16, padding: 22, width: '90%', maxWidth: 360, ...Platform.select({ web: { boxShadow: '0 15px 35px rgba(0,0,0,0.2)' } }) },
   modalHeaderTitle: { fontFamily: MODERN_FONT, fontSize: 16, fontWeight: '800' },
-  modalMessageText: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 18 },
-  modalButtonPrimaryText: { fontFamily: MODERN_FONT, color: '#ffffff', fontSize: 12, fontWeight: '700' },
-  modalBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  modalMessageText: { fontFamily: MODERN_FONT, fontSize: 13, lineHeight: 19 },
+  modalButtonPrimaryText: { fontFamily: MODERN_FONT, color: '#ffffff', fontSize: 12, fontWeight: '800' },
+  modalBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center', justifyContent: 'center', ...Platform.select({ web: { cursor: 'pointer' } }) },
   
-  cancelBtnStyle: { borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  cancelBtnTextStyle: { fontWeight: '700', fontSize: 13, fontFamily: MODERN_FONT }
+  cancelBtnStyle: { borderWidth: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 8, ...Platform.select({ web: { cursor: 'pointer' } }) },
+  cancelBtnTextStyle: { fontWeight: '700', fontSize: 12, fontFamily: MODERN_FONT }
 });
 
 /* Estilos de Tema Claro */
 const lightStyles = StyleSheet.create({
-  container: { backgroundColor: '#F9FAFB' },
-  pageTitle: { color: '#0f172a' },
-  pageSubtitle: { color: '#64748b' },
-  card: { backgroundColor: '#ffffff', borderColor: '#e2e8f0' },
-  cardTitle: { color: '#1e293b', borderBottomColor: '#f1f5f9' },
-  label: { color: '#64748b' },
-  input: { backgroundColor: '#f8fafc', borderColor: '#cbd5e1', color: '#0f172a' },
-  inputDisabled: { backgroundColor: '#f1f5f9', color: '#94a3b8', borderColor: '#e2e8f0' },
-  requestButton: { backgroundColor: '#0f172a' },
-  requestButtonText: { color: '#ffffff' },
-  currencyInputContainer: { backgroundColor: '#f8fafc', borderColor: '#cbd5e1' },
-  currencySymbol: { color: '#64748b' },
-  currencyInput: { color: '#0f172a' },
-  secondaryButton: { backgroundColor: '#f1f5f9', borderColor: '#cbd5e1' },
-  secondaryButtonText: { color: '#475569' },
-  historyItem: { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
-  historyMonth: { color: '#334155' },
-  badgeSuccess: { backgroundColor: '#dcfce7' },
-  badgeWarning: { backgroundColor: '#fef3c7' },
-  badgeSuccessText: { color: '#16a34a' },
-  badgeWarningText: { color: '#d97706' },
-  historyDataRow: { borderTopColor: '#f1f5f9' },
-  historyDataLabel: { color: '#64748b' },
-  historyDataValue: { color: '#0f172a' },
-  modalContainer: { backgroundColor: '#ffffff' },
-  modalHeaderTitle: { color: '#0f172a' },
-  modalMessageText: { color: '#475569' },
-  alertModalBox: { backgroundColor: '#ffffff' },
-  alertModalTitle: { color: '#1e293b' },
-  alertModalMessage: { color: '#475569' },
-  cancelBtnStyle: { backgroundColor: '#f1f5f9', borderColor: '#cbd5e1' },
-  cancelBtnTextStyle: { color: '#475569' }
+  container: { backgroundColor: TOKENS.light.background },
+  pageTitle: { color: TOKENS.light.textPrimary },
+  pageSubtitle: { color: TOKENS.light.textMuted },
+  card: { backgroundColor: TOKENS.light.surface, borderColor: TOKENS.light.border },
+  cardTitle: { color: TOKENS.light.textPrimary, borderBottomColor: TOKENS.light.borderSubtle },
+  label: { color: TOKENS.light.textSecondary },
+  input: { backgroundColor: TOKENS.light.surfaceSubtle, borderColor: TOKENS.light.border, color: TOKENS.light.textPrimary },
+  inputDisabled: { backgroundColor: TOKENS.light.surfaceSubtle, color: TOKENS.light.textMuted, borderColor: TOKENS.light.borderSubtle },
+  requestButton: { backgroundColor: TOKENS.light.surfaceSubtle },
+  requestButtonText: { color: TOKENS.light.textPrimary },
+  currencyInputContainer: { backgroundColor: TOKENS.light.surfaceSubtle, borderColor: TOKENS.light.border },
+  currencySymbol: { color: TOKENS.light.textSecondary },
+  currencyInput: { color: TOKENS.light.textPrimary },
+  secondaryButton: { backgroundColor: TOKENS.light.surfaceSubtle, borderColor: TOKENS.light.border },
+  secondaryButtonText: { color: TOKENS.light.textSecondary },
+  historyItem: { backgroundColor: TOKENS.light.surfaceSubtle, borderColor: TOKENS.light.border },
+  historyMonth: { color: TOKENS.light.textPrimary },
+  badgeSuccess: { backgroundColor: TOKENS.light.successSubtle },
+  badgeWarning: { backgroundColor: TOKENS.light.warningSubtle },
+  badgeSuccessText: { color: TOKENS.light.success },
+  badgeWarningText: { color: TOKENS.light.warning },
+  historyDataRow: { borderTopColor: TOKENS.light.borderSubtle },
+  historyDataLabel: { color: TOKENS.light.textMuted },
+  historyDataValue: { color: TOKENS.light.textPrimary },
+  modalContainer: { backgroundColor: TOKENS.light.surface },
+  modalHeaderTitle: { color: TOKENS.light.textPrimary },
+  modalMessageText: { color: TOKENS.light.textSecondary },
+  alertModalBox: { backgroundColor: TOKENS.light.surface },
+  alertModalTitle: { color: TOKENS.light.textPrimary },
+  alertModalMessage: { color: TOKENS.light.textSecondary },
+  cancelBtnStyle: { backgroundColor: TOKENS.light.surfaceSubtle, borderColor: TOKENS.light.border },
+  cancelBtnTextStyle: { color: TOKENS.light.textSecondary }
 });
 
 /* Estilos de Tema Escuro */
 const darkStyles = StyleSheet.create({
-  container: { backgroundColor: '#0f172a' },
-  pageTitle: { color: '#f8fafc' },
-  pageSubtitle: { color: '#94a3b8' },
-  card: { backgroundColor: '#1e293b', borderColor: '#334155' },
-  cardTitle: { color: '#f8fafc', borderBottomColor: '#334155' },
-  label: { color: '#94a3b8' },
-  input: { backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc' },
-  inputDisabled: { backgroundColor: '#0f172a', color: '#64748b', borderColor: '#334155' },
-  requestButton: { backgroundColor: '#334155' },
-  requestButtonText: { color: '#f8fafc' },
-  currencyInputContainer: { backgroundColor: '#0f172a', borderColor: '#334155' },
-  currencySymbol: { color: '#94a3b8' },
-  currencyInput: { color: '#f8fafc' },
-  secondaryButton: { backgroundColor: '#0f172a', borderColor: '#334155' },
-  secondaryButtonText: { color: '#cbd5e1' },
-  historyItem: { backgroundColor: '#0f172a', borderColor: '#334155' },
-  historyMonth: { color: '#f8fafc' },
-  badgeSuccess: { backgroundColor: '#052e16' },
-  badgeWarning: { backgroundColor: '#431407' },
-  badgeSuccessText: { color: '#34d399' },
-  badgeWarningText: { color: '#fbbf24' },
-  historyDataRow: { borderTopColor: '#334155' },
-  historyDataLabel: { color: '#94a3b8' },
-  historyDataValue: { color: '#f8fafc' },
-  modalContainer: { backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1 },
-  modalHeaderTitle: { color: '#f8fafc' },
-  modalMessageText: { color: '#94a3b8' },
-  alertModalBox: { backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1 },
-  alertModalTitle: { color: '#f8fafc' },
-  alertModalMessage: { color: '#94a3b8' },
-  cancelBtnStyle: { backgroundColor: '#334155', borderColor: '#475569' },
-  cancelBtnTextStyle: { color: '#cbd5e1' }
+  container: { backgroundColor: TOKENS.dark.background },
+  pageTitle: { color: TOKENS.dark.textPrimary },
+  pageSubtitle: { color: TOKENS.dark.textMuted },
+  card: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border },
+  cardTitle: { color: TOKENS.dark.textPrimary, borderBottomColor: TOKENS.dark.borderSubtle },
+  label: { color: TOKENS.dark.textSecondary },
+  input: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border, color: TOKENS.dark.textPrimary },
+  inputDisabled: { backgroundColor: TOKENS.dark.surfaceSubtle, color: TOKENS.dark.textMuted, borderColor: TOKENS.dark.borderSubtle },
+  requestButton: { backgroundColor: TOKENS.dark.surfaceSubtle },
+  requestButtonText: { color: TOKENS.dark.textPrimary },
+  currencyInputContainer: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  currencySymbol: { color: TOKENS.dark.textSecondary },
+  currencyInput: { color: TOKENS.dark.textPrimary },
+  secondaryButton: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  secondaryButtonText: { color: TOKENS.dark.textSecondary },
+  historyItem: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  historyMonth: { color: TOKENS.dark.textPrimary },
+  badgeSuccess: { backgroundColor: TOKENS.dark.successSubtle },
+  badgeWarning: { backgroundColor: TOKENS.dark.warningSubtle },
+  badgeSuccessText: { color: TOKENS.dark.success },
+  badgeWarningText: { color: TOKENS.dark.warning },
+  historyDataRow: { borderTopColor: TOKENS.dark.borderSubtle },
+  historyDataLabel: { color: TOKENS.dark.textMuted },
+  historyDataValue: { color: TOKENS.dark.textPrimary },
+  modalContainer: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border, borderWidth: 1 },
+  modalHeaderTitle: { color: TOKENS.dark.textPrimary },
+  modalMessageText: { color: TOKENS.dark.textSecondary },
+  alertModalBox: { backgroundColor: TOKENS.dark.surface, borderColor: TOKENS.dark.border, borderWidth: 1 },
+  alertModalTitle: { color: TOKENS.dark.textPrimary },
+  alertModalMessage: { color: TOKENS.dark.textSecondary },
+  cancelBtnStyle: { backgroundColor: TOKENS.dark.surfaceSubtle, borderColor: TOKENS.dark.border },
+  cancelBtnTextStyle: { color: TOKENS.dark.textSecondary }
 });

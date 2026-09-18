@@ -3,7 +3,7 @@ import {
   Modal, View, Text, TouchableOpacity, StyleSheet, Platform 
 } from 'react-native';
 
-const MODERN_FONT = Platform.OS === 'web' ? '"Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : 'System';
+import { MODERN_FONT, TOKENS } from '../theme/tokens';
 
 export default function FilterModal({ visible, onClose, activeFilter, onSelectFilter, isDarkMode }) {
   
@@ -50,67 +50,67 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1, 
     backgroundColor: 'transparent', 
-    // Posiciona exatamente embaixo da barra superior onde fica o botão de filtro
     justifyContent: 'flex-start', 
     alignItems: 'flex-start',
     paddingTop: 56, 
-    paddingLeft: 180, // Ajuste fino horizontal para alinhar diretamente abaixo do botão "Filtro"
+    paddingLeft: 180,
   },
   dropdownMenu: {
-    borderRadius: 8, 
+    borderRadius: 12, 
     borderWidth: 1,
-    padding: 4,
-    minWidth: 140, // Largura compacta ajustada ao texto
+    padding: 6,
+    minWidth: 160,
     ...Platform.select({ 
-      web: { outlineStyle: 'none', boxShadow: '0px 10px 25px rgba(0,0,0,0.12)' },
+      web: { outlineStyle: 'none', boxShadow: '0 12px 28px rgba(0,0,0,0.15)' },
       default: { elevation: 5 }
     })
   },
   filterOption: {
-    paddingVertical: 7, 
-    paddingHorizontal: 10, 
-    borderRadius: 6, 
+    paddingVertical: 8, 
+    paddingHorizontal: 12, 
+    borderRadius: 8, 
     backgroundColor: 'transparent',
+    ...Platform.select({ web: { cursor: 'pointer', transition: 'all 0.15s ease' } })
   },
   activeOption: {
     backgroundColor: '#eff6ff', 
   },
   optionText: {
-    fontSize: 13, 
+    fontSize: 12, 
     fontWeight: '600',
     fontFamily: MODERN_FONT,
   },
   activeOptionText: {
     color: '#2563eb',
-    fontWeight: '700'
+    fontWeight: '800'
   }
 });
 
 /* Estilos de Tema Claro */
 const lightStyles = StyleSheet.create({
   dropdownMenu: {
-    backgroundColor: '#ffffff', 
-    borderColor: '#cbd5e1',
+    backgroundColor: TOKENS.light.surface, 
+    borderColor: TOKENS.light.border,
   },
   optionText: {
-    color: '#475569', 
+    color: TOKENS.light.textSecondary, 
   }
 });
 
 /* Estilos de Tema Escuro */
 const darkStyles = StyleSheet.create({
   dropdownMenu: {
-    backgroundColor: '#1e293b', 
-    borderColor: '#334155',
+    backgroundColor: TOKENS.dark.surface, 
+    borderColor: TOKENS.dark.border,
   },
   optionText: {
-    color: '#94a3b8', 
+    color: TOKENS.dark.textSecondary, 
   },
   activeOption: {
     backgroundColor: '#1e3a8a',
   },
   activeOptionText: {
     color: '#93c5fd',
-    fontWeight: '700'
+    fontWeight: '800'
   }
 });
