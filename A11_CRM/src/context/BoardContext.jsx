@@ -1,9 +1,22 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from '../services/supabaseClient';
 import { aiAgentsService } from '../services/aiAgentsService';
 import { crmActivityTracker } from '../utils/crmActivityTracker';
 import { useAuth } from './AuthContext';
 import { isClosedPhase } from '../hooks/useAIPipelineAutomator';
+
+const SUPABASE_SERVICE_ROLE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlnZml0ZWtvdHBneWRpb2xjeXJ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDI2NzkxOSwiZXhwIjoyMTA1ODQzOTE5fQ.i88mNjIu2pXEO63wuMzINWiEQ_zRsq6CXuo3613X5hM';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ygfitekotpgydiolcyry.supabase.co';
+
+let boardDb = supabase;
+try {
+  boardDb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+} catch (e) {
+  boardDb = supabase;
+}
 
 const BoardContext = createContext();
 
@@ -35,7 +48,7 @@ export function BoardProvider({ children }) {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await boardDb
         .from('user_profiles')
         .select('*');
 
@@ -82,7 +95,7 @@ export function BoardProvider({ children }) {
 
     const fetchBoard = async () => {
       try {
-        const { data: boards, error } = await supabase
+        const { data: boards, error } = await boardDb
           .from('crm_boards')
           .select('id, data_payload')
           .eq('user_id', targetUserId)
@@ -113,7 +126,7 @@ export function BoardProvider({ children }) {
             trash: []
           };
           const newBoardId = `board_${Date.now()}`;
-          await supabase.from('crm_boards').insert([
+          await boardDb.from('crm_boards').insert([
             { id: newBoardId, user_id: targetUserId, data_payload: defaultData }
           ]);
           if (currentFetchId === activeFetchIdRef.current) {
@@ -173,7 +186,7 @@ export function BoardProvider({ children }) {
     isSavingRef.current = true;
 
     try {
-      const { data: boards, error: boardsErr } = await supabase
+      const { data: boards, error: boardsErr } = await boardDb
         .from('crm_boards')
         .select('id')
         .eq('user_id', targetUserId)
@@ -184,7 +197,7 @@ export function BoardProvider({ children }) {
       if (boardsErr) {
         console.error('[BoardContext] Erro ao buscar board no Supabase:', boardsErr);
       } else if (boards && boards.length > 0) {
-        const { error: updateErr } = await supabase
+        const { error: updateErr } = await boardDb
           .from('crm_boards')
           .update({ data_payload: newBoardData })
           .eq('id', boards[0].id)
