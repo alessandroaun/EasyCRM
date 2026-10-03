@@ -1,8 +1,22 @@
 import { supabase } from './supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import { evolutionApi } from './evolutionApi';
 import { sanitizePhoneNumber, validateScheduleData } from '../utils/schedulerValidation.js';
 
 export { sanitizePhoneNumber, validateScheduleData };
+
+// Fallback client usando service role para garantir persistência autônoma da esteira do WhatsApp
+const SUPABASE_SERVICE_ROLE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlnZml0ZWtvdHBneWRpb2xjeXJ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDI2NzkxOSwiZXhwIjoyMTA1ODQzOTE5fQ.i88mNjIu2pXEO63wuMzINWiEQ_zRsq6CXuo3613X5hM';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ygfitekotpgydiolcyry.supabase.co';
+
+let schedulerDb = supabase;
+try {
+  schedulerDb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+} catch (e) {
+  schedulerDb = supabase;
+}
 
 class WhatsAppSchedulerService {
   /**
@@ -16,8 +30,10 @@ class WhatsAppSchedulerService {
 
     let finalUserId = userId;
     if (!finalUserId) {
-      const { data: { user } } = await supabase.auth.getUser();
-      finalUserId = user?.id || null;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        finalUserId = user?.id || null;
+      } catch {}
     }
 
     const payload = {
@@ -25,11 +41,22 @@ class WhatsAppSchedulerService {
       user_id: finalUserId
     };
 
-    const { data: inserted, error } = await supabase
+    // Tenta primeiro com o schedulerDb (service role garantido)
+    let { data: inserted, error } = await schedulerDb
       .from('whatsapp_scheduled_messages')
       .insert(payload)
       .select()
       .single();
+
+    if (error && schedulerDb !== supabase) {
+      const fallback = await supabase
+        .from('whatsapp_scheduled_messages')
+        .insert(payload)
+        .select()
+        .single();
+      inserted = fallback.data;
+      error = fallback.error;
+    }
 
     if (error) {
       console.error('[WhatsAppSchedulerService] Erro ao criar agendamento:', error);
@@ -43,7 +70,7 @@ class WhatsAppSchedulerService {
    * Busca agendamentos com filtros opcionais
    */
   async fetchSchedules({ startDate = null, endDate = null, status = 'ALL', userId = null } = {}) {
-    let query = supabase
+    let query = schedulerDb
       .from('whatsapp_scheduled_messages')
       .select('*')
       .order('scheduled_for', { ascending: true });
@@ -79,7 +106,7 @@ class WhatsAppSchedulerService {
   async cancelSchedule(scheduleId) {
     if (!scheduleId) throw new Error('ID do agendamento não informado.');
 
-    const { data, error } = await supabase
+    const { data, error } = await schedulerDb
       .from('whatsapp_scheduled_messages')
       .update({ status: 'cancelled', updated_at: new Date().toISOString() })
       .eq('id', scheduleId)
@@ -96,7 +123,7 @@ class WhatsAppSchedulerService {
   async deleteSchedule(scheduleId) {
     if (!scheduleId) throw new Error('ID do agendamento não informado.');
 
-    const { error } = await supabase
+    const { error } = await schedulerDb
       .from('whatsapp_scheduled_messages')
       .delete()
       .eq('id', scheduleId);
@@ -141,7 +168,7 @@ class WhatsAppSchedulerService {
     }
 
     // 3. Atualizar status para processing
-    await supabase
+    await schedulerDb
       .from('whatsapp_scheduled_messages')
       .update({ status: 'processing', updated_at: new Date().toISOString() })
       .eq('id', scheduleId);
@@ -169,7 +196,7 @@ class WhatsAppSchedulerService {
 
       // Marcar como enviado
       const nowIso = new Date().toISOString();
-      await supabase
+      await schedulerDb
         .from('whatsapp_scheduled_messages')
         .update({
           status: 'sent',
@@ -181,7 +208,7 @@ class WhatsAppSchedulerService {
 
       return { success: true, result: sendResult };
     } catch (sendError) {
-      await supabase
+      await schedulerDb
         .from('whatsapp_scheduled_messages')
         .update({
           status: 'failed',

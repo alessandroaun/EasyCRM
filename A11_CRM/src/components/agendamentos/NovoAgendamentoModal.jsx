@@ -16,7 +16,9 @@ import {
   Check, 
   Loader2, 
   Search,
-  Volume2
+  Volume2,
+  Lock,
+  RotateCcw
 } from 'lucide-react';
 import { useBoard } from '../../context/BoardContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -24,7 +26,7 @@ import { whatsappSchedulerService, sanitizePhoneNumber } from '../../services/wh
 import { pocketTtsService } from '../../services/pocketTtsService';
 
 export default function NovoAgendamentoModal({ isOpen, onClose, onCreated, defaultDate = null }) {
-  const { boardData, showToast } = useBoard();
+  const { boardData, showToast, addLeadComment } = useBoard();
   const { isDarkMode } = useTheme();
 
   // Estados principais
@@ -236,14 +238,19 @@ export default function NovoAgendamentoModal({ isOpen, onClose, onCreated, defau
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!selectedLead) {
+      showToast?.('Por favor, selecione um lead da lista interna do seu CRM.', 'error');
+      return;
+    }
+
     if (!clientName.trim()) {
-      showToast?.('Por favor, informe o nome do cliente.', 'error');
+      showToast?.('Lead inválido: nome ausente.', 'error');
       return;
     }
 
     const cleanPhone = sanitizePhoneNumber(clientPhone);
     if (!cleanPhone || cleanPhone.length < 12) {
-      showToast?.('Por favor, informe um telefone válido com DDD.', 'error');
+      showToast?.('Lead inválido: telefone com DDD inválido no cadastro.', 'error');
       return;
     }
 
@@ -299,6 +306,27 @@ export default function NovoAgendamentoModal({ isOpen, onClose, onCreated, defau
       };
 
       await whatsappSchedulerService.createScheduledMessage(schedulePayload);
+
+      // REGISTRO AUTOMÁTICO DE NOTA / ATIVIDADE NO HISTÓRICO DO LEAD (ClientDetailsModal)
+      if (selectedLead?.id && addLeadComment) {
+        const dataFmt = scheduledDateTime.toLocaleDateString('pt-BR');
+        const horaFmt = scheduledDateTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const tipoNome = finalMessageType === 'audio_ai' 
+          ? 'Áudio IA Pocket-TTS' 
+          : finalMessageType === 'audio_record' 
+          ? 'Áudio Gravado' 
+          : finalMessageType === 'image' 
+          ? 'Imagem' 
+          : finalMessageType === 'document' 
+          ? 'Documento' 
+          : 'Texto';
+
+        const previewSnippet = (schedulePayload.content_text || fileName || '').slice(0, 70);
+        const autoNoteText = `📅 Sistema: Mensagem WhatsApp programada para ${dataFmt} às ${horaFmt} (${tipoNome}). Conteúdo: "${previewSnippet}${previewSnippet.length >= 70 ? '...' : ''}"`;
+        
+        await addLeadComment(selectedLead.id, autoNoteText);
+      }
+
       showToast?.('🎉 Mensagem agendada com sucesso no ConsorFlux!', 'success');
       onCreated?.();
       onClose();
@@ -344,86 +372,146 @@ export default function NovoAgendamentoModal({ isOpen, onClose, onCreated, defau
 
         {/* Formulário com Scroll */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1">
-          {/* Seção 1: Seleção de Lead */}
+          {/* Seção 1: Seleção de Lead (ESTRITAMENTE CONTATOS INTERNOS DO CRM) */}
           <div className="space-y-3">
-            <label className="text-xs font-bold flex items-center gap-1.5 uppercase tracking-wider text-slate-400">
-              <User size={13} /> Destinatário (Lead do CRM)
-            </label>
-
-            {/* Busca rápida */}
-            <div className="relative">
-              <Search size={15} className="absolute left-3.5 top-3.5 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Buscar lead por nome ou telefone na sua base..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full pl-10 pr-4 py-2.5 rounded-2xl text-xs border outline-none transition-all ${
-                  isDarkMode 
-                    ? 'bg-slate-950 border-slate-800 focus:border-emerald-500 text-slate-200' 
-                    : 'bg-slate-50 border-slate-200 focus:border-emerald-500 text-slate-800'
-                }`}
-              />
-
-              {/* Resultados suspensos da busca */}
-              {filteredLeads.length > 0 && (
-                <div className={`absolute top-full left-0 right-0 mt-1 rounded-2xl border shadow-xl z-20 overflow-hidden ${
-                  isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
-                }`}>
-                  {filteredLeads.map((lead) => (
-                    <button
-                      key={lead.id}
-                      type="button"
-                      onClick={() => handleSelectLead(lead)}
-                      className={`w-full p-3 text-left flex items-center justify-between text-xs transition-colors border-b last:border-0 ${
-                        isDarkMode 
-                          ? 'border-slate-800/60 hover:bg-slate-900 text-slate-200' 
-                          : 'border-slate-100 hover:bg-slate-50 text-slate-800'
-                      }`}
-                    >
-                      <div>
-                        <div className="font-bold">{lead.name}</div>
-                        <div className={`text-[10px] ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {lead.phone} • Fase: {lead.phaseName}
-                        </div>
-                      </div>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold">
-                        Selecionar
-                      </span>
-                    </button>
-                  ))}
-                </div>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold flex items-center gap-1.5 uppercase tracking-wider text-slate-400">
+                <User size={13} /> Destinatário (Lead da Carteira do CRM)
+              </label>
+              {selectedLead && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedLead(null);
+                    setClientName('');
+                    setClientPhone('');
+                    setSearchTerm('');
+                  }}
+                  className="text-[11px] flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-semibold"
+                >
+                  <RotateCcw size={11} />
+                  <span>Trocar Lead</span>
+                </button>
               )}
             </div>
 
-            {/* Inputs de Nome e Telefone selecionados/manuais */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-[11px] font-semibold text-slate-400">Nome do Cliente *</label>
+            {/* Busca rápida na base interna */}
+            {!selectedLead ? (
+              <div className="relative">
+                <Search size={15} className="absolute left-3.5 top-3.5 text-slate-400" />
                 <input
                   type="text"
-                  required
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Ex: Carlos Silva"
-                  className={`w-full px-3.5 py-2.5 mt-1 rounded-xl text-xs border outline-none ${
-                    isDarkMode ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'
+                  placeholder="Pesquise o lead pelo nome ou telefone na sua carteira..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-2xl text-xs border outline-none transition-all ${
+                    isDarkMode 
+                      ? 'bg-slate-950 border-slate-800 focus:border-emerald-500 text-slate-200' 
+                      : 'bg-slate-50 border-slate-200 focus:border-emerald-500 text-slate-800'
                   }`}
                 />
+
+                {/* Resultados suspensos da busca */}
+                {filteredLeads.length > 0 && (
+                  <div className={`absolute top-full left-0 right-0 mt-1 rounded-2xl border shadow-xl z-20 overflow-hidden ${
+                    isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
+                  }`}>
+                    {filteredLeads.map((lead) => (
+                      <button
+                        key={lead.id}
+                        type="button"
+                        onClick={() => handleSelectLead(lead)}
+                        className={`w-full p-3 text-left flex items-center justify-between text-xs transition-colors border-b last:border-0 ${
+                          isDarkMode 
+                            ? 'border-slate-800/60 hover:bg-slate-900 text-slate-200' 
+                            : 'border-slate-100 hover:bg-slate-50 text-slate-800'
+                        }`}
+                      >
+                        <div>
+                          <div className="font-bold">{lead.name}</div>
+                          <div className={`text-[10px] ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                            {lead.phone} • Fase: {lead.phaseName}
+                          </div>
+                        </div>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold">
+                          Selecionar
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {searchTerm.trim().length > 0 && filteredLeads.length === 0 && (
+                  <div className={`absolute top-full left-0 right-0 mt-1 p-3 rounded-2xl border shadow-xl z-20 text-xs text-center ${
+                    isDarkMode ? 'bg-slate-950 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-500'
+                  }`}>
+                    Nenhum lead interno encontrado com esse nome ou telefone.
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={`p-3 rounded-2xl border flex items-center justify-between ${
+                isDarkMode ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200' : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              }`}>
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+                    <User size={16} />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold">{selectedLead.name}</div>
+                    <div className="text-[10px] opacity-80">{selectedLead.phone} • Fase: {selectedLead.phaseName}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/20 px-2.5 py-1 rounded-full">
+                  <Lock size={10} />
+                  <span>Lead Verificado CRM</span>
+                </div>
+              </div>
+            )}
+
+            {/* Inputs de Nome e Telefone TRAVADOS CONTRA DIGITAÇÃO MANUAL */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+                  <span>Nome do Cliente</span>
+                  <Lock size={10} className="text-slate-500" />
+                </label>
+                <div className="relative mt-1">
+                  <input
+                    type="text"
+                    readOnly
+                    tabIndex={-1}
+                    value={clientName}
+                    placeholder="Selecione um lead da busca acima..."
+                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none cursor-not-allowed ${
+                      isDarkMode 
+                        ? 'bg-slate-950/50 border-slate-800 text-slate-300 placeholder-slate-600' 
+                        : 'bg-slate-100 border-slate-200 text-slate-700 placeholder-slate-400'
+                    }`}
+                  />
+                  <Lock size={12} className="absolute right-3 top-3 text-slate-500 opacity-60" />
+                </div>
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-400">Telefone / WhatsApp (com DDD) *</label>
-                <input
-                  type="text"
-                  required
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  placeholder="Ex: 11987654321"
-                  className={`w-full px-3.5 py-2.5 mt-1 rounded-xl text-xs border outline-none ${
-                    isDarkMode ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'
-                  }`}
-                />
+                <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+                  <span>Telefone / WhatsApp</span>
+                  <Lock size={10} className="text-slate-500" />
+                </label>
+                <div className="relative mt-1">
+                  <input
+                    type="text"
+                    readOnly
+                    tabIndex={-1}
+                    value={clientPhone}
+                    placeholder="Telefone vinculado ao lead..."
+                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none cursor-not-allowed ${
+                      isDarkMode 
+                        ? 'bg-slate-950/50 border-slate-800 text-slate-300 placeholder-slate-600' 
+                        : 'bg-slate-100 border-slate-200 text-slate-700 placeholder-slate-400'
+                    }`}
+                  />
+                  <Lock size={12} className="absolute right-3 top-3 text-slate-500 opacity-60" />
+                </div>
               </div>
             </div>
           </div>
@@ -738,8 +826,12 @@ export default function NovoAgendamentoModal({ isOpen, onClose, onCreated, defau
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50"
+              disabled={isSubmitting || !selectedLead}
+              className={`px-6 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-md ${
+                !selectedLead 
+                  ? 'bg-slate-700/60 text-slate-400 cursor-not-allowed opacity-60' 
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20'
+              } disabled:opacity-50`}
             >
               {isSubmitting ? (
                 <>
@@ -749,7 +841,7 @@ export default function NovoAgendamentoModal({ isOpen, onClose, onCreated, defau
               ) : (
                 <>
                   <Check size={16} />
-                  <span>Confirmar e Agendar</span>
+                  <span>{!selectedLead ? 'Selecione um Lead' : 'Confirmar e Agendar'}</span>
                 </>
               )}
             </button>

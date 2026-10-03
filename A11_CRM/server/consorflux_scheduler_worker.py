@@ -76,14 +76,15 @@ def simulate_presence(instance_name, phone, presence_type="composing", duration=
     except Exception as e:
         logging.warning(f"Falha ao enviar simulação de presença: {e}")
 
-def register_lead_comment(lead_id, lead_phone, comment_text):
+def register_lead_comment(lead_id, lead_phone, comment_text, user_id=None):
     """Registra comentário de confirmação do envio na timeline do lead no crm_boards"""
-    if not lead_id:
-        return
     try:
         url = f"{SUPABASE_URL}/rest/v1/crm_boards"
-        params = {"select": "id,data_payload", "limit": "5"}
-        res = requests.get(url, headers=HEADERS_SUPABASE, params=params, timeout=8)
+        params = {"select": "id,user_id,data_payload"}
+        if user_id:
+            params["user_id"] = f"eq.{user_id}"
+        
+        res = requests.get(url, headers=HEADERS_SUPABASE, params=params, timeout=10)
         if res.status_code != 200:
             return
         
@@ -95,10 +96,14 @@ def register_lead_comment(lead_id, lead_phone, comment_text):
 
             for phase in phases:
                 for client in phase.get("clients", []):
-                    if str(client.get("id")) == str(lead_id) or client.get("phone") == lead_phone:
+                    c_id = str(client.get("id", ""))
+                    c_phone = str(client.get("phone", "")).replace("+", "").replace("-", "").replace(" ", "")
+                    target_phone = str(lead_phone or "").replace("+", "").replace("-", "").replace(" ", "")
+
+                    if (lead_id and c_id == str(lead_id)) or (target_phone and (c_phone in target_phone or target_phone in c_phone)):
                         comments = client.get("comments") or []
                         new_comment = {
-                            "id": f"sched_{int(time.time() * 1000)}",
+                            "id": f"sched_done_{int(time.time() * 1000)}",
                             "text": comment_text,
                             "date": datetime.datetime.now(datetime.timezone.utc).isoformat()
                         }
@@ -112,8 +117,8 @@ def register_lead_comment(lead_id, lead_phone, comment_text):
                 board_id = b.get("id")
                 patch_url = f"{SUPABASE_URL}/rest/v1/crm_boards"
                 patch_params = {"id": f"eq.{board_id}"}
-                requests.patch(patch_url, headers=HEADERS_SUPABASE, params=patch_params, json={"data_payload": payload}, timeout=8)
-                logging.info(f"📝 Comentário registrado com sucesso no lead {lead_id}")
+                requests.patch(patch_url, headers=HEADERS_SUPABASE, params=patch_params, json={"data_payload": payload}, timeout=10)
+                logging.info(f"📝 Atividade de disparo registrada com sucesso na ficha do lead ({lead_phone}) no board {board_id}")
                 return
     except Exception as e:
         logging.warning(f"Erro ao salvar comentário na ficha do lead: {e}")
@@ -220,8 +225,9 @@ def process_single_message(msg):
     )
 
     logging.info(f"✅ Agendamento #{msg_id} enviado com sucesso para {lead_phone}!")
-    comment_text = f"🤖 WhatsApp Programado: Mensagem agendada enviada com sucesso para o lead ({lead_phone}). Tipo: {msg_type}."
-    register_lead_comment(lead_id, lead_phone, comment_text)
+    tipo_desc = "Áudio com IA Pocket-TTS" if msg_type == "audio_ai" else "Áudio de Voz" if msg_type == "audio_record" else "Mídia/Anexo" if msg_type in ["image", "document"] else "Texto"
+    comment_text = f"🤖 Sistema: Mensagem WhatsApp programada foi disparada com sucesso para o lead ({lead_phone}). Formato: {tipo_desc}."
+    register_lead_comment(lead_id, lead_phone, comment_text, user_id=msg.get("user_id"))
 
 def reset_stuck_messages():
     """Destrava mensagens que ficaram presas em 'processing' por mais de 10 minutos"""
