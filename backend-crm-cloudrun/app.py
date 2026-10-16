@@ -107,7 +107,12 @@ def require_authenticated_caller():
         return authenticate_webhook()
     if request.path.startswith("/api/webhooks"):
         return None
-    if request.path in {"/api/auth/notificar-reset", "/api/leads/notificar-transferencia"}:
+    if request.path in {
+        "/api/auth/notificar-reset",
+        "/api/leads/notificar-transferencia",
+        "/api/acoes-vendas/notificar-criacao",
+        "/api/acoes-vendas/notificar-cumprimento"
+    }:
         return None
     denial = authenticate_request(supabase)
     if denial is not None:
@@ -564,6 +569,215 @@ def notificar_transferencia_leads():
 
     except Exception as e:
         print(f"❌ Erro ao notificar transferência de leads: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/acoes-vendas/notificar-criacao', methods=['POST'])
+def notificar_criacao_acao_venda():
+    try:
+        data = request.get_json(silent=True) or {}
+        target_user_id = data.get('target_user_id')
+        creator_name = data.get('creator_name') or 'A Liderança'
+        tipo_meta = data.get('tipo_meta')
+        valor_meta = data.get('valor_meta')
+        bonificacao = data.get('bonificacao')
+        data_limite = data.get('data_limite')
+
+        if not target_user_id or not isinstance(target_user_id, str):
+            return jsonify({"error": "Identificador do destinatário (target_user_id) é obrigatório."}), 400
+
+        if tipo_meta not in ('cotas', 'credito'):
+            return jsonify({"error": "O campo tipo_meta deve ser 'cotas' ou 'credito'."}), 400
+
+        try:
+            valor_meta = float(valor_meta)
+            if valor_meta <= 0:
+                raise ValueError()
+        except (TypeError, ValueError):
+            return jsonify({"error": "O valor da meta (valor_meta) deve ser um número positivo."}), 400
+
+        if not bonificacao or not str(bonificacao).strip():
+            return jsonify({"error": "A descrição da bonificação é obrigatória."}), 400
+
+        if tipo_meta == 'cotas':
+            meta_str = f"{int(valor_meta)} cota(s)"
+        else:
+            meta_str = f"R$ {valor_meta:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+        titulo = "🎯 Nova Meta de Vendas Atribuída!"
+        prazo_str = f" até {data_limite}" if data_limite else ""
+        corpo = f"{creator_name} lançou um desafio: alcance a meta de {meta_str} e conquiste: {bonificacao}{prazo_str}!"
+        url = "https://app.consorflux.com/?open_notifications=true"
+        tag_colapso = f"consorflux_acao_venda_{target_user_id}"
+
+        total_notificados = 0
+        if supabase:
+            tokens_unicos = set()
+            try:
+                tokens_resp = supabase.table('user_push_tokens').select('token').eq('user_id', target_user_id).execute()
+                for row in (tokens_resp.data or []):
+                    tok = row.get('token')
+                    if tok and not tok.startswith('TEST_'):
+                        tokens_unicos.add(tok)
+            except Exception as token_err:
+                print(f"⚠️ Erro ao consultar tokens de push para {target_user_id}: {token_err}")
+
+            for token_destino in tokens_unicos:
+                try:
+                    message = messaging.Message(
+                        notification=messaging.Notification(
+                            title=titulo,
+                            body=corpo,
+                        ),
+                        webpush=messaging.WebpushConfig(
+                            headers={"Urgency": "high"},
+                            notification=messaging.WebpushNotification(
+                                title=titulo,
+                                body=corpo,
+                                icon="https://app.consorflux.com/ConsorFluxWhite.png",
+                                badge="https://app.consorflux.com/ConsorFluxWhite.png",
+                                vibrate=[200, 100, 200],
+                                require_interaction=True,
+                                tag=tag_colapso
+                            ),
+                            fcm_options=messaging.WebpushFCMOptions(
+                                link=url
+                            )
+                        ),
+                        android=messaging.AndroidConfig(
+                            priority='high',
+                            collapse_key=tag_colapso,
+                            notification=messaging.AndroidNotification(
+                                tag=tag_colapso,
+                                icon="https://app.consorflux.com/ConsorFluxWhite.png",
+                                color="#EAB308"
+                            )
+                        ),
+                        data={
+                            "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                            "title": str(titulo),
+                            "mensagem": str(corpo),
+                            "url": url,
+                            "type": "acao_venda_criada"
+                        },
+                        token=token_destino
+                    )
+                    messaging.send(message)
+                    total_notificados += 1
+                except messaging.UnregisteredError:
+                    print(f"🗑️ Token expirado removido: {token_destino[:15]}...")
+                    supabase.table('user_push_tokens').delete().eq('token', token_destino).execute()
+                except Exception as push_err:
+                    print(f"⚠️ Erro ao disparar push de ação de venda para token {token_destino[:15]}...: {push_err}")
+
+        return jsonify({
+            "success": True,
+            "delivered": total_notificados
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Erro ao notificar criação de ação de venda: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/acoes-vendas/notificar-cumprimento', methods=['POST'])
+def notificar_cumprimento_acao_venda():
+    try:
+        data = request.get_json(silent=True) or {}
+        creator_id = data.get('creator_id')
+        vendedor_name = data.get('vendedor_name')
+        tipo_meta = data.get('tipo_meta')
+        valor_meta = data.get('valor_meta')
+        bonificacao = data.get('bonificacao')
+
+        if not creator_id or not isinstance(creator_id, str):
+            return jsonify({"error": "Identificador do gestor criador (creator_id) é obrigatório."}), 400
+
+        if not vendedor_name or not str(vendedor_name).strip():
+            return jsonify({"error": "Nome do vendedor (vendedor_name) é obrigatório."}), 400
+
+        if not bonificacao or not str(bonificacao).strip():
+            return jsonify({"error": "A descrição da bonificação é obrigatória."}), 400
+
+        if tipo_meta == 'cotas' and valor_meta:
+            meta_str = f"de {int(valor_meta)} cota(s)"
+        elif tipo_meta == 'credito' and valor_meta:
+            meta_str = f"de R$ {float(valor_meta):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        else:
+            meta_str = "estipulada"
+
+        titulo = "🏆 Meta Batida! Hora da Bonificação"
+        corpo = f"Parabéns! O vendedor {vendedor_name} atingiu a meta {meta_str}! Prepare a bonificação: {bonificacao}."
+        url = "https://app.consorflux.com/?open_team_management=true"
+        tag_colapso = f"consorflux_meta_cumprida_{creator_id}"
+
+        total_notificados = 0
+        if supabase:
+            tokens_unicos = set()
+            try:
+                tokens_resp = supabase.table('user_push_tokens').select('token').eq('user_id', creator_id).execute()
+                for row in (tokens_resp.data or []):
+                    tok = row.get('token')
+                    if tok and not tok.startswith('TEST_'):
+                        tokens_unicos.add(tok)
+            except Exception as token_err:
+                print(f"⚠️ Erro ao consultar tokens de push para gestor {creator_id}: {token_err}")
+
+            for token_destino in tokens_unicos:
+                try:
+                    message = messaging.Message(
+                        notification=messaging.Notification(
+                            title=titulo,
+                            body=corpo,
+                        ),
+                        webpush=messaging.WebpushConfig(
+                            headers={"Urgency": "high"},
+                            notification=messaging.WebpushNotification(
+                                title=titulo,
+                                body=corpo,
+                                icon="https://app.consorflux.com/ConsorFluxWhite.png",
+                                badge="https://app.consorflux.com/ConsorFluxWhite.png",
+                                vibrate=[200, 100, 200],
+                                require_interaction=True,
+                                tag=tag_colapso
+                            ),
+                            fcm_options=messaging.WebpushFCMOptions(
+                                link=url
+                            )
+                        ),
+                        android=messaging.AndroidConfig(
+                            priority='high',
+                            collapse_key=tag_colapso,
+                            notification=messaging.AndroidNotification(
+                                tag=tag_colapso,
+                                icon="https://app.consorflux.com/ConsorFluxWhite.png",
+                                color="#10B981"
+                            )
+                        ),
+                        data={
+                            "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                            "title": str(titulo),
+                            "mensagem": str(corpo),
+                            "url": url,
+                            "type": "acao_venda_cumprida"
+                        },
+                        token=token_destino
+                    )
+                    messaging.send(message)
+                    total_notificados += 1
+                except messaging.UnregisteredError:
+                    print(f"🗑️ Token expirado removido: {token_destino[:15]}...")
+                    supabase.table('user_push_tokens').delete().eq('token', token_destino).execute()
+                except Exception as push_err:
+                    print(f"⚠️ Erro ao disparar push de meta batida para gestor {token_destino[:15]}...: {push_err}")
+
+        return jsonify({
+            "success": True,
+            "delivered": total_notificados
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Erro ao notificar cumprimento de meta: {e}")
         return jsonify({"error": str(e)}), 500
 
 # ==============================================================================
