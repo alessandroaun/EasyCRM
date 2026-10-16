@@ -74,6 +74,11 @@ begin
     raise exception 'Gerentes não possuem permissão para criar contas de Administrador.';
   end if;
 
+  -- Administradores e Gerentes pertencem estritamente a "Sem Equipe"
+  if clean_role in ('admin', 'administrador', 'gerente') then
+    clean_team := 'Sem Equipe';
+  end if;
+
   -- Valida se o email já existe
   if exists (select 1 from auth.users where email = clean_email) or
      exists (select 1 from public.user_profiles where lower(email) = clean_email) then
