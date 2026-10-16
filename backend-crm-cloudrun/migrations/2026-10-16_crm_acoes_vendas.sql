@@ -34,3 +34,5 @@ ALTER TABLE public.crm_acoes_vendas ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY acoes_vendas_all ON public.crm_acoes_vendas 
     FOR ALL USING (true) WITH CHECK (true);
+
+GRANT ALL ON TABLE public.crm_acoes_vendas TO authenticated, anon;
