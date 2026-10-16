@@ -134,13 +134,52 @@ language plpgsql
 security definer
 set search_path = pg_catalog
 as $$
+declare
+  caller_id uuid := (select auth.uid());
+  caller_role text;
+  target_email text;
+  target_role text;
 begin
-  perform crm_private.assert_admin();
-  if target_user_id = (select auth.uid()) then
-    raise exception 'An administrator cannot delete their own account through this function';
+  -- 1. Verifica permissao: admin, administrador ou gerente
+  perform crm_private.assert_admin_or_manager();
+
+  -- 2. Nao permite auto-exclusao
+  if target_user_id = caller_id then
+    raise exception 'Você não pode excluir sua própria conta de acesso.';
   end if;
-  delete from auth.users where id = target_user_id;
+
+  -- 3. Identifica dados do alvo
+  select email, role into target_email, target_role
+  from public.user_profiles
+  where id = target_user_id;
+
+  if target_email is null then
+    select email into target_email from auth.users where id = target_user_id;
+  end if;
+
+  -- 4. Protege o administrador mestre
+  if lower(trim(coalesce(target_email, ''))) = 'aleuchoaconsorcio@gmail.com' then
+    raise exception 'O administrador principal do sistema não pode ser removido.';
+  end if;
+
+  -- 5. Restricoes do Gerente: Gerente so pode remover Vendedor ou Supervisor
+  select role into caller_role
+  from public.user_profiles
+  where id = caller_id;
+
+  if caller_role = 'gerente' and coalesce(lower(target_role), '') in ('admin', 'administrador', 'gerente') then
+    raise exception 'Gerentes só possuem permissão para remover Vendedores e Supervisores.';
+  end if;
+
+  -- 6. Limpa registros dependentes
+  delete from public.user_push_tokens where user_id = target_user_id;
+  delete from public.mentor_chat_history where user_id = target_user_id;
+  delete from public.crm_roleta_config where user_id = target_user_id;
+  delete from public.gamificacao_eventos where user_id = target_user_id;
+
+  -- 7. Remove perfil e conta de autenticacao
   delete from public.user_profiles where id = target_user_id;
+  delete from auth.users where id = target_user_id;
 end;
 $$;
 
