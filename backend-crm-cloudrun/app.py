@@ -111,7 +111,8 @@ def require_authenticated_caller():
         "/api/auth/notificar-reset",
         "/api/leads/notificar-transferencia",
         "/api/acoes-vendas/notificar-criacao",
-        "/api/acoes-vendas/notificar-cumprimento"
+        "/api/acoes-vendas/notificar-cumprimento",
+        "/api/metas/notificar-atribuicao"
     }:
         return None
     denial = authenticate_request(supabase)
@@ -779,6 +780,126 @@ def notificar_cumprimento_acao_venda():
     except Exception as e:
         print(f"❌ Erro ao notificar cumprimento de meta: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/metas/notificar-atribuicao', methods=['POST'])
+def notificar_atribuicao_meta_mensal():
+    try:
+        data = request.get_json(silent=True) or {}
+        target_user_id = data.get('targetUserId') or data.get('target_user_id')
+        target_user_name = data.get('targetUserName') or data.get('target_user_name') or 'Consultor'
+        created_by_name = data.get('createdByName') or data.get('created_by_name') or 'A Liderança'
+        meta_credito = data.get('metaCredito') or data.get('meta_credito')
+        meta_cotas = data.get('metaCotas') or data.get('meta_cotas')
+        ligacoes_diarias = data.get('ligacoesDiarias') or data.get('ligacoes_diarias')
+        tipo_foco = data.get('tipoFoco') or data.get('tipo_foco') or 'ambos'
+        mes = data.get('mes')
+        ano = data.get('ano')
+
+        if not target_user_id or not isinstance(target_user_id, str):
+            return jsonify({"error": "Identificador do destinatário (targetUserId) é obrigatório."}), 400
+
+        meses_nomes = [
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ]
+        mes_idx = int(mes) if mes and 1 <= int(mes) <= 12 else 10
+        nome_mes = meses_nomes[mes_idx - 1]
+        ano_str = str(ano) if ano else "2026"
+
+        titulo = f"🎯 Nova Meta Definida ({nome_mes}/{ano_str})"
+
+        partes_meta = []
+        if meta_credito:
+            if isinstance(meta_credito, (int, float)):
+                cred_formatado = f"R$ {float(meta_credito):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            else:
+                cred_formatado = f"R$ {str(meta_credito).replace('R$', '').strip()}"
+            partes_meta.append(f"Crédito: {cred_formatado}")
+        if meta_cotas:
+            partes_meta.append(f"Cotas: {meta_cotas}")
+        if ligacoes_diarias:
+            partes_meta.append(f"Ligações: {ligacoes_diarias}/dia")
+
+        detalhes_str = " | ".join(partes_meta) if partes_meta else "Consulte os novos objetivos no CRM"
+        corpo = f"{created_by_name} definiu seus objetivos do mês: {detalhes_str}. Acesse Minha Central para acompanhar seu progresso!"
+        url = "https://app.consorflux.com/?open_central=true"
+        tag_colapso = f"consorflux_meta_mensal_{target_user_id}_{ano_str}_{mes_idx}"
+
+        total_notificados = 0
+        if supabase:
+            tokens_unicos = set()
+            try:
+                tokens_resp = supabase.table('user_push_tokens').select('token').eq('user_id', target_user_id).execute()
+                for row in (tokens_resp.data or []):
+                    tok = row.get('token')
+                    if tok and not tok.startswith('TEST_'):
+                        tokens_unicos.add(tok)
+            except Exception as token_err:
+                print(f"⚠️ Erro ao consultar tokens de push para {target_user_id}: {token_err}")
+
+            for token_destino in tokens_unicos:
+                try:
+                    message = messaging.Message(
+                        notification=messaging.Notification(
+                            title=titulo,
+                            body=corpo,
+                        ),
+                        webpush=messaging.WebpushConfig(
+                            headers={"Urgency": "high"},
+                            notification=messaging.WebpushNotification(
+                                title=titulo,
+                                body=corpo,
+                                icon="https://app.consorflux.com/ConsorFluxWhite.png",
+                                badge="https://app.consorflux.com/ConsorFluxWhite.png",
+                                vibrate=[200, 100, 200],
+                                require_interaction=True,
+                                tag=tag_colapso
+                            ),
+                            fcm_options=messaging.WebpushFCMOptions(
+                                link=url
+                            )
+                        ),
+                        android=messaging.AndroidConfig(
+                            priority='high',
+                            collapse_key=tag_colapso,
+                            notification=messaging.AndroidNotification(
+                                title=titulo,
+                                body=corpo,
+                                icon="ic_notification",
+                                color="#2563eb",
+                                sound="default",
+                                click_action=url,
+                                tag=tag_colapso
+                            )
+                        ),
+                        data={
+                            "titulo": str(titulo),
+                            "mensagem": str(corpo),
+                            "url": url,
+                            "type": "meta_mensal_atribuida",
+                            "mes": str(mes_idx),
+                            "ano": str(ano_str)
+                        },
+                        token=token_destino
+                    )
+                    messaging.send(message)
+                    total_notificados += 1
+                except messaging.UnregisteredError:
+                    print(f"🗑️ Token expirado removido: {token_destino[:15]}...")
+                    supabase.table('user_push_tokens').delete().eq('token', token_destino).execute()
+                except Exception as push_err:
+                    print(f"⚠️ Erro ao disparar push de meta mensal para {token_destino[:15]}...: {push_err}")
+
+        return jsonify({
+            "success": True,
+            "delivered": total_notificados
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Erro ao notificar atribuição de meta mensal: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 # ==============================================================================
 # 4. ROTA UNIVERSAL DE CONVERSÃO HTML -> PDF (Simulador Recon)
