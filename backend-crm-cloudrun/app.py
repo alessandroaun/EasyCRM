@@ -107,7 +107,7 @@ def require_authenticated_caller():
         return authenticate_webhook()
     if request.path.startswith("/api/webhooks"):
         return None
-    if request.path == "/api/auth/notificar-reset":
+    if request.path in {"/api/auth/notificar-reset", "/api/leads/notificar-transferencia"}:
         return None
     denial = authenticate_request(supabase)
     if denial is not None:
@@ -249,6 +249,7 @@ def enviar_notificacao_push(user_id: str, titulo: str, mensagem: str, lead_id: s
                 continue
 
             try:
+                tag_colapso = f"consorflux_{lead_id or 'notif'}"
                 message = messaging.Message(
                     notification=messaging.Notification(
                         title=titulo,
@@ -263,10 +264,19 @@ def enviar_notificacao_push(user_id: str, titulo: str, mensagem: str, lead_id: s
                             badge="https://app.consorflux.com/ConsorFluxWhite.png",
                             vibrate=[200, 100, 200],
                             require_interaction=True,
-                            tag=f"consorflux_{lead_id or 'notif'}"
+                            tag=tag_colapso
                         ),
                         fcm_options=messaging.WebpushFCMOptions(
                             link=url_destino
+                        )
+                    ),
+                    android=messaging.AndroidConfig(
+                        priority='high',
+                        collapse_key=tag_colapso,
+                        notification=messaging.AndroidNotification(
+                            tag=tag_colapso,
+                            icon="https://app.consorflux.com/ConsorFluxWhite.png",
+                            color="#2563EB"
                         )
                     ),
                     data={
@@ -276,7 +286,8 @@ def enviar_notificacao_push(user_id: str, titulo: str, mensagem: str, lead_id: s
                         "body": str(mensagem),
                         "url": str(url_destino),
                         "lead_id": str(lead_id) if lead_id else "",
-                        "type": "NEW_LEAD" if lead_id else "GENERAL"
+                        "type": "NEW_LEAD" if lead_id else "GENERAL",
+                        "tag": tag_colapso
                     },
                     token=token_destino
                 )
@@ -376,21 +387,74 @@ def notificar_solicitacao_reset():
             gestores_res = supabase.table('user_profiles').select('id, name, email, role').in_('role', ['admin', 'administrador', 'gerente']).eq('status', 'ativo').execute()
             gestores = gestores_res.data if (gestores_res and gestores_res.data) else []
 
+            # 4. Agrupa tokens únicos de todos os gestores para evitar duplicação em aparelhos físicos
+            gestor_ids = [g['id'] for g in gestores if g.get('id')]
+            tokens_unicos = set()
+            if gestor_ids:
+                tokens_resp = supabase.table('user_push_tokens').select('token').in_('user_id', gestor_ids).execute()
+                for row in (tokens_resp.data or []):
+                    tok = row.get('token')
+                    if tok and not tok.startswith('TEST_'):
+                        tokens_unicos.add(tok)
+
+            titulo = "🔐 Solicitação de Reset de Senha"
+            mensagem = f"O colaborador {nome_exibicao} ({email}) solicitou recuperação de acesso. Toque para autorizar."
+            url = "https://app.consorflux.com/?open_notifications=true"
+            tag_colapso = f"consorflux_reset_{email}"
+
             total_notificados = 0
-            for gestor in gestores:
-                g_id = gestor.get('id')
-                if not g_id:
-                    continue
-                titulo = "🔐 Solicitação de Reset de Senha"
-                mensagem = f"O colaborador {nome_exibicao} ({email}) solicitou recuperação de acesso. Toque para autorizar."
-                url = "https://app.consorflux.com/?open_notifications=true"
-                
+            for token_destino in tokens_unicos:
                 try:
-                    sucesso = enviar_notificacao_push(g_id, titulo, mensagem, url=url)
-                    if sucesso:
-                        total_notificados += 1
+                    message = messaging.Message(
+                        notification=messaging.Notification(
+                            title=titulo,
+                            body=mensagem,
+                        ),
+                        webpush=messaging.WebpushConfig(
+                            headers={"Urgency": "high"},
+                            notification=messaging.WebpushNotification(
+                                title=titulo,
+                                body=mensagem,
+                                icon="https://app.consorflux.com/ConsorFluxWhite.png",
+                                badge="https://app.consorflux.com/ConsorFluxWhite.png",
+                                vibrate=[200, 100, 200],
+                                require_interaction=True,
+                                tag=tag_colapso
+                            ),
+                            fcm_options=messaging.WebpushFCMOptions(
+                                link=url
+                            )
+                        ),
+                        android=messaging.AndroidConfig(
+                            priority='high',
+                            collapse_key=tag_colapso,
+                            notification=messaging.AndroidNotification(
+                                tag=tag_colapso,
+                                icon="https://app.consorflux.com/ConsorFluxWhite.png",
+                                color="#2563EB"
+                            )
+                        ),
+                        data={
+                            "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                            "title": str(titulo),
+                            "mensagem": str(mensagem),
+                            "body": str(mensagem),
+                            "url": str(url),
+                            "email": str(email),
+                            "tag": str(tag_colapso),
+                            "type": "RESET_REQUEST"
+                        },
+                        token=token_destino
+                    )
+
+                    resposta_firebase = messaging.send(message)
+                    print(f"✅ Push de reset enviado ({token_destino[:15]}...)! ID: {resposta_firebase}")
+                    total_notificados += 1
+                except messaging.UnregisteredError:
+                    print(f"🧹 Token expirado removido do Supabase: {token_destino[:15]}...")
+                    supabase.table('user_push_tokens').delete().eq('token', token_destino).execute()
                 except Exception as push_err:
-                    print(f"⚠️ Erro ao disparar push para gestor {g_id}: {push_err}")
+                    print(f"⚠️ Erro ao disparar push de reset para token {token_destino[:15]}...: {push_err}")
 
             return jsonify({
                 "success": True,
@@ -402,6 +466,104 @@ def notificar_solicitacao_reset():
 
     except Exception as e:
         print(f"❌ Erro ao processar solicitação de reset: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/leads/notificar-transferencia', methods=['POST'])
+def notificar_transferencia_leads():
+    try:
+        data = request.get_json(silent=True) or {}
+        target_user_id = data.get('target_user_id')
+        lead_count = data.get('lead_count')
+        sender_name = data.get('sender_name') or 'Gestão'
+
+        if not target_user_id or not isinstance(target_user_id, str):
+            return jsonify({"error": "Identificador do destinatário (target_user_id) é obrigatório."}), 400
+
+        try:
+            lead_count = int(lead_count)
+            if lead_count <= 0:
+                raise ValueError()
+        except (TypeError, ValueError):
+            return jsonify({"error": "A quantidade de leads (lead_count) deve ser um número inteiro positivo maior que zero."}), 400
+
+        titulo = "🎯 Novo Lead Transferido" if lead_count == 1 else "🎯 Novos Leads Transferidos"
+        corpo = (
+            f"Você recebeu 1 lead transferido por {sender_name}. Toque para visualizar na coluna Novo Cliente."
+            if lead_count == 1
+            else f"Você recebeu {lead_count} leads transferidos por {sender_name}. Toque para visualizar na coluna Novo Cliente."
+        )
+        url = "https://app.consorflux.com/?open_lead_board=true"
+        tag_colapso = f"consorflux_transfer_{target_user_id}"
+
+        total_notificados = 0
+        if supabase:
+            tokens_unicos = set()
+            try:
+                tokens_resp = supabase.table('user_push_tokens').select('token').eq('user_id', target_user_id).execute()
+                for row in (tokens_resp.data or []):
+                    tok = row.get('token')
+                    if tok and not tok.startswith('TEST_'):
+                        tokens_unicos.add(tok)
+            except Exception as token_err:
+                print(f"⚠️ Erro ao consultar tokens de push para {target_user_id}: {token_err}")
+
+            for token_destino in tokens_unicos:
+                try:
+                    message = messaging.Message(
+                        notification=messaging.Notification(
+                            title=titulo,
+                            body=corpo,
+                        ),
+                        webpush=messaging.WebpushConfig(
+                            headers={"Urgency": "high"},
+                            notification=messaging.WebpushNotification(
+                                title=titulo,
+                                body=corpo,
+                                icon="https://app.consorflux.com/ConsorFluxWhite.png",
+                                badge="https://app.consorflux.com/ConsorFluxWhite.png",
+                                vibrate=[200, 100, 200],
+                                require_interaction=True,
+                                tag=tag_colapso
+                            ),
+                            fcm_options=messaging.WebpushFCMOptions(
+                                link=url
+                            )
+                        ),
+                        android=messaging.AndroidConfig(
+                            priority='high',
+                            collapse_key=tag_colapso,
+                            notification=messaging.AndroidNotification(
+                                tag=tag_colapso,
+                                icon="https://app.consorflux.com/ConsorFluxWhite.png",
+                                color="#2563EB"
+                            )
+                        ),
+                        data={
+                            "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                            "title": str(titulo),
+                            "mensagem": str(corpo),
+                            "url": url,
+                            "type": "lead_transfer",
+                            "lead_count": str(lead_count)
+                        },
+                        token=token_destino
+                    )
+                    messaging.send(message)
+                    total_notificados += 1
+                except messaging.UnregisteredError:
+                    print(f"🗑️ Token expirado/não registrado removido para transfer: {token_destino[:15]}...")
+                    supabase.table('user_push_tokens').delete().eq('token', token_destino).execute()
+                except Exception as push_err:
+                    print(f"⚠️ Erro ao disparar push de transferência para token {token_destino[:15]}...: {push_err}")
+
+        return jsonify({
+            "success": True,
+            "lead_count": lead_count,
+            "delivered": total_notificados
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Erro ao notificar transferência de leads: {e}")
         return jsonify({"error": str(e)}), 500
 
 # ==============================================================================
