@@ -1,0 +1,11 @@
+Flask
+flask-cors
+google-genai
+gunicorn
+python-dotenv
+firebase-admin
+supabase
+playwright==1.63.0
+pdfplumber
+requests
+google-cloud-secret-manager

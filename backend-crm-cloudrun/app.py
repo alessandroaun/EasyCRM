@@ -69,7 +69,11 @@ allowed_origins = [
         "FRONTEND_ORIGINS", "https://app.consorflux.com,https://consorflux.com,https://a11crm.netlify.app,http://localhost:5173"
     ).split(",") if origin.strip()
 ]
-CORS(app, origins=allowed_origins, allow_headers=["Authorization", "Content-Type"])
+allowed_origin_patterns = [
+    re.compile(r"^https://[a-zA-Z0-9-]+\.consorflux-app\.pages\.dev$"),
+    re.compile(r"^https://[a-zA-Z0-9-]+\.pages\.dev$")
+]
+CORS(app, origins=allowed_origins + allowed_origin_patterns, allow_headers=["Authorization", "Content-Type"])
 
 # ==============================================================================
 # 1. INICIALIZAÇÃO DO FIREBASE E SUPABASE
@@ -112,7 +116,8 @@ def require_authenticated_caller():
         "/api/leads/notificar-transferencia",
         "/api/acoes-vendas/notificar-criacao",
         "/api/acoes-vendas/notificar-cumprimento",
-        "/api/metas/notificar-atribuicao"
+        "/api/metas/notificar-atribuicao",
+        "/api/gerar-pdf-html"
     }:
         return None
     denial = authenticate_request(supabase)
